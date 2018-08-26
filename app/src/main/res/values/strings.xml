@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">FlashMe</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="title_card_flip">Card Flip</string>
+    <string name="intro">Time to get flashed!</string>
+
+    <string name="action_info">Photo info</string>
+    <string name="action_photo">View photo</string>
+
+    <string name="card_back_title">Angry Red Android</string>
+    <string name="card_back_description"><![CDATA[Lorem ipsum dolor sit]]></string>
+    <string name="description_image_1">Image 1</string>
+
+
+    <string name="english_word">Input the English word</string>
+    <string name="swedish_word">Input the Swedish word</string>
+    <string name="article">Input the article for Swedish word</string>
+    <string name="imperative_form">Input the Swedish imperative form</string>
+    <string name="imperfect_form">Input the Swedish imperfect form</string>
+</resources>

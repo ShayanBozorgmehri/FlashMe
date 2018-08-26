@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item
+        android:id="@+id/noun"
+        android:icon="@drawable/noun_icon"
+        android:title="Nouns" />
+
+    <item
+        android:id="@+id/verb"
+        android:icon="@drawable/verb_icon"
+        android:title="Verbs" />
+
+    <item android:title="Communicate">
+        <menu>
+            <item
+                android:id="@+id/womenPutYourWeaponDown"
+                android:icon="@drawable/ic_menu_share"
+                android:title="This Does Nothing" />
+        </menu>
+    </item>
+</menu>
