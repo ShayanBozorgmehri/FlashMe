@@ -5,6 +5,8 @@ import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
@@ -49,13 +51,41 @@ public class NounCardFlipActivity extends CardFlipActivity {
         b.show();
     }
 
+    // determine if all manual, auto eng or auto swed
+    protected boolean getTranslationBasedOnTranslationType(final View dialogView){
+        final String translationType = getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group);
+        final String engInput = getEditText(dialogView, R.id.englishWord);
+        final String swedInput = getEditText(dialogView, R.id.swedishWord);
+
+        String article = null;
+        String engTranslation = null;
+        String swedTranslation = null;
+
+        if(engInput.trim().isEmpty() && swedInput.trim().isEmpty()){
+            Toast.makeText(getBaseContext(), "Cannot leave both input fields blank!", Toast.LENGTH_SHORT);
+            return false;
+        }
+        if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
+            engTranslation = getEnglishTextUsingYandex(swedInput);
+        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+            swedTranslation = getSwedishTextUsingYandex(engInput);
+            if(swedInput != null){
+                article = swedTranslation;
+            }
+        }
+        return true;
+    }
     @Override
     protected void addCardToDocument(final View dialogView) {
-        Toast.makeText(getBaseContext(), "Updating cards...", Toast.LENGTH_SHORT).show();
 
-        String eng = getEditText(dialogView, R.id.englishWord);
-        swed = getEditText(dialogView, R.id.swedishWord);
-        String article = getSelectedArticle(dialogView);
+        final String engInput = getEditText(dialogView, R.id.englishWord);
+        final String swedInput = getEditText(dialogView, R.id.swedishWord);
+
+        // determine if all manual, auto eng or auto swed
+        if(getTranslationBasedOnTranslationType(dialogView)){//invalid
+            return;
+        }
+        String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         MutableDocument mutableDocument = new MutableDocument();
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -65,6 +95,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         map.put("swedish word", jsonString);
         mutableDocument.setData(map);
         mutableDocument.setString("someKey", "someValue");
+
+        Toast.makeText(getBaseContext(), "Updating cards..." , Toast.LENGTH_SHORT).show();
 
         // Save the document to the database
         try {
@@ -80,6 +112,12 @@ public class NounCardFlipActivity extends CardFlipActivity {
             e.printStackTrace();
         }
         Log.d("DEBUG", "Successfully created new card document with id: " + document.getId());
+
+        printStuff();
+        updateCurrentCard();
+    }
+
+    private void printStuff(){
         Query query = QueryBuilder
                 .select(SelectResult.expression(Meta.id),
                         SelectResult.property("english word"),
@@ -96,8 +134,6 @@ public class NounCardFlipActivity extends CardFlipActivity {
             Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
             e.printStackTrace();
         }
-
-        updateCurrentCard();
     }
 
     @Override

@@ -21,6 +21,7 @@ package com.boredofnothing.flashcard;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
@@ -37,6 +38,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
@@ -74,15 +76,14 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     private final String frontFragTag = "frontFrag";
     protected static Document document = null;
-    String swed;
+    protected YandexTranslator yandexTranslator;
 
-    //left off here, update the docs on flip in ttheir frags
-    // OR just load all of the docs at once based on the category and iterate over em
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card_flip);
 
+        yandexTranslator = new YandexTranslator(getApplicationContext());
         findDocuments();
         getFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
@@ -169,6 +170,16 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected void addCardToDocument(final View dialogView);
     abstract protected void updateCurrentCard();
     abstract protected Set<Map<String, Object>> loadAllCards();
+    abstract protected String getSelectedTranslationOption(final View dialogView);
+    abstract protected void setSwedishTextFromYandex(final View dialogView);
+
+    protected String getSwedishTextUsingYandex(String englishText){
+        return yandexTranslator.getTranslationFromYandex(englishText, YandexTranslator.ENG_TO_SWED);
+    }
+
+    protected String getEnglishTextUsingYandex(String swedishText){
+        return yandexTranslator.getTranslationFromYandex(swedishText, YandexTranslator.SWED_TO_ENG);
+    }
 
     public void flipCard(View v){
         flipCard();
@@ -233,8 +244,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return ((EditText)dialogView.findViewById(id)).getText().toString();
     }
 
-    protected String getSelectedArticle(final View dialogView){
-        RadioGroup radioGroup = dialogView.findViewById(R.id.radio_group);
+    protected String getSelectedRadioOption(final View dialogView, int id){
+        RadioGroup radioGroup = dialogView.findViewById(id);
         return ((RadioButton) dialogView.findViewById(radioGroup.getCheckedRadioButtonId())).getText().toString();
     }
 

@@ -10,6 +10,12 @@
     <string name="action_info">Photo info</string>
     <string name="action_photo">View photo</string>
 
+    <string name="english_auto_translation">Auto English</string>
+    <string name="swedish_auto_translation">Auto Swedish</string>
+    <string name="manual_translation">Manual Input</string>
+
+
+
     <string name="card_back_title">Angry Red Android</string>
     <string name="card_back_description"><![CDATA[Lorem ipsum dolor sit]]></string>
     <string name="description_image_1">Image 1</string>

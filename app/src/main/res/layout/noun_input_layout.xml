@@ -25,7 +25,7 @@
         android:hint="@string/swedish_word" />
 
     <TextView
-        android:id="@+id/radio_group_header"
+        android:id="@+id/article_radio_group_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -35,32 +35,70 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
     <RadioGroup
-        android:id="@+id/radio_group"
+        android:id="@+id/article_radio_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
 
         <RadioButton
-            android:id="@+id/radio1"
+            android:id="@+id/no_article"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="No article" />
+            android:text="no article" />
 
         <RadioButton
-            android:id="@+id/radio2"
+            android:id="@+id/ett_article"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="ett" />
 
         <RadioButton
-            android:id="@+id/radio3"
+            android:id="@+id/en_article"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="en" />
     </RadioGroup>
 
+    <TextView
+        android:id="@+id/translate_radio_group_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="14dp"
+        android:layout_marginBottom="4dp"
+        android:text="Select manual or auto translation"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+    <RadioGroup
+        android:id="@+id/noun_translate_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/manual_translation"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/manual_translation" />
+
+        <RadioButton
+            android:id="@+id/eng_auto_translation"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/english_auto_translation" />
+
+        <RadioButton
+            android:id="@+id/swe_auto_translation"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/swedish_auto_translation" />
+    </RadioGroup>
 </LinearLayout>
