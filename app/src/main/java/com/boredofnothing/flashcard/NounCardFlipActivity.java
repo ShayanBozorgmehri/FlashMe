@@ -5,13 +5,11 @@ import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
+import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -23,12 +21,42 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 public class NounCardFlipActivity extends CardFlipActivity {
 
     private String article;
+
+    @Override
+    protected void findDocuments(){
+        Query query = QueryBuilder
+                .select(SelectResult.expression(Meta.id),
+                        SelectResult.property("english word"),
+                        SelectResult.property("swedish word"))
+                .from(DataSource.database(MainActivity.database)).where(Expression.property("english word").notEqualTo(Expression.string("car")));
+        try {
+            ResultSet resultSet = query.execute();
+            List<Result> documents = resultSet.allResults();
+            if(MainActivity.database.getCount() == 0){
+                Log.d("DEBUG", "DB is empty");
+            } else {
+                Log.d("DEBUG", "DB is NOT empty" + documents.size());
+                for(Result res: documents){
+                    Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
+                }
+                Result randomDoc = documents.get(new Random().nextInt(documents.size()));
+                Log.d("DEBUG", "Loading random doc with ID " + randomDoc.getString(0)
+                        + " and data: " + randomDoc.getString(1) + ", " + randomDoc.getString(2));
+                document = MainActivity.database.getDocument(randomDoc.getString(0));
+            }
+        } catch (CouchbaseLiteException e) {
+            Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void showInputDialog() {
@@ -62,8 +90,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         final String engInput = getEditText(dialogView, R.id.englishNoun).trim();
         final String swedInput = getEditText(dialogView, R.id.swedishNoun).trim();
 
-        String engTranslation = null;
-        String swedTranslation = null;
+        String engTranslation;
+        String swedTranslation;
 
         if(!validateInputFields(translationType, engInput, swedInput)){
             return false;

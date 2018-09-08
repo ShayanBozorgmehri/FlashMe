@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
+import com.couchbase.lite.IndexBuilder;
+import com.couchbase.lite.ValueIndexItem;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -41,6 +43,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         try {
             Log.d("DEBUG", "searching for/creating DB...");
             database = new Database("flash_me_db", config);
+            if(database.getIndexes().size() == 0){
+                database.createIndex("TypeNameIndex",
+                        IndexBuilder.valueIndex(ValueIndexItem.property("english word")));
+            }
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }

@@ -12,7 +12,7 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:hint="@string/english_word" />
+        android:hint="@string/english_noun" />
 
     <EditText
         android:id="@+id/swedishNoun"
@@ -22,7 +22,7 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:hint="@string/swedish_word" />
+        android:hint="@string/swedish_noun" />
 
     <TextView
         android:id="@+id/article_radio_group_header"

@@ -101,33 +101,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    private void findDocuments(){
-        Query query = QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property("english word"),
-                        SelectResult.property("swedish word"))
-                .from(DataSource.database(MainActivity.database));
-        try {
-            ResultSet resultSet = query.execute();
-            List<Result> documents = resultSet.allResults(); // this shit is wrong
-            if(MainActivity.database.getCount() == 0){ // this shit is right
-                Log.d("DEBUG", "DB is empty");
-            } else {
-                Log.d("DEBUG", "DB is NOT empty" + documents.size());//shit prints zero
-                for(Result result: resultSet){
-                    Log.d("--------------", result.getString(0));
-                }
-                Result randomDoc = documents.get(new Random().nextInt(documents.size() ));
-                Log.d("DEBUG", "Loading random doc with ID " + randomDoc.getString(0)
-                        + " and data: " + randomDoc.getString(1) + ", " + randomDoc.getString(2));
-                document = MainActivity.database.getDocument(randomDoc.getString(0));
-            }
-        } catch (CouchbaseLiteException e) {
-            Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -168,6 +141,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected boolean addCardToDocument(final View dialogView);
     abstract protected void updateCurrentCard();
     abstract protected Set<Map<String, Object>> loadAllCards();
+    abstract protected void findDocuments();
 
     protected boolean validateInputFields(String translationType, String engInput, String swedInput){
         if(translationType.equals(getResources().getString(R.string.manual_translation))
