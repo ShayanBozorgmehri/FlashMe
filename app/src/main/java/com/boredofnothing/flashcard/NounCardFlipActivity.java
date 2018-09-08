@@ -168,14 +168,4 @@ public class NounCardFlipActivity extends CardFlipActivity {
     protected Set<Map<String, Object>> loadAllCards() {
         return null;
     }
-
-    @Override
-    protected String getSelectedTranslationOption(View dialogView) {
-        return null;
-    }
-
-    @Override
-    protected void setSwedishTextFromYandex(View dialogView) {
-
-    }
 }

@@ -25,7 +25,7 @@ public class YandexTranslator extends AsyncTask<String, Void, String> {
     protected String getTranslationFromYandex(String textToBeTranslated, String languagePair){
         String translationResult = null;
         try {
-            String translatedJson = execute(textToBeTranslated, languagePair).get();//left off adding this, now see if this will return the correct translation
+            String translatedJson = execute(textToBeTranslated, languagePair).get();
             JSONObject json = new JSONObject(translatedJson);
 
             String code = json.get("code").toString();

@@ -168,8 +168,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected boolean addCardToDocument(final View dialogView);
     abstract protected void updateCurrentCard();
     abstract protected Set<Map<String, Object>> loadAllCards();
-    abstract protected String getSelectedTranslationOption(final View dialogView);
-    abstract protected void setSwedishTextFromYandex(final View dialogView);
 
     protected boolean validateInputFields(String translationType, String engInput, String swedInput){
         if(translationType.equals(getResources().getString(R.string.manual_translation))

@@ -117,14 +117,4 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         }
         return null;
     }
-
-    @Override
-    protected String getSelectedTranslationOption(View dialogView) {
-        return null;
-    }
-
-    @Override
-    protected void setSwedishTextFromYandex(View dialogView) {
-
-    }
 }
