@@ -38,7 +38,9 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 Log.d("DEBUG", "Creating new verb card.");
-                addCardToDocument(dialogView);
+                if (addCardToDocument(dialogView)){
+                    dialog.dismiss();
+                }
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -51,11 +53,11 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected void addCardToDocument(final View dialogView) {
+    protected boolean addCardToDocument(final View dialogView) {
         Toast.makeText(getBaseContext(), "Updating cards...", Toast.LENGTH_SHORT).show();
 
-        String eng = getEditText(dialogView, R.id.englishWord);
-        swed = getEditText(dialogView, R.id.swedishWord);
+        String eng = getEditText(dialogView, R.id.englishVerb);
+        String swed = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.imperativeForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
         MutableDocument mutableDocument = new MutableDocument();
@@ -66,7 +68,6 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         map.put("english word", verb.getEnglishWord());
         map.put("swedish word", jsonString);
         mutableDocument.setData(map);
-        mutableDocument.setString("someKey", "someValue");
 
         //left off here may 22, need to load cards now random, instead of using 'english word'
         // Save the document to the database
@@ -84,6 +85,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", "Successfully created new card document with id: " + document.getId());
         updateCurrentCard();
         loadAllCards();
+        return true;
     }
 
     @Override
@@ -114,5 +116,15 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    protected String getSelectedTranslationOption(View dialogView) {
+        return null;
+    }
+
+    @Override
+    protected void setSwedishTextFromYandex(View dialogView) {
+
     }
 }

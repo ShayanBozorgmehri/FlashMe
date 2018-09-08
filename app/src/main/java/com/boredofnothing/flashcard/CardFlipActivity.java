@@ -76,14 +76,12 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     private final String frontFragTag = "frontFrag";
     protected static Document document = null;
-    protected YandexTranslator yandexTranslator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card_flip);
 
-        yandexTranslator = new YandexTranslator(getApplicationContext());
         findDocuments();
         getFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
@@ -167,18 +165,37 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     abstract protected void showInputDialog();
-    abstract protected void addCardToDocument(final View dialogView);
+    abstract protected boolean addCardToDocument(final View dialogView);
     abstract protected void updateCurrentCard();
     abstract protected Set<Map<String, Object>> loadAllCards();
     abstract protected String getSelectedTranslationOption(final View dialogView);
     abstract protected void setSwedishTextFromYandex(final View dialogView);
 
+    protected boolean validateInputFields(String translationType, String engInput, String swedInput){
+        if(translationType.equals(getResources().getString(R.string.manual_translation))
+                && (engInput.trim().isEmpty() || swedInput.trim().isEmpty())){
+            Toast.makeText(getBaseContext(), "Cannot leave manual input fields blank!", Toast.LENGTH_SHORT).show();
+            return false;
+        } else if(translationType.equals(getResources().getString(R.string.english_auto_translation)) && swedInput.trim().isEmpty()){
+            Toast.makeText(getBaseContext(), "Swedish input field required to find English auto translation!", Toast.LENGTH_SHORT).show();
+            return false;
+        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation)) && engInput.trim().isEmpty()){
+            Toast.makeText(getBaseContext(), "English input field required to find Swedish auto translation!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
     protected String getSwedishTextUsingYandex(String englishText){
-        return yandexTranslator.getTranslationFromYandex(englishText, YandexTranslator.ENG_TO_SWED);
+        return new YandexTranslator().getTranslationFromYandex(englishText, YandexTranslator.ENG_TO_SWED);
     }
 
     protected String getEnglishTextUsingYandex(String swedishText){
-        return yandexTranslator.getTranslationFromYandex(swedishText, YandexTranslator.SWED_TO_ENG);
+        return new YandexTranslator().getTranslationFromYandex(swedishText, YandexTranslator.SWED_TO_ENG);
+    }
+
+    public boolean isNullOrEmpty(String input){
+        return input == null || input.trim().isEmpty();
     }
 
     public void flipCard(View v){
@@ -242,6 +259,10 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     protected String getEditText(final View dialogView, int id){
         return ((EditText)dialogView.findViewById(id)).getText().toString();
+    }
+
+    protected void setEditText(final View dialogView, int id, String text){
+        ((EditText)dialogView.findViewById(id)).setText(text);
     }
 
     protected String getSelectedRadioOption(final View dialogView, int id){

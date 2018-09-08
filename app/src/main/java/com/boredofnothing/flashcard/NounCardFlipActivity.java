@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -27,6 +28,8 @@ import java.util.Set;
 
 public class NounCardFlipActivity extends CardFlipActivity {
 
+    private String article;
+
     @Override
     protected void showInputDialog() {
 
@@ -39,7 +42,9 @@ public class NounCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 Log.d("DEBUG", "Creating new noun card.");
-                addCardToDocument(dialogView);
+                if(addCardToDocument(dialogView)){
+                    dialog.dismiss();
+                }
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -54,47 +59,64 @@ public class NounCardFlipActivity extends CardFlipActivity {
     // determine if all manual, auto eng or auto swed
     protected boolean getTranslationBasedOnTranslationType(final View dialogView){
         final String translationType = getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group);
-        final String engInput = getEditText(dialogView, R.id.englishWord);
-        final String swedInput = getEditText(dialogView, R.id.swedishWord);
+        final String engInput = getEditText(dialogView, R.id.englishNoun).trim();
+        final String swedInput = getEditText(dialogView, R.id.swedishNoun).trim();
 
-        String article = null;
         String engTranslation = null;
         String swedTranslation = null;
 
-        if(engInput.trim().isEmpty() && swedInput.trim().isEmpty()){
-            Toast.makeText(getBaseContext(), "Cannot leave both input fields blank!", Toast.LENGTH_SHORT);
+        if(!validateInputFields(translationType, engInput, swedInput)){
             return false;
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
             engTranslation = getEnglishTextUsingYandex(swedInput);
-        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
-            swedTranslation = getSwedishTextUsingYandex(engInput);
-            if(swedInput != null){
-                article = swedTranslation;
+            if(isNullOrEmpty(engTranslation)){
+                Toast.makeText(getBaseContext(), "Could not find English translation for: " + swedInput, Toast.LENGTH_SHORT).show();
+                return false;
             }
+            setEditText(dialogView, R.id.englishNoun, engTranslation);
+        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+            swedTranslation = getSwedishTextUsingYandex("a " + engInput);//get both the article an noun
+            if(swedTranslation != null){
+                String[] result = swedTranslation.split(" ");
+                if(result.length != 1){
+                    article = result[0];
+                    swedTranslation = result[1];
+                } else {
+                    article = "no article"; //example, vatten. there is no en/ett vatten
+                }
+                //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
+            }
+            if(isNullOrEmpty(swedTranslation)){
+                Toast.makeText(getBaseContext(), "Could not find Swedish translation for: " + engInput, Toast.LENGTH_SHORT).show();
+                return false;
+            }
+            setEditText(dialogView, R.id.swedishNoun, swedTranslation);
         }
         return true;
     }
     @Override
-    protected void addCardToDocument(final View dialogView) {
-
-        final String engInput = getEditText(dialogView, R.id.englishWord);
-        final String swedInput = getEditText(dialogView, R.id.swedishWord);
+    protected boolean addCardToDocument(final View dialogView) {
 
         // determine if all manual, auto eng or auto swed
-        if(getTranslationBasedOnTranslationType(dialogView)){//invalid
-            return;
+        if(!getTranslationBasedOnTranslationType(dialogView)){//invalid
+            return false;
         }
-        String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
+
+        final String engTranslation = getEditText(dialogView, R.id.englishNoun);
+        final String swedTranslation = getEditText(dialogView, R.id.swedishNoun);
+        if(getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.english_auto_translation))){
+            article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
+        }
         MutableDocument mutableDocument = new MutableDocument();
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Noun noun = new Noun(eng, swed, article);
+        Noun noun = new Noun(engTranslation, swedTranslation, article);
+        //Noun noun = new Noun(eng, swed, article);
         String jsonString = gson.toJson(noun);
         map.put("english word", noun.getEnglishWord());
         map.put("swedish word", jsonString);
         mutableDocument.setData(map);
-        mutableDocument.setString("someKey", "someValue");
 
         Toast.makeText(getBaseContext(), "Updating cards..." , Toast.LENGTH_SHORT).show();
 
@@ -115,6 +137,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
         printStuff();
         updateCurrentCard();
+        return true;
     }
 
     private void printStuff(){
@@ -144,5 +167,15 @@ public class NounCardFlipActivity extends CardFlipActivity {
     @Override
     protected Set<Map<String, Object>> loadAllCards() {
         return null;
+    }
+
+    @Override
+    protected String getSelectedTranslationOption(View dialogView) {
+        return null;
+    }
+
+    @Override
+    protected void setSwedishTextFromYandex(View dialogView) {
+
     }
 }

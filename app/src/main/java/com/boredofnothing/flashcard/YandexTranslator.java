@@ -1,6 +1,5 @@
 package com.boredofnothing.flashcard;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -21,17 +20,12 @@ public class YandexTranslator extends AsyncTask<String, Void, String> {
 
     protected static final String ENG_TO_SWED = "en-sv";
     protected static final String SWED_TO_ENG = "sv-en";
-    private Context ctx;
-
-    public YandexTranslator(Context ctx){
-        this.ctx = ctx;
-    }
 
     //Function for calling executing the Translator Background Task
     protected String getTranslationFromYandex(String textToBeTranslated, String languagePair){
         String translationResult = null;
         try {
-            String translatedJson = execute(textToBeTranslated,languagePair).get();//left off adding this, now see if this will return the correct translation
+            String translatedJson = execute(textToBeTranslated, languagePair).get();//left off adding this, now see if this will return the correct translation
             JSONObject json = new JSONObject(translatedJson);
 
             String code = json.get("code").toString();
