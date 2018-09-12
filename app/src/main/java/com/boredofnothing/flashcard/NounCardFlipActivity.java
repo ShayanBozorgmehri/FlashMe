@@ -32,19 +32,16 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void findDocuments(){
-        Query query = QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property(CardSideType.ENGLISH_NOUN.toString()),
-                        SelectResult.property(CardSideType.NOUN_INFO.toString()))
-                .from(DataSource.database(MainActivity.database))
-                .where(Expression.property(CardSideType.ENGLISH_NOUN.toString()).notNullOrMissing());
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
+                CardSideType.ENGLISH_NOUN.toString(),
+                CardSideType.NOUN_INFO.toString());
         try {
             ResultSet resultSet = query.execute();
             List<Result> documents = resultSet.allResults();
-            if(MainActivity.database.getCount() == 0){
-                Log.d("DEBUG", "DB is empty");
+            if(documents.size() == 0){
+                Log.d("DEBUG", "DB is empty of nouns");
             } else {
-                Log.d("DEBUG", "DB is NOT empty" + documents.size());
+                Log.d("DEBUG", "DB is NOT empty of nouns: " + documents.size());
                 for(Result res: documents){
                     Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
                 }

@@ -39,7 +39,13 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Document;
+import com.couchbase.lite.Expression;
+import com.couchbase.lite.Meta;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.SelectResult;
 
 import java.util.Map;
 import java.util.Set;
@@ -239,6 +245,15 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     protected String getSelectedRadioOption(final View dialogView, int id){
         RadioGroup radioGroup = dialogView.findViewById(id);
         return ((RadioButton) dialogView.findViewById(radioGroup.getCheckedRadioButtonId())).getText().toString();
+    }
+
+    protected Query createQueryForCardTypeWithNonNullOrMissingValues(String wordType, String infoType) {
+        return QueryBuilder
+                .select(SelectResult.expression(Meta.id),
+                        SelectResult.property(wordType),
+                        SelectResult.property(infoType))
+                .from(DataSource.database(MainActivity.database))
+                .where(Expression.property(wordType).notNullOrMissing());
     }
 
     /**

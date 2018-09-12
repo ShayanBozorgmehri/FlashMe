@@ -30,16 +30,13 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void findDocuments(){
-        Query query = QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property(CardSideType.ENGLISH_VERB.toString()),
-                        SelectResult.property(CardSideType.VERB_INFO.toString()))
-                .from(DataSource.database(MainActivity.database))
-                .where(Expression.property(CardSideType.ENGLISH_VERB.toString()).notNullOrMissing());
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
+                CardSideType.ENGLISH_VERB.toString(),
+                CardSideType.VERB_INFO.toString());
         try {
             ResultSet resultSet = query.execute();
             List<Result> documents = resultSet.allResults();
-            if(MainActivity.database.getCount() == 0){
+            if(documents.size() == 0){
                 Log.d("DEBUG", "DB is empty of verbs");
             } else {
                 Log.d("DEBUG", "DB is NOT empty of verbs: " + documents.size());
