@@ -51,10 +51,9 @@ public class YandexTranslator extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        //String variables
+
         String textToBeTranslated = params[0];
         String languagePair = params[1];
-
         String jsonString;
 
         try {

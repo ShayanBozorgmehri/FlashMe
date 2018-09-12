@@ -25,14 +25,14 @@
         android:hint="@string/swedish_verb" />
 
     <EditText
-        android:id="@+id/imperativeForm"
+        android:id="@+id/infinitiveForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:hint="@string/imperative_form" />
+        android:hint="@string/infinitive_form" />
 
     <EditText
         android:id="@+id/imperfectForm"
@@ -43,5 +43,43 @@
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/imperfect_form" />
+    <TextView
+        android:id="@+id/verb_translate_radio_group_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="14dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/select_translation_mode"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+    <RadioGroup
+        android:id="@+id/verb_translate_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/verb_manual_translation"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/manual_translation" />
+
+        <RadioButton
+            android:id="@+id/verb_eng_auto_translation"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/english_auto_translation" />
+
+        <RadioButton
+            android:id="@+id/verb_swe_auto_translation"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/swedish_auto_translation" />
+    </RadioGroup>
 
 </LinearLayout>

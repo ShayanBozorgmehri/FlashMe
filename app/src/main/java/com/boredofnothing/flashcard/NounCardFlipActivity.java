@@ -8,15 +8,10 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.DataSource;
-import com.couchbase.lite.Expression;
-import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
-import com.couchbase.lite.SelectResult;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -40,6 +35,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
             List<Result> documents = resultSet.allResults();
             if(documents.size() == 0){
                 Log.d("DEBUG", "DB is empty of nouns");
+                document = null;
             } else {
                 Log.d("DEBUG", "DB is NOT empty of nouns: " + documents.size());
                 for(Result res: documents){
@@ -83,11 +79,13 @@ public class NounCardFlipActivity extends CardFlipActivity {
     }
 
     // determine if all manual, auto eng or auto swed
+    @Override
     protected boolean getTranslationBasedOnTranslationType(final View dialogView){
         final String translationType = getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishNoun).trim();
         final String swedInput = getEditText(dialogView, R.id.swedishNoun).trim();
 
+        //TODO: possible improvement is to just to create a Noun obj, set the vars for it and then return the obj, instead of returning boolean
         String engTranslation;
         String swedTranslation;
 
@@ -121,11 +119,12 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
         return true;
     }
+
     @Override
     protected boolean addCardToDocument(final View dialogView) {
 
         // determine if all manual, auto eng or auto swed
-        if(!getTranslationBasedOnTranslationType(dialogView)){//invalid
+        if(!getTranslationBasedOnTranslationType(dialogView)){//it's invalid
             return false;
         }
 
@@ -138,7 +137,6 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Noun noun = new Noun(engTranslation, swedTranslation, article);
-        //Noun noun = new Noun(eng, swed, article);
         String jsonString = gson.toJson(noun);
         map.put(CardSideType.ENGLISH_NOUN.toString(), noun.getEnglishWord());
         map.put(CardSideType.NOUN_INFO.toString(), jsonString);
@@ -152,8 +150,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
             Log.d("DEBUG", jsonString);
             MainActivity.database.save(mutableDocument);
-            document = MainActivity.database.getDocument(mutableDocument.getId());//left off here, DB is NOT empty but keeps saying that it is,
-            // alos the last added card will always be the random one cuz of this. need to fix logix in cardflipactivityl
+            document = MainActivity.database.getDocument(mutableDocument.getId());
 
         } catch (CouchbaseLiteException e) {
             Log.e("ERROR:", "Failed to add properties to document: " + e.getMessage() + "-" + e.getCause());
@@ -167,16 +164,14 @@ public class NounCardFlipActivity extends CardFlipActivity {
     }
 
     private void printStuff(){
-        Query query = QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property(CardSideType.ENGLISH_NOUN.toString()),
-                        SelectResult.property(CardSideType.NOUN_INFO.toString()))
-                .from(DataSource.database(MainActivity.database));
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
+                CardSideType.ENGLISH_NOUN.toString(),
+                CardSideType.NOUN_INFO.toString());
         try {
             ResultSet resultSet = query.execute();
             int i = 0;
             for (Result result : resultSet) {
-                System.out.println("************result " + ++i + ": id " + result.getString(0)
+                System.out.println("************result for nouns" + ++i + ": id " + result.getString(0)
                         + "      eng " + result.getString(1));
             }
         } catch (CouchbaseLiteException e) {

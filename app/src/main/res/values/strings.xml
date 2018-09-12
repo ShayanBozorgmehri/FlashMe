@@ -14,19 +14,18 @@
     <string name="swedish_auto_translation">Auto Swedish</string>
     <string name="manual_translation">Manual Input</string>
 
-
-
     <string name="card_back_title">Angry Red Android</string>
     <string name="card_back_description"><![CDATA[Lorem ipsum dolor sit]]></string>
     <string name="description_image_1">Image 1</string>
 
+    <string name="select_translation_mode">Select manual or auto translation</string>
 
     <string name="english_noun">Input the English noun</string>
     <string name="swedish_noun">Input the Swedish noun</string>
     <string name="article">Input the article for Swedish noun</string>
 
-    <string name="english_verb">Input the English verb</string>
-    <string name="swedish_verb">Input the Swedish verb</string>
-    <string name="imperative_form">Input the Swedish imperative form</string>
+    <string name="english_verb">Input the English infinitive form</string>
+    <string name="swedish_verb">Input the Swedish present form</string>
+    <string name="infinitive_form">Input the Swedish infinitive form</string>
     <string name="imperfect_form">Input the Swedish imperfect form</string>
 </resources>

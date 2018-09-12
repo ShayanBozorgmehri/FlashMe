@@ -5,6 +5,9 @@ public class Word {
     private String englishWord;
     private String swedishWord;
 
+    public Word(){
+    }
+
     public Word(String englishWord, String swedishWord) {
         this.englishWord = englishWord;
         this.swedishWord = swedishWord;

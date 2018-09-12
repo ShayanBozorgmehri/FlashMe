@@ -3,20 +3,23 @@ package com.boredofnothing.flashcard;
 public class Verb extends Word {
 
     private String imperfect; // ie, past tense
-    private String imperative; // ie, stem form
+    private String infinitive; // ie, stem form
 
-    public Verb(String englishWord, String swedishWord, String imperative, String imperfect) {
+    public Verb(){
+    }
+
+    public Verb(String englishWord, String swedishWord, String infinitive, String imperfect) {
         super(englishWord, swedishWord);
-        this.imperative = imperative;
+        this.infinitive = infinitive;
         this.imperfect = imperfect;
     }
 
-    public void setImperative(String imperative) {
-        this.imperative = imperative;
+    public void setInfinitive(String infinitive) {
+        this.infinitive = infinitive;
     }
 
-    public String getImperative() {
-        return imperative;
+    public String getInfinitive() {
+        return infinitive;
     }
 
     public void setImperfect(String imperfect) {
