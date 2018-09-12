@@ -21,7 +21,6 @@ package com.boredofnothing.flashcard;
  */
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
@@ -40,19 +39,9 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Document;
-import com.couchbase.lite.Meta;
-import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryBuilder;
-import com.couchbase.lite.Result;
-import com.couchbase.lite.ResultSet;
-import com.couchbase.lite.SelectResult;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -74,7 +63,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
      */
     private boolean mShowingBack = false;
 
-    private final String frontFragTag = "frontFrag";
     protected static Document document = null;
 
     @Override
@@ -88,15 +76,19 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             // If there is no saved instance state, add a fragment representing the
             // front of the card to this activity. If there is saved instance state,
             // this fragment will have already been added to the activity.
-            Log.i("tag", "first time");
+
+            CardFrontFragment cardFrontFragment = new CardFrontFragment();
+            Bundle args = new Bundle();
+            String navigationItem = getIntent().getStringExtra("selected_navigation_item");
+            args.putString("navigation_item", navigationItem);
+            args.putString("card_type", CardSideType.getEnumByConstructor("english " + navigationItem));
+            cardFrontFragment.setArguments(args);
 
             getFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container, new CardFrontFragment(), frontFragTag)
+                    .add(R.id.container, cardFrontFragment)
                     .commit();
         } else {
-            Log.i("tag", "NOT first time");
-
             mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
         }
     }
@@ -170,7 +162,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return input == null || input.trim().isEmpty();
     }
 
-    public void flipCard(View v){
+    public void flipCard(View v){ //called from layout
         flipCard();
     }
 
@@ -187,6 +179,13 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         // Create and commit a new fragment transaction that adds the fragment for the back of
         // the card, uses custom animations, and is part of the fragment manager's back stack.
 
+        CardBackFragment cardBackFragment = new CardBackFragment();
+        Bundle args = new Bundle();
+        String navigationItem = getIntent().getStringExtra("selected_navigation_item");
+        args.putString("navigation_item", navigationItem);
+        args.putString("card_type", CardSideType.getEnumByConstructor(navigationItem + " info"));
+        cardBackFragment.setArguments(args);
+
         getFragmentManager()
                 .beginTransaction()
 
@@ -201,7 +200,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 // Replace any fragments currently in the container view with a fragment
                 // representing the next page (indicated by the just-incremented currentPage
                 // variable).
-                .replace(R.id.container, new CardBackFragment())
+                .replace(R.id.container, cardBackFragment)
 
                 // Add this transaction to the back stack, allowing users to press Back
                 // to get to the front of the card.
@@ -250,8 +249,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_card_front, container, false);
         }
 
@@ -260,13 +258,43 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             super.onActivityCreated(savedInstanceState);
 
             if(document != null){
-                ((TextView) getView().findViewById(R.id.frontText)).setText(document.getString("english word"));
+                ((TextView) getView().findViewById(R.id.frontText))
+                        .setText(document.getString(getArguments().getString("card_type")));
             } else{
-                ((TextView) getView().findViewById(R.id.frontText)).setText("DB is empty for eng word");
+                ((TextView) getView().findViewById(R.id.frontText))
+                        .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
             }
         }
+    }
 
-        //commenting this out for now but apply same logic when you want to add buttons at the end of the test
+    /**
+     * A fragment representing the back of the card.
+     */
+    public static class CardBackFragment extends Fragment {
+        public CardBackFragment() {
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_card_back, container, false);
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+
+            if(document != null){
+                ((TextView) getView().findViewById(R.id.backText))
+                        .setText(document.getString(getArguments().getString("card_type")));
+            } else{
+                ((TextView) getView().findViewById(R.id.backText))
+                        .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
+            }
+        }
+    }
+}
+
+//commenting this out for now but apply same logic when you want to add buttons at the end of the test in the FRAGMENTS
 //        @Override
 //        public void onActivityCreated(Bundle savedInstanceState) {
 //            super.onActivityCreated(savedInstanceState);
@@ -284,30 +312,3 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 //                });
 //            }
 //        }
-    }
-
-    /**
-     * A fragment representing the back of the card.
-     */
-    public static class CardBackFragment extends Fragment {
-        public CardBackFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_card_back, container, false);
-        }
-
-        @Override
-        public void onActivityCreated(Bundle savedInstanceState) {
-            super.onActivityCreated(savedInstanceState);
-
-            if(document != null){
-                ((TextView) getView().findViewById(R.id.backText)).setText(document.getString("swedish word"));
-            } else{
-                ((TextView) getView().findViewById(R.id.backText)).setText("DB is empty for swed word");
-            }
-        }
-    }
-}

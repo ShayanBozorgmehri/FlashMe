@@ -34,9 +34,10 @@ public class NounCardFlipActivity extends CardFlipActivity {
     protected void findDocuments(){
         Query query = QueryBuilder
                 .select(SelectResult.expression(Meta.id),
-                        SelectResult.property("english word"),
-                        SelectResult.property("swedish word"))
-                .from(DataSource.database(MainActivity.database)).where(Expression.property("english word").notEqualTo(Expression.string("car")));
+                        SelectResult.property(CardSideType.ENGLISH_NOUN.toString()),
+                        SelectResult.property(CardSideType.NOUN_INFO.toString()))
+                .from(DataSource.database(MainActivity.database))
+                .where(Expression.property(CardSideType.ENGLISH_NOUN.toString()).notNullOrMissing());
         try {
             ResultSet resultSet = query.execute();
             List<Result> documents = resultSet.allResults();
@@ -142,8 +143,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Noun noun = new Noun(engTranslation, swedTranslation, article);
         //Noun noun = new Noun(eng, swed, article);
         String jsonString = gson.toJson(noun);
-        map.put("english word", noun.getEnglishWord());
-        map.put("swedish word", jsonString);
+        map.put(CardSideType.ENGLISH_NOUN.toString(), noun.getEnglishWord());
+        map.put(CardSideType.NOUN_INFO.toString(), jsonString);
         mutableDocument.setData(map);
 
         Toast.makeText(getBaseContext(), "Updating cards..." , Toast.LENGTH_SHORT).show();
@@ -171,8 +172,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
     private void printStuff(){
         Query query = QueryBuilder
                 .select(SelectResult.expression(Meta.id),
-                        SelectResult.property("english word"),
-                        SelectResult.property("swedish word"))
+                        SelectResult.property(CardSideType.ENGLISH_NOUN.toString()),
+                        SelectResult.property(CardSideType.NOUN_INFO.toString()))
                 .from(DataSource.database(MainActivity.database));
         try {
             ResultSet resultSet = query.execute();

@@ -104,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             drawer.closeDrawer(GravityCompat.START);
             return true;
         }
-        intent.putExtra("item_selected", item.getTitle().toString());
+        String[] itemResources = getResources().getResourceName(item.getItemId()).split("\\/");
+        intent.putExtra("selected_navigation_item", itemResources[1]);//the menu items id as a String
         startActivity(intent);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

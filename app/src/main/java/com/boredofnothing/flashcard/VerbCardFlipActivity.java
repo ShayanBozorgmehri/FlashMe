@@ -9,7 +9,6 @@ import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
-import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDocument;
@@ -22,30 +21,28 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 public class VerbCardFlipActivity extends CardFlipActivity {
-    
+
     @Override
     protected void findDocuments(){
-        Toast.makeText(getBaseContext(), "NOTHING FOR VRB YET", Toast.LENGTH_SHORT).show();
         Query query = QueryBuilder
                 .select(SelectResult.expression(Meta.id),
-                        SelectResult.property("english word"),
-                        SelectResult.property("swedish word"))
-                .from(DataSource.database(MainActivity.database));
+                        SelectResult.property(CardSideType.ENGLISH_VERB.toString()),
+                        SelectResult.property(CardSideType.VERB_INFO.toString()))
+                .from(DataSource.database(MainActivity.database))
+                .where(Expression.property(CardSideType.ENGLISH_VERB.toString()).notNullOrMissing());
         try {
             ResultSet resultSet = query.execute();
-
             List<Result> documents = resultSet.allResults();
             if(MainActivity.database.getCount() == 0){
-                Log.d("DEBUG", "DB is empty");
+                Log.d("DEBUG", "DB is empty of verbs");
             } else {
-                Log.d("DEBUG", "DB is NOT empty" + documents.size());
+                Log.d("DEBUG", "DB is NOT empty of verbs: " + documents.size());
                 for(Result res: documents){
                     Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
                 }
