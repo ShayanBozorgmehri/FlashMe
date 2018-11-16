@@ -54,7 +54,8 @@ public class BabelTranslator extends AsyncTask<Void, Void, Void> {
                     data += tense + ": " + value + "\n";
                 }
             } else {
-                data = "NO RESULTS FOR: " ;
+                verb = null;
+                data = null;
             }
         }
         catch (IOException e) {

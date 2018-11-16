@@ -63,17 +63,26 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             return false;
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
+            if (!isNetworkAvailable()) {
+                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                return false;
+            }
             engTranslation = getEnglishTextUsingYandex(swedInput);
-            if(isNullOrEmpty(engTranslation)){
+            if (isNullOrEmpty(engTranslation)) {
                 Toast.makeText(getBaseContext(), "Could not find English translation for: " + swedInput, Toast.LENGTH_SHORT).show();
                 return false;
             }
             setEditText(dialogView, R.id.englishVerb, engTranslation);
-        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+
+        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             // first, get a translation from yandex
+            if (!isNetworkAvailable()) {
+                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                return false;
+            }
             // then, use the yandex translation to get the conjugations from babel
             String yandexInfinitiveForm = getSwedishTextUsingYandex(engInput);
-            if(isNullOrEmpty(yandexInfinitiveForm)){
+            if (isNullOrEmpty(yandexInfinitiveForm)) {
                 Toast.makeText(getBaseContext(), "Could not find Swedish translation for: " + engInput, Toast.LENGTH_SHORT).show();
                 return false;
             }
@@ -87,7 +96,12 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 e.printStackTrace();
                 return false;
             }
+
             Verb verb = babelTranslator.getVerb();
+            if (verb == null) {
+                Toast.makeText(getBaseContext(), "Could not find translation for verb: " + engInput, Toast.LENGTH_SHORT).show();
+                return false;
+            }
             setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
             setEditText(dialogView, R.id.infinitiveForm, verb.getInfinitive());
             setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
@@ -124,7 +138,9 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected boolean addCardToDocument(final View dialogView) {
-        getTranslationBasedOnTranslationType(dialogView);
+        if(!getTranslationBasedOnTranslationType(dialogView)){
+            return false;
+        }
         Toast.makeText(getBaseContext(), "Updating cards...", Toast.LENGTH_SHORT).show();
 
         String eng = getEditText(dialogView, R.id.englishVerb);

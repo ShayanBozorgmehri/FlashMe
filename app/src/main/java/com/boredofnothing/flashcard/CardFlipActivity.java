@@ -23,7 +23,10 @@ package com.boredofnothing.flashcard;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
@@ -142,9 +145,16 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected void findDocuments();
     abstract protected boolean getTranslationBasedOnTranslationType(final View dialogView);
 
+    protected boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null;
+    }
+
     protected boolean validateInputFields(String translationType, String engInput, String swedInput){
         if(translationType.equals(getResources().getString(R.string.manual_translation))
-                && (engInput.trim().isEmpty() || swedInput.trim().isEmpty())){
+                && (engInput.isEmpty() || swedInput.isEmpty())){
             Toast.makeText(getBaseContext(), "Cannot leave manual input fields blank!", Toast.LENGTH_SHORT).show();
             return false;
         } else if(translationType.equals(getResources().getString(R.string.english_auto_translation)) && swedInput.trim().isEmpty()){

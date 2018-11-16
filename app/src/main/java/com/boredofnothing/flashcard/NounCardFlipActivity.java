@@ -93,6 +93,10 @@ public class NounCardFlipActivity extends CardFlipActivity {
             return false;
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
+            if(!isNetworkAvailable()){
+                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                return false;
+            }
             engTranslation = getEnglishTextUsingYandex(swedInput);
             if(isNullOrEmpty(engTranslation)){
                 Toast.makeText(getBaseContext(), "Could not find English translation for: " + swedInput, Toast.LENGTH_SHORT).show();
@@ -100,6 +104,10 @@ public class NounCardFlipActivity extends CardFlipActivity {
             }
             setEditText(dialogView, R.id.englishNoun, engTranslation);
         } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+            if(!isNetworkAvailable()){
+                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                return false;
+            }
             swedTranslation = getSwedishTextUsingYandex("a " + engInput);//get both the article an noun
             if(swedTranslation != null){
                 String[] result = swedTranslation.split(" ");
