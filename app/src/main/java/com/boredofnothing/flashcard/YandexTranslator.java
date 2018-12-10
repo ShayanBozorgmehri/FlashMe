@@ -37,6 +37,9 @@ public class YandexTranslator extends AsyncTask<String, Void, String> {
                 System.out.println("ERROR: 401 Blocked API key");
             } else if("404".equals(code)){
                 System.out.println("ERROR: 404 Exceeded the daily limit on the amount of translated text");
+            } else if("422".equals(code)){
+                System.out.println("ERROR: THE TEXT CANT BE TRANSLATED!!!");
+                translationResult = "this shit cant be translated";
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
