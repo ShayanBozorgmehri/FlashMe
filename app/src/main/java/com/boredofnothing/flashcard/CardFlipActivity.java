@@ -72,7 +72,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     /**
      * Whether or not we're showing the back of the card (otherwise showing the front).
      */
-    private boolean mShowingBack = false;
+    private boolean isShowingBack = false;
 
     protected static Document document = null;
 
@@ -88,19 +88,19 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             // front of the card to this activity. If there is saved instance state,
             // this fragment will have already been added to the activity.
 
-            CardFrontFragment cardFrontFragment = new CardFrontFragment();
+            FrontCardFragment frontCardFragment = new FrontCardFragment();
             Bundle args = new Bundle();
             String navigationItem = getIntent().getStringExtra("selected_navigation_item");
             args.putString("navigation_item", navigationItem);
             args.putString("card_type", CardSideType.getEnumByConstructor("english " + navigationItem));
-            cardFrontFragment.setArguments(args);
+            frontCardFragment.setArguments(args);
 
             getFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container, cardFrontFragment)
+                    .add(R.id.container, frontCardFragment)
                     .commit();
         } else {
-            mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
+            isShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
         }
     }
 
@@ -111,10 +111,10 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         // Add either a "photo" or "finish" button to the action bar, depending on which page
         // is currently selected.
         MenuItem item = menu.add(Menu.NONE, R.id.create_card, Menu.NONE,
-                mShowingBack
+                isShowingBack
                         ? R.string.action_photo
                         : R.string.action_info);
-        item.setIcon(mShowingBack
+        item.setIcon(isShowingBack
                 ? R.drawable.ic_action_photo
                 : R.drawable.ic_action_info);
         item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -139,12 +139,12 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
         return super.onOptionsItemSelected(item);
     }
-
     abstract protected void showInputDialog();
     abstract protected boolean addCardToDocument(final View dialogView);
     abstract protected void updateCurrentCard();
     abstract protected Set<Map<String, Object>> loadAllCards();
     abstract protected void findDocuments();
+
     abstract protected boolean getTranslationBasedOnTranslationType(final View dialogView);
 
     protected boolean isNetworkAvailable() {
@@ -181,29 +181,28 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return input == null || input.trim().isEmpty();
     }
 
-    public void flipCard(View v){ //called from layout
-        flipCard();
-    }
+    public void flipCard(View v){ //called from back & front card layouts
 
-    private void flipCard() {
-        if (mShowingBack) {
+        Log.d("DEBUG", "FLIPCARD");
+
+        if (isShowingBack) {
             getFragmentManager().popBackStack();
             return;
         }
 
         // Flip to the back.
 
-        mShowingBack = true;
+        isShowingBack = true;
 
         // Create and commit a new fragment transaction that adds the fragment for the back of
         // the card, uses custom animations, and is part of the fragment manager's back stack.
 
-        CardBackFragment cardBackFragment = new CardBackFragment();
+        BackCardFragment backCardFragment = new BackCardFragment();
         Bundle args = new Bundle();
         String navigationItem = getIntent().getStringExtra("selected_navigation_item");
         args.putString("navigation_item", navigationItem);
         args.putString("card_type", CardSideType.getEnumByConstructor(navigationItem + " info"));
-        cardBackFragment.setArguments(args);
+        backCardFragment.setArguments(args);
 
         getFragmentManager()
                 .beginTransaction()
@@ -219,7 +218,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 // Replace any fragments currently in the container view with a fragment
                 // representing the next page (indicated by the just-incremented currentPage
                 // variable).
-                .replace(R.id.container, cardBackFragment)
+                .replace(R.id.container, backCardFragment)
 
                 // Add this transaction to the back stack, allowing users to press Back
                 // to get to the front of the card.
@@ -241,7 +240,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     @Override
     public void onBackStackChanged() {
-        mShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
+        isShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
 
         // When the back stack changes, invalidate the options menu (action bar).
         invalidateOptionsMenu();
@@ -272,14 +271,17 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     /**
      * A fragment representing the front of the card.
      */
-    public static class CardFrontFragment extends Fragment {
-        public CardFrontFragment() {
-        }
+    public static class FrontCardFragment extends Fragment {
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-            View view = inflater.inflate(R.layout.fragment_card_front, container, false);
+            View view = inflater.inflate(R.layout.front_card_fragment, container, false);
+            idk(view);
+            return view;
+        }
+
+        public void idk(View view){
 
             final GestureDetector gesture = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
@@ -305,42 +307,51 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                     }
                     return super.onFling(e1, e2, velocityX, velocityY);
                 }
+
+                @Override
+                public boolean onSingleTapUp(MotionEvent event) {
+
+                    Log.d("DEBUG", "the tap event was: " + event.getAction());
+                    return super.onSingleTapUp(event);
+                }
             });
 
             view.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
+                    System.out.println("view touched");
                     return gesture.onTouchEvent(event);
                 }
             });
-
-            return view;
         }
-
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            if(document != null){
+            if(document != null) {
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText(document.getString(getArguments().getString("card_type")));
-            } else{
+            } else {
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
             }
         }
-    }
 
+    }
     /**
      * A fragment representing the back of the card.
      */
-    public static class CardBackFragment extends Fragment {
-        public CardBackFragment() {
-        }
+    public static class BackCardFragment extends Fragment {
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View view = inflater.inflate(R.layout.fragment_card_back, container, false);
+
+            View view = inflater.inflate(R.layout.back_card_fragment, container, false);
+            idk(view);
+            return view;
+        }
+
+        private void idk(View view){
 
             final GestureDetector gesture = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
@@ -366,26 +377,32 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                     }
                     return super.onFling(e1, e2, velocityX, velocityY);
                 }
+
+                @Override
+                public boolean onSingleTapUp(MotionEvent event) {
+
+                    Log.d("DEBUG", "the tap event was: " + event.getAction());
+                    return super.onSingleTapUp(event);
+                }
             });
 
             view.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
+                    System.out.println("view touched");
                     return gesture.onTouchEvent(event);
                 }
             });
-
-            return view;
         }
 
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            if(document != null){
+            if(document != null) {
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText(document.getString(getArguments().getString("card_type")));
-            } else{
+            } else {
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
             }
