@@ -181,62 +181,62 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return input == null || input.trim().isEmpty();
     }
 
-    public void flipCard(View v){ //called from back & front card layouts
-
-        Log.d("DEBUG", "FLIPCARD");
-
-        if (isShowingBack) {
-            getFragmentManager().popBackStack();
-            return;
-        }
-
-        // Flip to the back.
-
-        isShowingBack = true;
-
-        // Create and commit a new fragment transaction that adds the fragment for the back of
-        // the card, uses custom animations, and is part of the fragment manager's back stack.
-
-        BackCardFragment backCardFragment = new BackCardFragment();
-        Bundle args = new Bundle();
-        String navigationItem = getIntent().getStringExtra("selected_navigation_item");
-        args.putString("navigation_item", navigationItem);
-        args.putString("card_type", CardSideType.getEnumByConstructor(navigationItem + " info"));
-        backCardFragment.setArguments(args);
-
-        getFragmentManager()
-                .beginTransaction()
-
-                // Replace the default fragment animations with animator resources representing
-                // rotations when switching to the back of the card, as well as animator
-                // resources representing rotations when flipping back to the front (e.g. when
-                // the system Back button is pressed).
-                .setCustomAnimations(
-                        R.animator. card_flip_right_in, R.animator.card_flip_right_out,
-                        R.animator.card_flip_left_in, R.animator.card_flip_left_out)
-
-                // Replace any fragments currently in the container view with a fragment
-                // representing the next page (indicated by the just-incremented currentPage
-                // variable).
-                .replace(R.id.container, backCardFragment)
-
-                // Add this transaction to the back stack, allowing users to press Back
-                // to get to the front of the card.
-                .addToBackStack(null)
-
-                // Commit the transaction.
-                .commit();
-
-        // Defer an invalidation of the options menu (on modern devices, the action bar). This
-        // can't be done immediately because the transaction may not yet be committed. Commits
-        // are asynchronous in that they are posted to the main thread's message loop.
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                invalidateOptionsMenu();
-            }
-        });
-    }
+//    public void flipCard(View v){ //called from back & front card layouts
+//
+//        Log.d("DEBUG", "FLIPCARD");
+//
+//        if (isShowingBack) {
+//            getFragmentManager().popBackStack();
+//            return;
+//        }
+//
+//        // Flip to the back.
+//
+//        isShowingBack = true;
+//
+//        // Create and commit a new fragment transaction that adds the fragment for the back of
+//        // the card, uses custom animations, and is part of the fragment manager's back stack.
+//
+//        BackCardFragment backCardFragment = new BackCardFragment();
+//        Bundle args = new Bundle();
+//        String navigationItem = getIntent().getStringExtra("selected_navigation_item");
+//        args.putString("navigation_item", navigationItem);
+//        args.putString("card_type", CardSideType.getEnumByConstructor(navigationItem + " info"));
+//        backCardFragment.setArguments(args);
+//
+//        getFragmentManager()
+//                .beginTransaction()
+//
+//                // Replace the default fragment animations with animator resources representing
+//                // rotations when switching to the back of the card, as well as animator
+//                // resources representing rotations when flipping back to the front (e.g. when
+//                // the system Back button is pressed).
+//                .setCustomAnimations(
+//                        R.animator. card_flip_right_in, R.animator.card_flip_right_out,
+//                        R.animator.card_flip_left_in, R.animator.card_flip_left_out)
+//
+//                // Replace any fragments currently in the container view with a fragment
+//                // representing the next page (indicated by the just-incremented currentPage
+//                // variable).
+//                .replace(R.id.container, backCardFragment)
+//
+//                // Add this transaction to the back stack, allowing users to press Back
+//                // to get to the front of the card.
+//                .addToBackStack(null)
+//
+//                // Commit the transaction.
+//                .commit();
+//
+//        // Defer an invalidation of the options menu (on modern devices, the action bar). This
+//        // can't be done immediately because the transaction may not yet be committed. Commits
+//        // are asynchronous in that they are posted to the main thread's message loop.
+//        mHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                invalidateOptionsMenu();
+//            }
+//        });
+//    }
 
     @Override
     public void onBackStackChanged() {
@@ -277,6 +277,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
             View view = inflater.inflate(R.layout.front_card_fragment, container, false);
+            view.setClickable(true);
+            view.setFocusable(true);
             idk(view);
             return view;
         }
@@ -309,9 +311,59 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 }
 
                 @Override
-                public boolean onSingleTapUp(MotionEvent event) {
+                public boolean onSingleTapUp(MotionEvent event) {//TODO: add flipping logic here because you only wanna flip if its TAPPED
+                    // so then split flipCard logic into the onSingleTapUp methods in the fragments.
+                    // pass/get varaibles from activity by doing: ((CardFlipActivity) getActivity()).variable
 
-                    Log.d("DEBUG", "the tap event was: " + event.getAction());
+                    Log.d("DEBUG", "the front tap event was: " + event.getAction());
+
+                    if(!((CardFlipActivity) getActivity()).isShowingBack){
+                        ((CardFlipActivity) getActivity()).isShowingBack = true;
+
+                        // Create and commit a new fragment transaction that adds the fragment for the back of
+                        // the card, uses custom animations, and is part of the fragment manager's back stack.
+
+                        BackCardFragment backCardFragment = new BackCardFragment();
+                        Bundle args = new Bundle();
+                        String navigationItem = getArguments().getString("navigation_item");
+                        args.putString("navigation_item", navigationItem);
+                        args.putString("card_type", CardSideType.getEnumByConstructor(navigationItem + " info"));
+                        backCardFragment.setArguments(args);
+
+                        getFragmentManager()
+                                .beginTransaction()
+
+                                // Replace the default fragment animations with animator resources representing
+                                // rotations when switching to the back of the card, as well as animator
+                                // resources representing rotations when flipping back to the front (e.g. when
+                                // the system Back button is pressed).
+                                .setCustomAnimations(
+                                        R.animator. card_flip_right_in, R.animator.card_flip_right_out,
+                                        R.animator.card_flip_left_in, R.animator.card_flip_left_out)
+
+                                // Replace any fragments currently in the container view with a fragment
+                                // representing the next page (indicated by the just-incremented currentPage
+                                // variable).
+                                .replace(R.id.container, backCardFragment)
+
+                                // Add this transaction to the back stack, allowing users to press Back
+                                // to get to the front of the card.
+                                .addToBackStack(null)
+
+                                // Commit the transaction.
+                                .commit();
+
+                        // Defer an invalidation of the options menu (on modern devices, the action bar). This
+                        // can't be done immediately because the transaction may not yet be committed. Commits
+                        // are asynchronous in that they are posted to the main thread's message loop.
+                        ((CardFlipActivity) getActivity()).mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                getActivity().invalidateOptionsMenu();
+                            }
+                        });
+                    }
+
                     return super.onSingleTapUp(event);
                 }
             });
@@ -319,7 +371,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             view.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    System.out.println("view touched");
+                    System.out.println("front view touched");
                     return gesture.onTouchEvent(event);
                 }
             });
@@ -347,6 +399,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
             View view = inflater.inflate(R.layout.back_card_fragment, container, false);
+            view.setClickable(true);
+            view.setFocusable(true);
             idk(view);
             return view;
         }
@@ -381,7 +435,12 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 @Override
                 public boolean onSingleTapUp(MotionEvent event) {
 
-                    Log.d("DEBUG", "the tap event was: " + event.getAction());
+                    Log.d("DEBUG", "the BACK tap event was: " + event.getAction());
+
+                    if (((CardFlipActivity) getActivity()).isShowingBack) {
+                        getFragmentManager().popBackStack();
+                    }
+
                     return super.onSingleTapUp(event);
                 }
             });
@@ -389,7 +448,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             view.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    System.out.println("view touched");
+                    System.out.println("back view touched");
                     return gesture.onTouchEvent(event);
                 }
             });

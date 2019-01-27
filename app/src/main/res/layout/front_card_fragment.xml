@@ -22,7 +22,6 @@
     android:padding="16dp"
     android:gravity="bottom"
     android:id="@+id/frontFragment"
-    android:onClick="flipCard"
     >
 
     <TextView
