@@ -52,6 +52,7 @@ import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.SelectResult;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,7 +75,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
      */
     private boolean isShowingBack = false;
 
-    protected static Document document = null;
+    protected static int currentIndex;
+    protected static ArrayList<Document> documents = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +146,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected void updateCurrentCard();
     abstract protected Set<Map<String, Object>> loadAllCards();
     abstract protected void findDocuments();
-
     abstract protected boolean getTranslationBasedOnTranslationType(final View dialogView);
 
     protected boolean isNetworkAvailable() {
@@ -295,6 +296,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                     final int SWIPE_MAX_OFF_PATH = 250;
                     final int SWIPE_THRESHOLD_VELOCITY = 200;
                     try {
+                        //TODO: add swipe logic to change to NEXT CARD in db. probably will need a list to keep track
                         if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
                             return false;
                         if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
@@ -311,9 +313,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 }
 
                 @Override
-                public boolean onSingleTapUp(MotionEvent event) {//TODO: add flipping logic here because you only wanna flip if its TAPPED
-                    // so then split flipCard logic into the onSingleTapUp methods in the fragments.
-                    // pass/get varaibles from activity by doing: ((CardFlipActivity) getActivity()).variable
+                public boolean onSingleTapUp(MotionEvent event) {
 
                     Log.d("DEBUG", "the front tap event was: " + event.getAction());
 
@@ -368,21 +368,20 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 }
             });
 
-            view.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    System.out.println("front view touched");
-                    return gesture.onTouchEvent(event);
-                }
+            view.setOnTouchListener((v, event) -> {
+                System.out.println("front view touched");
+                return gesture.onTouchEvent(event);
             });
         }
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            if(document != null) {
+            if(currentIndex != -1 && documents.get(currentIndex) != null) {
+                Log.d("DEBUG", "front value for index " + currentIndex + ", for value " + getArguments().getString("card_type") +
+                        " is: " + documents.get(currentIndex).getString(getArguments().getString("card_type")));
                 ((TextView) getView().findViewById(R.id.frontText))
-                        .setText(document.getString(getArguments().getString("card_type")));
+                        .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
             } else {
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
@@ -445,12 +444,9 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 }
             });
 
-            view.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    System.out.println("back view touched");
-                    return gesture.onTouchEvent(event);
-                }
+            view.setOnTouchListener((v, event) -> {
+                System.out.println("back view touched");
+                return gesture.onTouchEvent(event);
             });
         }
 
@@ -458,9 +454,11 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            if(document != null) {
+            if(currentIndex != -1 && documents.get(currentIndex) != null) {
+                Log.d("DEBUG", "back value for index " + currentIndex + ", for value " + getArguments().getString("card_type") +
+                        " is: " + documents.get(currentIndex).getString(getArguments().getString("card_type")));
                 ((TextView) getView().findViewById(R.id.backText))
-                        .setText(document.getString(getArguments().getString("card_type")));
+                        .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
             } else {
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");

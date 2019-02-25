@@ -15,10 +15,10 @@ import com.couchbase.lite.ResultSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 public class NounCardFlipActivity extends CardFlipActivity {
@@ -32,19 +32,18 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 CardSideType.NOUN_INFO.toString());
         try {
             ResultSet resultSet = query.execute();
-            List<Result> documents = resultSet.allResults();
-            if(documents.size() == 0){
+            List<Result> results = resultSet.allResults();
+            if(results.size() == 0){
                 Log.d("DEBUG", "DB is empty of nouns");
-                document = null;
+                currentIndex = -1;
             } else {
-                Log.d("DEBUG", "DB is NOT empty of nouns: " + documents.size());
-                for(Result res: documents){
+                Log.d("DEBUG", "DB is NOT empty of nouns: " + results.size());
+                for(Result res: results){
                     Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
+                    documents.add(MainActivity.database.getDocument(res.getString(0)));
                 }
-                Result randomDoc = documents.get(new Random().nextInt(documents.size()));
-                Log.d("DEBUG", "Loading random doc with ID " + randomDoc.getString(0)
-                        + " and data: " + randomDoc.getString(1) + ", " + randomDoc.getString(2));
-                document = MainActivity.database.getDocument(randomDoc.getString(0));
+                Collections.shuffle(documents);
+                currentIndex = 0;
             }
         } catch (CouchbaseLiteException e) {
             Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
@@ -158,13 +157,13 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
             Log.d("DEBUG", jsonString);
             MainActivity.database.save(mutableDocument);
-            document = MainActivity.database.getDocument(mutableDocument.getId());
+            documents.add(++currentIndex, MainActivity.database.getDocument(mutableDocument.getId()));
 
         } catch (CouchbaseLiteException e) {
             Log.e("ERROR:", "Failed to add properties to document: " + e.getMessage() + "-" + e.getCause());
             e.printStackTrace();
         }
-        Log.d("DEBUG", "Successfully created new card document with id: " + document.getId());
+        Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
 
         printStuff();
         updateCurrentCard();
