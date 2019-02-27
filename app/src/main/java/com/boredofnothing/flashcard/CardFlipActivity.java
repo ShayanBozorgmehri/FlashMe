@@ -76,13 +76,14 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     private boolean isShowingBack = false;
 
     protected static int currentIndex;
-    protected static ArrayList<Document> documents = new ArrayList<>();
+    protected static ArrayList<Document> documents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card_flip);
 
+        documents = new ArrayList<>();
         findDocuments();
         getFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
@@ -382,6 +383,9 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         " is: " + documents.get(currentIndex).getString(getArguments().getString("card_type")));
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
+                for(Document doc: documents){
+                    Log.d("DEBUG", "on created: " + doc.getString(getArguments().getString("card_type")));
+                }
             } else {
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
@@ -459,6 +463,9 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         " is: " + documents.get(currentIndex).getString(getArguments().getString("card_type")));
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
+                for(Document doc: documents){
+                    Log.d("DEBUG", "on created: " + doc.getString(getArguments().getString("card_type")));
+                }
             } else {
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
