@@ -19,13 +19,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
-    protected void findDocuments(){
+    protected void loadAllDocuments(){
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(
                 CardSideType.ENGLISH_VERB.toString(),
                 CardSideType.VERB_INFO.toString());
@@ -169,33 +168,11 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         }
         Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
         updateCurrentCard();
-        loadAllCards();
         return true;
     }
 
     @Override
     protected void updateCurrentCard(){
         //TODO: update the verb when the user is just modifying the value
-    }
-
-    @Override
-    protected Set<Map<String, Object>> loadAllCards() {
-        Log.d("DEBUG", "Loading all verb cards");
-        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
-                CardSideType.ENGLISH_VERB.toString(),
-                CardSideType.VERB_INFO.toString());
-        try {
-            ResultSet resultSet = query.execute();
-            int i = 0;
-            for (Result result : resultSet) {
-                System.out.println("************result for verbs" + ++i + ": id " + result.getString(0)
-                        + "      eng " + result.getString(1));
-            }
-        } catch (CouchbaseLiteException e) {
-            Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
-            e.printStackTrace();
-        }
-
-        return null;
     }
 }

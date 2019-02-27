@@ -19,14 +19,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class NounCardFlipActivity extends CardFlipActivity {
 
     private String article;
 
     @Override
-    protected void findDocuments(){
+    protected void loadAllDocuments(){
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(
                 CardSideType.ENGLISH_NOUN.toString(),
                 CardSideType.NOUN_INFO.toString());
@@ -165,26 +164,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
         Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
 
-        printStuff();
         updateCurrentCard();
         return true;
-    }
-
-    private void printStuff(){
-        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
-                CardSideType.ENGLISH_NOUN.toString(),
-                CardSideType.NOUN_INFO.toString());
-        try {
-            ResultSet resultSet = query.execute();
-            int i = 0;
-            for (Result result : resultSet) {
-                System.out.println("************result for nouns" + ++i + ": id " + result.getString(0)
-                        + "      eng " + result.getString(1));
-            }
-        } catch (CouchbaseLiteException e) {
-            Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -192,8 +173,4 @@ public class NounCardFlipActivity extends CardFlipActivity {
         //TODO: update the noun when the user is just modifying the value
     }
 
-    @Override
-    protected Set<Map<String, Object>> loadAllCards() {
-        return null;
-    }
 }
