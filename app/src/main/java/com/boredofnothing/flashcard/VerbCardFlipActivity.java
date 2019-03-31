@@ -37,7 +37,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             } else {
                 Log.d("DEBUG", "DB is NOT empty of verbs: " + results.size());
                 for(Result res: results){
-                    Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
+                    //Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
                     documents.add(MainActivity.database.getDocument(res.getString(0)));
                 }
                 Collections.shuffle(documents);

@@ -25,6 +25,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -53,8 +54,6 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.SelectResult;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Demonstrates a "card-flip" animation using custom fragment transactions ({@link
@@ -84,7 +83,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         setContentView(R.layout.activity_card_flip);
 
         documents = new ArrayList<>();
-        findDocuments();
+        loadAllDocuments();
         getFragmentManager().addOnBackStackChangedListener(this);
         if (savedInstanceState == null) {
             // If there is no saved instance state, add a fragment representing the
@@ -100,10 +99,13 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
             getFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container, frontCardFragment)
+                    .setCustomAnimations(R.animator.anim_slide_in_left, R.animator.anim_slide_out_right) //left off here, maybe move these files to animation folder instead, but then you might need to create a new fragmnt with the updated card values on swipe. idk
+                    .add(R.id.fragment_container, frontCardFragment)
                     .commit();
         } else {
             isShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
+            System.out.println("setting isShowingBack to : " + isShowingBack);
+
         }
     }
 
@@ -145,8 +147,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected void showInputDialog();
     abstract protected boolean addCardToDocument(final View dialogView);
     abstract protected void updateCurrentCard();
-    abstract protected Set<Map<String, Object>> loadAllCards();
-    abstract protected void findDocuments();
+    abstract protected void loadAllDocuments();
     abstract protected boolean getTranslationBasedOnTranslationType(final View dialogView);
 
     protected boolean isNetworkAvailable() {
@@ -183,66 +184,10 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return input == null || input.trim().isEmpty();
     }
 
-//    public void flipCard(View v){ //called from back & front card layouts
-//
-//        Log.d("DEBUG", "FLIPCARD");
-//
-//        if (isShowingBack) {
-//            getFragmentManager().popBackStack();
-//            return;
-//        }
-//
-//        // Flip to the back.
-//
-//        isShowingBack = true;
-//
-//        // Create and commit a new fragment transaction that adds the fragment for the back of
-//        // the card, uses custom animations, and is part of the fragment manager's back stack.
-//
-//        BackCardFragment backCardFragment = new BackCardFragment();
-//        Bundle args = new Bundle();
-//        String navigationItem = getIntent().getStringExtra("selected_navigation_item");
-//        args.putString("navigation_item", navigationItem);
-//        args.putString("card_type", CardSideType.getEnumByConstructor(navigationItem + " info"));
-//        backCardFragment.setArguments(args);
-//
-//        getFragmentManager()
-//                .beginTransaction()
-//
-//                // Replace the default fragment animations with animator resources representing
-//                // rotations when switching to the back of the card, as well as animator
-//                // resources representing rotations when flipping back to the front (e.g. when
-//                // the system Back button is pressed).
-//                .setCustomAnimations(
-//                        R.animator. card_flip_right_in, R.animator.card_flip_right_out,
-//                        R.animator.card_flip_left_in, R.animator.card_flip_left_out)
-//
-//                // Replace any fragments currently in the container view with a fragment
-//                // representing the next page (indicated by the just-incremented currentPage
-//                // variable).
-//                .replace(R.id.container, backCardFragment)
-//
-//                // Add this transaction to the back stack, allowing users to press Back
-//                // to get to the front of the card.
-//                .addToBackStack(null)
-//
-//                // Commit the transaction.
-//                .commit();
-//
-//        // Defer an invalidation of the options menu (on modern devices, the action bar). This
-//        // can't be done immediately because the transaction may not yet be committed. Commits
-//        // are asynchronous in that they are posted to the main thread's message loop.
-//        mHandler.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                invalidateOptionsMenu();
-//            }
-//        });
-//    }
-
     @Override
     public void onBackStackChanged() {
         isShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
+        System.out.println("onBackStackChanged isShowingBack to : " + isShowingBack);
 
         // When the back stack changes, invalidate the options menu (action bar).
         invalidateOptionsMenu();
@@ -270,22 +215,54 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 .where(Expression.property(wordType).notNullOrMissing());
     }
 
+    private static void incrementCurrentIndex(){
+        if(currentIndex < documents.size() - 1){
+            currentIndex++;
+        } else {
+            currentIndex = 0;
+        }
+    }
+
+    private static void decrementCurrentIndex(){
+        if(currentIndex != 0){
+            currentIndex--;
+        } else {
+            currentIndex = 0;
+        }
+    }
+
     /**
      * A fragment representing the front of the card.
      */
     public static class FrontCardFragment extends Fragment {
 
+        static int colorCounter =0;
+
+        private static FrontCardFragment clone(FrontCardFragment frontCardFragment){
+            FrontCardFragment clone = new FrontCardFragment();
+            Bundle args = new Bundle();
+            args.putString("navigation_item", frontCardFragment.getArguments().getString("navigation_item"));
+            args.putString("card_type", frontCardFragment.getArguments().getString("card_type"));
+            clone.setArguments(args);
+            System.out.println("nav is==============" + frontCardFragment.getArguments().getString("navigation_item"));
+            System.out.println("****the fragments are the same: " + (clone == frontCardFragment || frontCardFragment.equals(clone)));
+            return clone;
+        }
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+            Log.d("DEBUG", "****creating view with object: " + this);
+            System.out.println("isShowingBack: " + ((CardFlipActivity) getActivity()).isShowingBack);
 
             View view = inflater.inflate(R.layout.front_card_fragment, container, false);
             view.setClickable(true);
             view.setFocusable(true);
-            idk(view);
+            view.setBackgroundColor(colorCounter % 2 == 0 ? Color.DKGRAY: Color.BLUE);
+            setUpGestures(view);
             return view;
         }
 
-        public void idk(View view){
+        public void setUpGestures(View view){
 
             final GestureDetector gesture = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
@@ -297,26 +274,50 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                     final int SWIPE_MAX_OFF_PATH = 250;
                     final int SWIPE_THRESHOLD_VELOCITY = 200;
                     try {
-                        //TODO: add swipe logic to change to NEXT CARD in db. probably will need a list to keep track
                         if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
                             return false;
                         if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "*************Right to Left");
+                            incrementCurrentIndex();
+//                            left off here, there is animation kinda, but not really.
+//                            i THINK the main frame/layout needs to be changed or something.
+//                            pay attention to how the animation is changed when you FIRST choose NOUN/Verb
+//                                    notice how the top thing changes and how there actually is animation!!! THAT IS KEY
+//
+//                                    OR look at the answer: https://stackoverflow.com/questions/17760299/android-fragmenttransaction-custom-animation-unknown-animator-name-translate
+//                            see how they commit twice on two diff R.ids...
+                            getFragmentManager()
+                                    .beginTransaction()
+                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
+                                            R.animator.enter_from_right, R.animator.exit_to_right)
+                                    .replace(R.id.fragment_container, FrontCardFragment.clone(FrontCardFragment.this))
+                                    //.addToBackStack(null)
+                                    .commit();
                         } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "************Left to Right");
+                            decrementCurrentIndex();
+                            getFragmentManager()
+                                    .beginTransaction()
+                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
+                                            R.animator.enter_from_right, R.animator.exit_to_right)
+                                    .replace(R.id.fragment_container, FrontCardFragment.clone(FrontCardFragment.this))
+                                    //.addToBackStack(null)
+                                    .commit();
                         }
                     } catch (Exception e) {
                         Log.e("ERROR", "Shit went wrong in onFling " + e.getMessage());
                     }
+                    colorCounter++;
                     return super.onFling(e1, e2, velocityX, velocityY);
                 }
 
                 @Override
-                public boolean onSingleTapUp(MotionEvent event) {
+                public boolean onSingleTapUp(MotionEvent event) { //TODO: after swiping, unable to to flip card. maybe cuz of frag stack?
 
-                    Log.d("DEBUG", "the front tap event was: " + event.getAction());
+                    Log.d("DEBUG", "the front tap event was: " + event.getAction()
+                            + ". isShowingBack: " + ((CardFlipActivity) getActivity()).isShowingBack);
 
                     if(!((CardFlipActivity) getActivity()).isShowingBack){
                         ((CardFlipActivity) getActivity()).isShowingBack = true;
@@ -333,36 +334,17 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
                         getFragmentManager()
                                 .beginTransaction()
-
-                                // Replace the default fragment animations with animator resources representing
-                                // rotations when switching to the back of the card, as well as animator
-                                // resources representing rotations when flipping back to the front (e.g. when
-                                // the system Back button is pressed).
                                 .setCustomAnimations(
                                         R.animator. card_flip_right_in, R.animator.card_flip_right_out,
                                         R.animator.card_flip_left_in, R.animator.card_flip_left_out)
-
-                                // Replace any fragments currently in the container view with a fragment
-                                // representing the next page (indicated by the just-incremented currentPage
-                                // variable).
-                                .replace(R.id.container, backCardFragment)
-
-                                // Add this transaction to the back stack, allowing users to press Back
-                                // to get to the front of the card.
+                                .replace(R.id.fragment_container, backCardFragment)
                                 .addToBackStack(null)
-
-                                // Commit the transaction.
                                 .commit();
 
                         // Defer an invalidation of the options menu (on modern devices, the action bar). This
                         // can't be done immediately because the transaction may not yet be committed. Commits
                         // are asynchronous in that they are posted to the main thread's message loop.
-                        ((CardFlipActivity) getActivity()).mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                getActivity().invalidateOptionsMenu();
-                            }
-                        });
+                        ((CardFlipActivity) getActivity()).mHandler.post(() -> getActivity().invalidateOptionsMenu());
                     }
 
                     return super.onSingleTapUp(event);
@@ -379,13 +361,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             super.onActivityCreated(savedInstanceState);
 
             if(currentIndex != -1 && documents.get(currentIndex) != null) {
-                Log.d("DEBUG", "front value for index " + currentIndex + ", for value " + getArguments().getString("card_type") +
-                        " is: " + documents.get(currentIndex).getString(getArguments().getString("card_type")));
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
-                for(Document doc: documents){
-                    Log.d("DEBUG", "on created: " + doc.getString(getArguments().getString("card_type")));
-                }
             } else {
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
@@ -425,9 +402,15 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "*************Right to Left");
+                            incrementCurrentIndex();
+                            getActivity().overridePendingTransition(R.animator.anim_slide_in_right,
+                                    R.animator.anim_slide_out_right);
                         } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "************Left to Right");
+                            decrementCurrentIndex();
+                            getActivity().overridePendingTransition(R.animator.anim_slide_out_right,
+                                    R.animator.anim_slide_in_right);
                         }
                     } catch (Exception e) {
                         Log.e("ERROR", "Shit went wrong in onFling " + e.getMessage());
@@ -459,13 +442,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             super.onActivityCreated(savedInstanceState);
 
             if(currentIndex != -1 && documents.get(currentIndex) != null) {
-                Log.d("DEBUG", "back value for index " + currentIndex + ", for value " + getArguments().getString("card_type") +
-                        " is: " + documents.get(currentIndex).getString(getArguments().getString("card_type")));
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
-                for(Document doc: documents){
-                    Log.d("DEBUG", "on created: " + doc.getString(getArguments().getString("card_type")));
-                }
             } else {
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
