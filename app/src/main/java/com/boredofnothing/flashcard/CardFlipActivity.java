@@ -248,6 +248,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             System.out.println("****the fragments are the same: " + (clone == frontCardFragment || frontCardFragment.equals(clone)));
             return clone;
         }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -375,17 +376,26 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
      */
     public static class BackCardFragment extends Fragment {
 
+        private static BackCardFragment clone(BackCardFragment backCardFragment){
+            BackCardFragment clone = new BackCardFragment();
+            Bundle args = new Bundle();
+            args.putString("navigation_item", backCardFragment.getArguments().getString("navigation_item"));
+            args.putString("card_type", backCardFragment.getArguments().getString("card_type"));
+            clone.setArguments(args);
+            return clone;
+        }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
             View view = inflater.inflate(R.layout.back_card_fragment, container, false);
             view.setClickable(true);
             view.setFocusable(true);
-            idk(view);
+            setUpGestures(view);
             return view;
         }
 
-        private void idk(View view){
+        private void setUpGestures(View view){
 
             final GestureDetector gesture = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
@@ -403,14 +413,26 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "*************Right to Left");
                             incrementCurrentIndex();
-                            getActivity().overridePendingTransition(R.animator.anim_slide_in_right,
-                                    R.animator.anim_slide_out_right);
+//                            getActivity().overridePendingTransition(R.animator.anim_slide_in_right,
+//                                    R.animator.anim_slide_out_right);
+                            getFragmentManager()
+                                    .beginTransaction()
+                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
+                                            R.animator.enter_from_right, R.animator.exit_to_right)
+                                    .replace(R.id.fragment_container, BackCardFragment.clone(BackCardFragment.this))
+                                    .commit();
                         } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "************Left to Right");
                             decrementCurrentIndex();
-                            getActivity().overridePendingTransition(R.animator.anim_slide_out_right,
-                                    R.animator.anim_slide_in_right);
+//                            getActivity().overridePendingTransition(R.animator.anim_slide_out_right,
+//                                    R.animator.anim_slide_in_right);
+                            getFragmentManager()
+                                    .beginTransaction()
+                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
+                                            R.animator.enter_from_right, R.animator.exit_to_right)
+                                    .replace(R.id.fragment_container, BackCardFragment.clone(BackCardFragment.this))
+                                    .commit();
                         }
                     } catch (Exception e) {
                         Log.e("ERROR", "Shit went wrong in onFling " + e.getMessage());
