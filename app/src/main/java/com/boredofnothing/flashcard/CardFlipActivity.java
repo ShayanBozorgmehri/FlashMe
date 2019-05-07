@@ -258,7 +258,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             View view = inflater.inflate(R.layout.front_card_fragment, container, false);
             view.setClickable(true);
             view.setFocusable(true);
-            view.setBackgroundColor(colorCounter % 2 == 0 ? Color.DKGRAY: Color.BLUE);
+            view.setBackgroundColor(colorCounter % 2 == 0 ? Color.DKGRAY: Color.GRAY);
             setUpGestures(view);
             return view;
         }

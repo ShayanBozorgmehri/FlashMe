@@ -1,6 +1,5 @@
 package com.boredofnothing.flashcard;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -13,12 +12,12 @@ import java.io.IOException;
 
 public class BabelTranslator extends AsyncTask<Void, Void, Void> {
 
-    private final Context context;
+    //private final Context context;
     private Verb verb;
     //private ProgressDialog progressDialog;
 
-    public BabelTranslator(Context context, String presentTense){
-        this.context = context;
+    public BabelTranslator(String presentTense){
+        //this.context = context;
         verb = new Verb();
         verb.setInfinitive(presentTense);
     }

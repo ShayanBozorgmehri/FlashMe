@@ -84,7 +84,8 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 Toast.makeText(getBaseContext(), "Could not find Swedish translation for: " + engInput, Toast.LENGTH_SHORT).show();
                 return false;
             }
-            BabelTranslator babelTranslator = new BabelTranslator(getBaseContext(), yandexInfinitiveForm);
+            //BabelTranslator babelTranslator = new BabelTranslator(getBaseContext(), yandexInfinitiveForm);
+            BabelTranslator babelTranslator = new BabelTranslator(yandexInfinitiveForm);
             try {
                 babelTranslator.execute().get();//execute and wait until the call is done
             } catch (InterruptedException e) {
