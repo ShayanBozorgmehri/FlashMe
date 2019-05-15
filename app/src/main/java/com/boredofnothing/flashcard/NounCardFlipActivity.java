@@ -89,7 +89,6 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Document document = documents.get(currentIndex);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Noun noun = gson.fromJson(document.getString(CardSideType.NOUN_INFO.toString()), Noun.class);
-        // left off here, maybe figure out now and then actually update the value
         //TODO: find out why the next line wont work when setting via noun.getEnglishWord()...
         ((EditText)dialogView.findViewById(R.id.englishNoun)).setText(document.getString(CardSideType.ENGLISH_NOUN.toString()));
         ((EditText)dialogView.findViewById(R.id.swedishNoun)).setText(noun.getSwedishWord());
@@ -177,7 +176,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         map.put(CardSideType.NOUN_INFO.toString(), jsonString);
         mutableDocument.setData(map);
 
-        Toast.makeText(getBaseContext(), "Updating cards..." , Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "Adding noun..." , Toast.LENGTH_SHORT).show();
 
         // Save the document to the database
         try {
@@ -203,6 +202,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
         String engNoun = getEditText(dialogView, R.id.englishNoun).trim();
         String swedNoun = getEditText(dialogView, R.id.swedishNoun).trim();
         String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
@@ -210,9 +210,10 @@ public class NounCardFlipActivity extends CardFlipActivity {
         String jsonString = gson.toJson(noun);
         map.put(CardSideType.ENGLISH_NOUN.toString(), noun.getEnglishWord());
         map.put(CardSideType.NOUN_INFO.toString(), jsonString);
+
         mutableDocument.setData(map);
 
-        Toast.makeText(getBaseContext(), "Editing card..." , Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "Editing noun..." , Toast.LENGTH_SHORT).show();
 
         try {
             Log.d("DEBUG", jsonString);

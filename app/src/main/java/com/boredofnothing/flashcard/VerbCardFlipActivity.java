@@ -5,9 +5,12 @@ import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.Result;
@@ -134,13 +137,40 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         b.show();
     }
 
+    @Override
+    protected void showEditInputDialog() {
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.verb_input_layout, null);
+        dialogBuilder.setView(dialogView);
+
+        dialogBuilder.setTitle("Edit verb flashcard");
+        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+            Log.d("DEBUG", "Editing verb card.");
+            updateCurrentCard(dialogView);
+            dialog.dismiss();
+        });
+
+        Document document = documents.get(currentIndex);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Verb verb = gson.fromJson(document.getString(CardSideType.VERB_INFO.toString()), Verb.class);
+        //TODO: find out why the next line wont work when setting via verb.getEnglishWord()...
+        ((EditText)dialogView.findViewById(R.id.englishVerb)).setText(document.getString(CardSideType.ENGLISH_VERB.toString()));
+        ((EditText)dialogView.findViewById(R.id.swedishVerb)).setText(verb.getSwedishWord());
+        ((EditText)dialogView.findViewById(R.id.imperfectForm)).setText(verb.getImperfect());
+        ((EditText)dialogView.findViewById(R.id.infinitiveForm)).setText(verb.getInfinitive());
+
+        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit noun card."));
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
 
     @Override
     protected boolean addCardToDocument(final View dialogView) {
         if(!getTranslationBasedOnTranslationType(dialogView)){
             return false;
         }
-        Toast.makeText(getBaseContext(), "Updating cards...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "Adding verb...", Toast.LENGTH_SHORT).show();
 
         String eng = getEditText(dialogView, R.id.englishVerb);
         String swed = getEditText(dialogView, R.id.swedishVerb);
@@ -168,12 +198,36 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             e.printStackTrace();
         }
         Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
-        updateCurrentCard();
         return true;
     }
 
     @Override
-    protected void updateCurrentCard(){
-        //TODO: update the verb when the user is just modifying the value
+    protected void updateCurrentCard(final View dialogView){
+        Document document = documents.get(currentIndex);
+        MutableDocument mutableDocument = document.toMutable();
+        Map<String, Object> map = new HashMap<>();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        String eng = getEditText(dialogView, R.id.englishVerb);
+        String swed = getEditText(dialogView, R.id.swedishVerb);
+        String imperative = getEditText(dialogView, R.id.infinitiveForm);
+        String imperfect = getEditText(dialogView, R.id.imperfectForm);
+        Verb verb = new Verb(eng, swed, imperative, imperfect);
+        String jsonString = gson.toJson(verb);
+        map.put(CardSideType.ENGLISH_VERB.toString(), verb.getEnglishWord());
+        map.put(CardSideType.VERB_INFO.toString(), jsonString);
+
+        mutableDocument.setData(map);
+
+        Toast.makeText(getBaseContext(), "Editing verb..." , Toast.LENGTH_SHORT).show();
+
+        try {
+            Log.d("DEBUG", jsonString);
+            MainActivity.database.save(mutableDocument);
+            documents.set(currentIndex, mutableDocument);
+        } catch (CouchbaseLiteException e) {
+            Toast.makeText(getBaseContext(), "Failed to edit.", Toast.LENGTH_SHORT).show();
+            Log.e("ERROR", "Failed to edit verb due to: " + e);
+        }
     }
 }
