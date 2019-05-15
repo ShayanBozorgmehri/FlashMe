@@ -1,13 +1,15 @@
 package com.boredofnothing.flashcard;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.Result;
@@ -59,19 +61,46 @@ public class NounCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setView(dialogView);
 
         dialogBuilder.setTitle("Create new noun flashcard");
-        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d("DEBUG", "Creating new noun card.");
-                if(addCardToDocument(dialogView)){
-                    dialog.dismiss();
-                }
+        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+            Log.d("DEBUG", "Creating new noun card.");
+            if(addCardToDocument(dialogView)){
+                dialog.dismiss();
             }
         });
-        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d("DEBUG", "Cancelled creating new noun card.");
-            }
+        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new noun card."));
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
+
+    @Override
+    protected void showEditInputDialog() {
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.noun_input_layout, null);
+        dialogBuilder.setView(dialogView);
+
+        dialogBuilder.setTitle("Edit noun flashcard");
+        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+            Log.d("DEBUG", "Editing noun card.");
+             updateCurrentCard(dialogView);
+            dialog.dismiss();
         });
+
+        Document document = documents.get(currentIndex);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Noun noun = gson.fromJson(document.getString(CardSideType.NOUN_INFO.toString()), Noun.class);
+        // left off here, maybe figure out now and then actually update the value
+        //TODO: find out why the next line wont work when setting via noun.getEnglishWord()...
+        ((EditText)dialogView.findViewById(R.id.englishNoun)).setText(document.getString(CardSideType.ENGLISH_NOUN.toString()));
+        ((EditText)dialogView.findViewById(R.id.swedishNoun)).setText(noun.getSwedishWord());
+        if(Article.NO_ARTICLE.getValue().equals(noun.getArticle())){
+            ((RadioButton)dialogView.findViewById(R.id.no_article)).setChecked(true);
+        } else if(Article.EN.getValue().equals(noun.getArticle())){
+            ((RadioButton)dialogView.findViewById(R.id.en_article)).setChecked(true);
+        } else {
+            ((RadioButton)dialogView.findViewById(R.id.ett_article)).setChecked(true);
+        }
+        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit noun card."));
         AlertDialog b = dialogBuilder.create();
         b.show();
     }
@@ -164,13 +193,35 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
         Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
 
-        updateCurrentCard();
-        return true;
+       return true;
     }
 
+
     @Override
-    protected void updateCurrentCard(){
-        //TODO: update the noun when the user is just modifying the value
+    protected void updateCurrentCard(final View dialogView){
+        Document document = documents.get(currentIndex);
+        MutableDocument mutableDocument = document.toMutable();
+        Map<String, Object> map = new HashMap<>();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String engNoun = getEditText(dialogView, R.id.englishNoun).trim();
+        String swedNoun = getEditText(dialogView, R.id.swedishNoun).trim();
+        String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
+        Noun noun = new Noun(engNoun, swedNoun, article);
+        String jsonString = gson.toJson(noun);
+        map.put(CardSideType.ENGLISH_NOUN.toString(), noun.getEnglishWord());
+        map.put(CardSideType.NOUN_INFO.toString(), jsonString);
+        mutableDocument.setData(map);
+
+        Toast.makeText(getBaseContext(), "Editing card..." , Toast.LENGTH_SHORT).show();
+
+        try {
+            Log.d("DEBUG", jsonString);
+            MainActivity.database.save(mutableDocument);
+            documents.set(currentIndex, mutableDocument);
+        } catch (CouchbaseLiteException e) {
+            Toast.makeText(getBaseContext(), "Failed to edit.", Toast.LENGTH_SHORT).show();
+            Log.e("ERROR", "Failed to edit noun due to: " + e);
+        }
     }
 
 }

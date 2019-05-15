@@ -113,16 +113,14 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
 
-        // Add either a "photo" or "finish" button to the action bar, depending on which page
-        // is currently selected.
-        MenuItem item = menu.add(Menu.NONE, R.id.create_card, Menu.NONE,
-                isShowingBack
-                        ? R.string.action_photo
-                        : R.string.action_info);
-        item.setIcon(isShowingBack
-                ? R.drawable.ic_action_photo
-                : R.drawable.ic_action_info);
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        MenuItem editCardItem = menu.add(Menu.NONE, R.id.edit_card, 1, R.string.edit_card);
+        editCardItem.setIcon(R.drawable.edit);
+        editCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+
+        MenuItem createCardItem = menu.add(Menu.NONE, R.id.create_card, 2, R.string.create_card);
+        createCardItem.setIcon(R.drawable.plus_sign);
+        createCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+
         return true;
     }
 
@@ -140,13 +138,19 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 Log.d("DEBUG", "create card clicked");
                 showInputDialog();
                 return true;
+
+            case R.id.edit_card:
+                Log.d("DEBUG", "edit card clicked");
+                showEditInputDialog();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
     abstract protected void showInputDialog();
+    abstract protected void showEditInputDialog();
     abstract protected boolean addCardToDocument(final View dialogView);
-    abstract protected void updateCurrentCard();
+    abstract protected void updateCurrentCard(final View dialogView);
     abstract protected void loadAllDocuments();
     abstract protected boolean getTranslationBasedOnTranslationType(final View dialogView);
 

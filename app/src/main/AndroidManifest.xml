@@ -32,6 +32,7 @@
 
         <activity android:name=".NounCardFlipActivity"
             android:label="@string/title_card_flip"
+            android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme">
             <meta-data android:name="android.support.PARENT_ACTIVITY"
@@ -40,6 +41,7 @@
 
         <activity android:name=".VerbCardFlipActivity"
             android:label="@string/title_card_flip"
+            android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme">
             <meta-data android:name="android.support.PARENT_ACTIVITY"

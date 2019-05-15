@@ -4,7 +4,7 @@ public enum Article {
 
     EN("en"),
     ETT("ett"),
-    UNKNOWN_ARTICLE("unknown");
+    NO_ARTICLE("no article");
 
     private String value;
 
