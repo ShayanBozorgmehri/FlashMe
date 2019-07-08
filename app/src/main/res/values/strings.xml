@@ -6,9 +6,12 @@
 
     <string name="title_card_flip">Card Flip</string>
     <string name="intro">Time to get flashed!</string>
+    <string name="noun_count">Noun count: </string>
+    <string name="verb_count">Verb count: </string>
 
     <string name="create_card">Create card</string>
     <string name="edit_card">Edit card</string>
+    <string name="search_card">Search card</string>
 
     <string name="english_auto_translation">Auto English</string>
     <string name="swedish_auto_translation">Auto Swedish</string>

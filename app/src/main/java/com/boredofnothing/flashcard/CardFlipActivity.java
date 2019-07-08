@@ -210,7 +210,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return ((RadioButton) dialogView.findViewById(radioGroup.getCheckedRadioButtonId())).getText().toString();
     }
 
-    protected Query createQueryForCardTypeWithNonNullOrMissingValues(String wordType, String infoType) {
+    protected static Query createQueryForCardTypeWithNonNullOrMissingValues(String wordType, String infoType) {
         return QueryBuilder
                 .select(SelectResult.expression(Meta.id),
                         SelectResult.property(wordType),

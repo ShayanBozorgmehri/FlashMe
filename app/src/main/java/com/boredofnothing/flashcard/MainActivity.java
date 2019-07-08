@@ -11,12 +11,18 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.IndexBuilder;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.ValueIndexItem;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -111,5 +117,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount);
+        displayCardCount(CardSideType.ENGLISH_VERB, CardSideType.VERB_INFO, R.id.verbCount);
+    }
+
+    private void displayCardCount(CardSideType wordType, CardSideType infoType, int tvId) {
+        Query query = CardFlipActivity.createQueryForCardTypeWithNonNullOrMissingValues(
+                wordType.toString(),
+                infoType.toString());
+        try {
+            ResultSet resultSet = query.execute();
+            List<Result> results = resultSet.allResults();
+            TextView tv = findViewById(tvId);
+            tv.setText(String.format(tv.getText().toString() + results.size()));
+        } catch (CouchbaseLiteException e) {
+            Log.e("ERROR", "Failed to get count due to: " + e);
+            e.printStackTrace();
+        }
     }
 }
