@@ -122,11 +122,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onResume(){
         super.onResume();
-        displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount);
-        displayCardCount(CardSideType.ENGLISH_VERB, CardSideType.VERB_INFO, R.id.verbCount);
+        displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount, getString(R.string.noun_count));
+        displayCardCount(CardSideType.ENGLISH_VERB, CardSideType.VERB_INFO, R.id.verbCount, getString(R.string.verb_count));
     }
 
-    private void displayCardCount(CardSideType wordType, CardSideType infoType, int tvId) {
+    private void displayCardCount(CardSideType wordType, CardSideType infoType, int tvId, String countPrefix) {
         Query query = CardFlipActivity.createQueryForCardTypeWithNonNullOrMissingValues(
                 wordType.toString(),
                 infoType.toString());
@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();
             TextView tv = findViewById(tvId);
-            tv.setText(String.format(tv.getText().toString() + results.size()));
+            tv.setText(String.format(countPrefix + results.size()));
         } catch (CouchbaseLiteException e) {
             Log.e("ERROR", "Failed to get count due to: " + e);
             e.printStackTrace();
