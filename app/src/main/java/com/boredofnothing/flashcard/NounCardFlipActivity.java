@@ -8,18 +8,13 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
-import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
-import com.couchbase.lite.Result;
-import com.couchbase.lite.ResultSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class NounCardFlipActivity extends CardFlipActivity {
@@ -31,25 +26,12 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(
                 CardSideType.ENGLISH_NOUN.toString(),
                 CardSideType.NOUN_INFO.toString());
-        try {
-            ResultSet resultSet = query.execute();
-            List<Result> results = resultSet.allResults();
-            if(results.size() == 0){
-                Log.d("DEBUG", "DB is empty of nouns");
-                currentIndex = -1;
-            } else {
-                Log.d("DEBUG", "DB is NOT empty of nouns: " + results.size());
-                for(Result res: results){
-                   // Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
-                    documents.add(MainActivity.database.getDocument(res.getString(0)));
-                }
-                Collections.shuffle(documents);
-                currentIndex = 0;
-            }
-        } catch (CouchbaseLiteException e) {
-            Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
-            e.printStackTrace();
-        }
+        loadAllDocumentViaQuery(query);
+    }
+
+    @Override
+    protected void showSearchSuggestion() {
+
     }
 
     @Override
@@ -161,6 +143,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if(!getTranslationBasedOnTranslationType(dialogView)){//it's invalid
             return false;
         }
+        Toast.makeText(getBaseContext(), "Adding noun..." , Toast.LENGTH_SHORT).show();
 
         final String engTranslation = getEditText(dialogView, R.id.englishNoun);
         final String swedTranslation = getEditText(dialogView, R.id.swedishNoun);
@@ -176,21 +159,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         map.put(CardSideType.NOUN_INFO.toString(), jsonString);
         mutableDocument.setData(map);
 
-        Toast.makeText(getBaseContext(), "Adding noun..." , Toast.LENGTH_SHORT).show();
-
-        // Save the document to the database
-        try {
-            Log.d("DEBUG", "Adding properties to document: " + mutableDocument.getId());
-
-            Log.d("DEBUG", jsonString);
-            MainActivity.database.save(mutableDocument);
-            documents.add(++currentIndex, MainActivity.database.getDocument(mutableDocument.getId()));
-
-        } catch (CouchbaseLiteException e) {
-            Log.e("ERROR:", "Failed to add properties to document: " + e.getMessage() + "-" + e.getCause());
-            e.printStackTrace();
-        }
-        Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
+        Log.d("DEBUG", jsonString);
+        storeDocumentToDB(mutableDocument);
 
        return true;
     }
@@ -214,15 +184,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         mutableDocument.setData(map);
 
         Toast.makeText(getBaseContext(), "Editing noun..." , Toast.LENGTH_SHORT).show();
-
-        try {
-            Log.d("DEBUG", jsonString);
-            MainActivity.database.save(mutableDocument);
-            documents.set(currentIndex, mutableDocument);
-        } catch (CouchbaseLiteException e) {
-            Toast.makeText(getBaseContext(), "Failed to edit.", Toast.LENGTH_SHORT).show();
-            Log.e("ERROR", "Failed to edit noun due to: " + e);
-        }
+        Log.d("DEBUG", jsonString);
+        updateDocumentInDB(mutableDocument);
     }
 
 }

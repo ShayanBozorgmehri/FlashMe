@@ -23,6 +23,9 @@
 
     <string name="select_translation_mode">Select manual or auto translation</string>
 
+    <string name="english_adjective">Input the English adjective</string>
+    <string name="swedish_adjective">Input the Swedish adjective</string>
+
     <string name="english_noun">Input the English noun</string>
     <string name="swedish_noun">Input the Swedish noun</string>
     <string name="article">Input the article for Swedish noun</string>

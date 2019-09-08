@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
+
+    <item
+        android:id="@+id/adjective"
+        android:icon="@drawable/adjective_icon"
+        android:title="Adjectives" />
+
     <item
         android:id="@+id/noun"
         android:icon="@drawable/noun_icon"

@@ -48,6 +48,7 @@ public class YandexTranslator extends AsyncTask<String, Void, String> {
         } catch (JSONException e) {
             e.printStackTrace();
         } finally {
+            Log.d("debug", "found translation: " + translationResult + " for input: " + textToBeTranslated);
             return translationResult;
         }
     }
@@ -66,7 +67,7 @@ public class YandexTranslator extends AsyncTask<String, Void, String> {
                     + "&text=" + textToBeTranslated + "&lang=" + languagePair;
             URL yandexTranslateURL = new URL(yandexUrl);
 
-            //Set Http Conncection, Input Stream, and Buffered Reader
+            //Set Http Connection, Input Stream, and Buffered Reader
             HttpURLConnection httpJsonConnection = (HttpURLConnection) yandexTranslateURL.openConnection();
             InputStream inputStream = httpJsonConnection.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));

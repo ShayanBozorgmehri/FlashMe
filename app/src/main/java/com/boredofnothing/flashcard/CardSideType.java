@@ -2,6 +2,8 @@ package com.boredofnothing.flashcard;
 
 public enum CardSideType {
 
+    ADJECTIVE_INFO("adjective info"),
+    ENGLISH_ADJECTIVE("english adjective"),
     NOUN_INFO("noun info"),
     ENGLISH_NOUN("english noun"),
     VERB_INFO("verb info"),

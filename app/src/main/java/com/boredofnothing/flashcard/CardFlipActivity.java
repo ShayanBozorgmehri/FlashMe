@@ -45,15 +45,21 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
+import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Demonstrates a "card-flip" animation using custom fragment transactions ({@link
@@ -186,6 +192,50 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     public boolean isNullOrEmpty(String input){
         return input == null || input.trim().isEmpty();
+    }
+
+    protected void loadAllDocumentViaQuery(Query query) {
+        try {
+            ResultSet resultSet = query.execute();
+            List<Result> results = resultSet.allResults();
+            if(results.size() == 0){
+                Log.d("DEBUG", "DB is empty");
+                currentIndex = -1;
+            } else {
+                Log.d("DEBUG", "DB is NOT empty: " + results.size());
+                for(Result res: results){
+                    // Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
+                    documents.add(MainActivity.database.getDocument(res.getString(0)));
+                }
+                Collections.shuffle(documents);
+                currentIndex = 0;
+            }
+        } catch (CouchbaseLiteException e) {
+            Log.e("ERROR", "Piece of shit query didn't work cuz: " + e);
+            e.printStackTrace();
+        }
+    }
+
+    protected void storeDocumentToDB(MutableDocument mutableDocument) {
+        try {
+            Log.d("DEBUG", "Adding properties to document: " + mutableDocument.getId());
+            MainActivity.database.save(mutableDocument);
+            documents.add(++currentIndex, MainActivity.database.getDocument(mutableDocument.getId()));
+            Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
+        } catch (CouchbaseLiteException e) {
+            Log.e("ERROR:", "Failed to add properties to document: " + e.getMessage() + "-" + e.getCause());
+            e.printStackTrace();
+        }
+    }
+
+    protected void updateDocumentInDB(MutableDocument mutableDocument) {
+        try {
+            MainActivity.database.save(mutableDocument);
+            documents.set(currentIndex, mutableDocument);
+        } catch (CouchbaseLiteException e) {
+            Toast.makeText(getBaseContext(), "Failed to edit.", Toast.LENGTH_SHORT).show();
+            Log.e("ERROR", "Failed to edit adjective due to: " + e);
+        }
     }
 
     @Override

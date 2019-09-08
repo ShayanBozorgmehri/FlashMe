@@ -3,8 +3,8 @@ package com.boredofnothing.flashcard;
 public class Word {
 
     // marking the english word as transient so it is not serialized, so it does not show up on the back of the card
-    private transient String englishWord;
-    private String swedishWord;
+    protected transient String englishWord;
+    protected String swedishWord;
 
     public Word(){
     }

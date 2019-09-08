@@ -104,6 +104,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Log.i("INFO", "verbs selected");
             intent = new Intent(MainActivity.this, VerbCardFlipActivity.class);
         }
+        else if (id == R.id.adjective) {
+            Log.i("INFO", "adjectives selected");
+            intent = new Intent(MainActivity.this, AdjectiveCardFlipActivity.class);
+        }
         else {
             //just doing this so anything else wont do shit, remove this once all the menu items actually have fucntionalyiy
             DrawerLayout drawer = findViewById(R.id.drawer_layout);
