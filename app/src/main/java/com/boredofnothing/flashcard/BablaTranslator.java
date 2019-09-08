@@ -10,13 +10,13 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 
-public class BabelTranslator extends AsyncTask<Void, Void, Void> {
+public class BablaTranslator extends AsyncTask<Void, Void, Void> {
 
     //private final Context context;
     private Verb verb;
     //private ProgressDialog progressDialog;
 
-    public BabelTranslator(String presentTense){
+    public BablaTranslator(String presentTense){
         //this.context = context;
         verb = new Verb();
         verb.setInfinitive(presentTense);

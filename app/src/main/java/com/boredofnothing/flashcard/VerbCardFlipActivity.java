@@ -87,10 +87,10 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 Toast.makeText(getBaseContext(), "Could not find Swedish translation for: " + engInput, Toast.LENGTH_SHORT).show();
                 return false;
             }
-            //BabelTranslator babelTranslator = new BabelTranslator(getBaseContext(), yandexInfinitiveForm);
-            BabelTranslator babelTranslator = new BabelTranslator(yandexInfinitiveForm);
+            //BablaTranslator bablaTranslator = new BablaTranslator(getBaseContext(), yandexInfinitiveForm);
+            BablaTranslator bablaTranslator = new BablaTranslator(yandexInfinitiveForm);
             try {
-                babelTranslator.execute().get();//execute and wait until the call is done
+                bablaTranslator.execute().get();//execute and wait until the call is done
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 return false;
@@ -99,7 +99,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 return false;
             }
 
-            Verb verb = babelTranslator.getVerb();
+            Verb verb = bablaTranslator.getVerb();
             if (verb == null) {
                 Toast.makeText(getBaseContext(), "Could not find translation for verb: " + engInput, Toast.LENGTH_SHORT).show();
                 return false;
@@ -120,19 +120,13 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setView(dialogView);
 
         dialogBuilder.setTitle("Create new verb flashcard");
-        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d("DEBUG", "Creating new verb card.");
-                if (addCardToDocument(dialogView)){
-                    dialog.dismiss();
-                }
+        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+            Log.d("DEBUG", "Creating new verb card.");
+            if (addCardToDocument(dialogView)){
+                dialog.dismiss();
             }
         });
-        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                Log.d("DEBUG", "Cancelled creating new verb card.");
-            }
-        });
+        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new verb card."));
         AlertDialog b = dialogBuilder.create();
         b.show();
     }
