@@ -44,6 +44,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
             Log.d("DEBUG", "Creating new adjective card.");
             if (addCardToDocument(dialogView)){
                 dialog.dismiss();
+                displayNewlyAddedCard();
             }
         });
         dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new adjective card."));

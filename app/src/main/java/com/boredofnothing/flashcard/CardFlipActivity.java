@@ -285,6 +285,25 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
+    protected void displayNewlyAddedCard() {
+
+        // only auto update the display if the front card is show
+        if (!isShowingBack) {
+            Bundle args = new Bundle();
+            String navigationItem = getIntent().getStringExtra("selected_navigation_item");
+            args.putString("navigation_item", navigationItem);
+            args.putString("card_type", CardSideType.getEnumByConstructor("english " + navigationItem));
+            FrontCardFragment frontCardFragment = new FrontCardFragment();
+            frontCardFragment.setArguments(args);
+            getFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
+                            R.animator.enter_from_right, R.animator.exit_to_right)
+                    .replace(R.id.fragment_container, frontCardFragment)
+                    .commit();
+        }
+    }
+
     /**
      * A fragment representing the front of the card.
      */
@@ -411,6 +430,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 return gesture.onTouchEvent(event);
             });
         }
+
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);

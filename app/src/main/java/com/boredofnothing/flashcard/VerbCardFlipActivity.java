@@ -100,6 +100,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             Log.d("DEBUG", "Creating new verb card.");
             if (addCardToDocument(dialogView)){
                 dialog.dismiss();
+                displayNewlyAddedCard();
             }
         });
         dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new verb card."));

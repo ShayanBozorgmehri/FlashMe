@@ -47,6 +47,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
             Log.d("DEBUG", "Creating new noun card.");
             if(addCardToDocument(dialogView)){
                 dialog.dismiss();
+                displayNewlyAddedCard();
             }
         });
         dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new noun card."));
