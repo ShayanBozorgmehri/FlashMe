@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
@@ -43,8 +44,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        
+        CouchbaseLite.init(getApplicationContext());
         // Create or open the database named FlashMeDB
-        DatabaseConfiguration config = new DatabaseConfiguration(getApplicationContext());
+        DatabaseConfiguration config = new DatabaseConfiguration();
 
         try {
             Log.d("DEBUG", "searching for/creating DB...");
