@@ -6,6 +6,7 @@
 
     <string name="title_card_flip">Card Flip</string>
     <string name="intro">Time to get flashed!</string>
+    <string name="adjective_count">Adjective count: </string>
     <string name="noun_count">Noun count: </string>
     <string name="verb_count">Verb count: </string>
 
@@ -16,10 +17,6 @@
     <string name="english_auto_translation">Auto English</string>
     <string name="swedish_auto_translation">Auto Swedish</string>
     <string name="manual_translation">Manual Input</string>
-
-    <string name="card_back_title">Angry Red Android</string>
-    <string name="card_back_description"><![CDATA[Lorem ipsum dolor sit]]></string>
-    <string name="description_image_1">Image 1</string>
 
     <string name="select_translation_mode">Select manual or auto translation</string>
 

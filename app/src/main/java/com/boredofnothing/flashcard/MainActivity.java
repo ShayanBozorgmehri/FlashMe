@@ -126,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onResume(){
         super.onResume();
+        displayCardCount(CardSideType.ENGLISH_ADJECTIVE, CardSideType.ADJECTIVE_INFO, R.id.adjectiveCount, getString(R.string.adjective_count));
         displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount, getString(R.string.noun_count));
         displayCardCount(CardSideType.ENGLISH_VERB, CardSideType.VERB_INFO, R.id.verbCount, getString(R.string.verb_count));
     }
