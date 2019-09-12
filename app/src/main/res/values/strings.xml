@@ -11,6 +11,7 @@
     <string name="verb_count">Verb count: </string>
 
     <string name="create_card">Create card</string>
+    <string name="delete_card">Delete card</string>
     <string name="edit_card">Edit card</string>
     <string name="search_card">Search card</string>
 

@@ -25,6 +25,7 @@
     -->
     <item type="id" name="action_next" />
     <item type="id" name="create_card" />
+    <item type="id" name="delete_card" />
     <item type="id" name="edit_card" />
 
 </resources>

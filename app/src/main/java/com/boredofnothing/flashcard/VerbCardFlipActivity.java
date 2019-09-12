@@ -183,4 +183,21 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", jsonString);
         updateDocumentInDB(mutableDocument);
     }
+
+    @Override
+    protected void showDeleteDialog() {
+
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+
+        dialogBuilder.setTitle("Delete verb flashcard?");
+        dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
+            Toast.makeText(getBaseContext(), "Deleting verb..." , Toast.LENGTH_SHORT).show();
+            deleteDocument();
+            dialog.dismiss();
+        });
+
+        dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting verb card."));
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
 }

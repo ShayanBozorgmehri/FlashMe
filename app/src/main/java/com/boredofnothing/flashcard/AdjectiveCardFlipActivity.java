@@ -161,4 +161,22 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", jsonString);
         updateDocumentInDB(mutableDocument);
     }
+
+    @Override
+    protected void showDeleteDialog() {
+
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+
+        dialogBuilder.setTitle("Delete adjective flashcard?");
+        dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
+            Toast.makeText(getBaseContext(), "Deleting adjective..." , Toast.LENGTH_SHORT).show();
+            deleteDocument();
+            dialog.dismiss();
+        });
+
+        dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting adjective card."));
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
+
 }

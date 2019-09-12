@@ -119,13 +119,17 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
 
-        MenuItem editCardItem = menu.add(Menu.NONE, R.id.edit_card, 1, R.string.edit_card);
-        editCardItem.setIcon(R.drawable.edit);
-        editCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        MenuItem trashCardItem = menu.add(Menu.NONE, R.id.delete_card, 2, R.string.delete_card);
+        trashCardItem.setIcon(R.drawable.trash);
+        trashCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        MenuItem createCardItem = menu.add(Menu.NONE, R.id.create_card, 2, R.string.create_card);
+        MenuItem editCardItem = menu.add(Menu.NONE, R.id.edit_card, 3, R.string.edit_card);
+        editCardItem.setIcon(R.drawable.edit);
+        editCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+        MenuItem createCardItem = menu.add(Menu.NONE, R.id.create_card, 4, R.string.create_card);
         createCardItem.setIcon(R.drawable.plus_sign);
-        createCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        createCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         return true;
     }
@@ -149,12 +153,19 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 Log.d("DEBUG", "edit card clicked");
                 showEditInputDialog();
                 return true;
+
+            case R.id.delete_card:
+                Log.d("DEBUG", "delete card clicked");
+                showDeleteDialog();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
     abstract protected void showInputDialog();
     abstract protected void showEditInputDialog();
+    abstract protected void showDeleteDialog();
     abstract protected boolean addCardToDocument(final View dialogView);
     abstract protected void updateCurrentCard(final View dialogView);
     abstract protected void loadAllDocuments();
@@ -238,6 +249,19 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
+    protected void deleteDocument() {
+        try {
+            Log.d("DEBUG", "before delete count is: " + documents.size());
+            MainActivity.database.delete(documents.get(currentIndex));
+            documents.remove(currentIndex);
+            Log.d("DEBUG", "after delete count is: " + documents.size());
+        } catch (CouchbaseLiteException e) {
+            Log.e("ERROR", "Failed to delete document " + documents.get(currentIndex)
+                    + " from DB due to: " + e);
+        }
+    }
+
+
     @Override
     public void onBackStackChanged() {
         isShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
@@ -309,7 +333,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
      */
     public static class FrontCardFragment extends Fragment {
 
-        static int colorCounter =0;
+        static int colorCounter = 0;
 
         private static FrontCardFragment clone(FrontCardFragment frontCardFragment){
             FrontCardFragment clone = new FrontCardFragment();

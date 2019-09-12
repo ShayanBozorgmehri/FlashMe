@@ -189,4 +189,21 @@ public class NounCardFlipActivity extends CardFlipActivity {
         updateDocumentInDB(mutableDocument);
     }
 
+    @Override
+    protected void showDeleteDialog() {
+
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+
+        dialogBuilder.setTitle("Delete noun flashcard?");
+        dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
+            Toast.makeText(getBaseContext(), "Deleting noun..." , Toast.LENGTH_SHORT).show();
+            deleteDocument();
+            dialog.dismiss();
+        });
+
+        dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting noun card."));
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
+
 }
