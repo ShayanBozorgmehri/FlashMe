@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
@@ -57,6 +56,12 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void showEditInputDialog() {
+
+        if (documents.isEmpty()) {
+            displayNoCardsToEditToast();
+            return;
+        }
+
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.noun_input_layout, null);
@@ -103,18 +108,18 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
             if(!isNetworkAvailable()){
-                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                displayNoConnectionToast();
                 return false;
             }
             engTranslation = getEnglishTextUsingYandex(swedInput);
             if(isNullOrEmpty(engTranslation)){
-                Toast.makeText(getBaseContext(), "Could not find English translation for: " + swedInput, Toast.LENGTH_SHORT).show();
+                displayToast("Could not find English translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishNoun, engTranslation);
         } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if(!isNetworkAvailable()){
-                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                displayNoConnectionToast();
                 return false;
             }
             swedTranslation = getSwedishTextUsingYandex("a " + engInput);//get both the article an noun
@@ -129,7 +134,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
             }
             if(isNullOrEmpty(swedTranslation)){
-                Toast.makeText(getBaseContext(), "Could not find Swedish translation for: " + engInput, Toast.LENGTH_SHORT).show();
+                displayToast("Could not find Swedish translation for: " + engInput);
                 return false;
             }
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
@@ -144,7 +149,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if(!getTranslationBasedOnTranslationType(dialogView)){//it's invalid
             return false;
         }
-        Toast.makeText(getBaseContext(), "Adding noun..." , Toast.LENGTH_SHORT).show();
+        displayToast("Adding noun..." );
 
         final String engTranslation = getEditText(dialogView, R.id.englishNoun);
         final String swedTranslation = getEditText(dialogView, R.id.swedishNoun);
@@ -184,7 +189,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
         mutableDocument.setData(map);
 
-        Toast.makeText(getBaseContext(), "Editing noun..." , Toast.LENGTH_SHORT).show();
+        displayToast("Editing noun..." );
         Log.d("DEBUG", jsonString);
         updateDocumentInDB(mutableDocument);
     }
@@ -192,11 +197,16 @@ public class NounCardFlipActivity extends CardFlipActivity {
     @Override
     protected void showDeleteDialog() {
 
+        if (documents.isEmpty()) {
+            displayNoCardsToDeleteToast();
+            return;
+        }
+
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 
         dialogBuilder.setTitle("Delete noun flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
-            Toast.makeText(getBaseContext(), "Deleting noun..." , Toast.LENGTH_SHORT).show();
+            displayToast("Deleting noun..." );
             deleteDocument();
             dialog.dismiss();
         });

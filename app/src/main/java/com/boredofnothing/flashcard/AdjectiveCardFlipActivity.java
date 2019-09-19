@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
@@ -54,6 +53,12 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void showEditInputDialog() {
+
+        if (documents.isEmpty()) {
+            displayNoCardsToEditToast();
+            return;
+        }
+
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.adjective_input_layout, null);
@@ -93,23 +98,23 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
             if(!isNetworkAvailable()){
-                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                displayNoConnectionToast();
                 return false;
             }
             engTranslation = getEnglishTextUsingYandex(swedInput);
             if(isNullOrEmpty(engTranslation)){
-                Toast.makeText(getBaseContext(), "Could not find English translation for: " + swedInput, Toast.LENGTH_SHORT).show();
+                displayToast("Could not find English translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishAdjective, engTranslation);
         } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if(!isNetworkAvailable()){
-                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                displayNoConnectionToast();
                 return false;
             }
             swedTranslation = getSwedishTextUsingYandex(engInput);//could fiddle with this here by making it a sentence too to get the context
             if(isNullOrEmpty(swedTranslation)){
-                Toast.makeText(getBaseContext(), "Could not find Swedish translation for: " + engInput, Toast.LENGTH_SHORT).show();
+                displayToast("Could not find Swedish translation for: " + engInput);
                 return false;
             }
             setEditText(dialogView, R.id.swedishAdjective, swedTranslation);
@@ -122,7 +127,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         if(!getTranslationBasedOnTranslationType(dialogView)){
             return false;
         }
-        Toast.makeText(getBaseContext(), "Adding adjective...", Toast.LENGTH_SHORT).show();
+        displayToast("Adding adjective...");
 
         String eng = getEditText(dialogView, R.id.englishAdjective);
         String swed = getEditText(dialogView, R.id.swedishAdjective);
@@ -157,7 +162,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
         mutableDocument.setData(map);
 
-        Toast.makeText(getBaseContext(), "Editing adjective..." , Toast.LENGTH_SHORT).show();
+        displayToast("Editing adjective..." );
         Log.d("DEBUG", jsonString);
         updateDocumentInDB(mutableDocument);
     }
@@ -165,11 +170,16 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     @Override
     protected void showDeleteDialog() {
 
+        if (documents.isEmpty()) {
+            displayNoCardsToDeleteToast();
+            return;
+        }
+
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 
         dialogBuilder.setTitle("Delete adjective flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
-            Toast.makeText(getBaseContext(), "Deleting adjective..." , Toast.LENGTH_SHORT).show();
+            displayToast("Deleting adjective..." );
             deleteDocument();
             dialog.dismiss();
         });

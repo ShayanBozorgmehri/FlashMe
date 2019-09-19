@@ -181,13 +181,13 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     protected boolean validateInputFields(String translationType, String engInput, String swedInput){
         if(translationType.equals(getResources().getString(R.string.manual_translation))
                 && (engInput.isEmpty() || swedInput.isEmpty())){
-            Toast.makeText(getBaseContext(), "Cannot leave manual input fields blank!", Toast.LENGTH_SHORT).show();
+            displayToast("Cannot leave manual input fields blank!");
             return false;
         } else if(translationType.equals(getResources().getString(R.string.english_auto_translation)) && swedInput.trim().isEmpty()){
-            Toast.makeText(getBaseContext(), "Swedish input field required to find English auto translation!", Toast.LENGTH_SHORT).show();
+            displayToast("Swedish input field required to find English auto translation!");
             return false;
         } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation)) && engInput.trim().isEmpty()){
-            Toast.makeText(getBaseContext(), "English input field required to find Swedish auto translation!", Toast.LENGTH_SHORT).show();
+            displayToast("English input field required to find Swedish auto translation!");
             return false;
         }
         return true;
@@ -227,6 +227,24 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
+    protected final void displayNoCardsToEditToast() {
+        displayToast("No cards to edit!");
+    }
+
+    protected final void displayNoCardsToDeleteToast() {
+        displayToast("No cards to delete!");
+    }
+
+    protected final void displayNoConnectionToast() {
+        displayToast("No network connection found. Please enable WIFI or data.");
+    }
+
+    protected final void displayToast(String message) {
+        Toast toast = Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+        toast.show();
+    }
+
     protected void storeDocumentToDB(MutableDocument mutableDocument) {
         try {
             Log.d("DEBUG", "Adding properties to document: " + mutableDocument.getId());
@@ -244,7 +262,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             MainActivity.database.save(mutableDocument);
             documents.set(currentIndex, mutableDocument);
         } catch (CouchbaseLiteException e) {
-            Toast.makeText(getBaseContext(), "Failed to edit.", Toast.LENGTH_SHORT).show();
+            displayToast("Failed to edit!");
             Log.e("ERROR", "Failed to edit adjective due to: " + e);
         }
     }
@@ -260,7 +278,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                     + " from DB due to: " + e);
         }
     }
-
 
     @Override
     public void onBackStackChanged() {

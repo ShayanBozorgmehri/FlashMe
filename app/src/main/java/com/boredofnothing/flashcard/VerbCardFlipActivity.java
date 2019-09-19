@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
@@ -41,12 +40,12 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
             if (!isNetworkAvailable()) {
-                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                displayNoConnectionToast();
                 return false;
             }
             engTranslation = getEnglishTextUsingYandex(swedInput);
             if (isNullOrEmpty(engTranslation)) {
-                Toast.makeText(getBaseContext(), "Could not find English translation for: " + swedInput, Toast.LENGTH_SHORT).show();
+                displayToast("Could not find English translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishVerb, engTranslation);
@@ -54,13 +53,13 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             // first, get a translation from yandex
             if (!isNetworkAvailable()) {
-                Toast.makeText(getBaseContext(), "No network connection found. Please enable WIFI or data.", Toast.LENGTH_SHORT).show();
+                displayNoConnectionToast();
                 return false;
             }
             // then, use the yandex translation to get the conjugations from babel
             String yandexInfinitiveForm = getSwedishTextUsingYandex(engInput);
             if (isNullOrEmpty(yandexInfinitiveForm)) {
-                Toast.makeText(getBaseContext(), "Could not find Swedish translation for: " + engInput, Toast.LENGTH_SHORT).show();
+                displayToast("Could not find Swedish translation for: " + engInput);
                 return false;
             }
             //BablaTranslator bablaTranslator = new BablaTranslator(getBaseContext(), yandexInfinitiveForm);
@@ -77,7 +76,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
             Verb verb = bablaTranslator.getVerb();
             if (verb == null) {
-                Toast.makeText(getBaseContext(), "Could not find translation for verb: " + engInput, Toast.LENGTH_SHORT).show();
+                displayToast("Could not find translation for verb: " + engInput);
                 return false;
             }
             setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
@@ -110,6 +109,12 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void showEditInputDialog() {
+
+        if (documents.isEmpty()) {
+            displayNoCardsToEditToast();
+            return;
+        }
+
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.verb_input_layout, null);
@@ -141,7 +146,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         if(!getTranslationBasedOnTranslationType(dialogView)){
             return false;
         }
-        Toast.makeText(getBaseContext(), "Adding verb...", Toast.LENGTH_SHORT).show();
+        displayToast("Adding verb...");
 
         String eng = getEditText(dialogView, R.id.englishVerb);
         String swed = getEditText(dialogView, R.id.swedishVerb);
@@ -179,7 +184,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
         mutableDocument.setData(map);
 
-        Toast.makeText(getBaseContext(), "Editing verb..." , Toast.LENGTH_SHORT).show();
+        displayToast("Editing verb...");
         Log.d("DEBUG", jsonString);
         updateDocumentInDB(mutableDocument);
     }
@@ -187,11 +192,16 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     @Override
     protected void showDeleteDialog() {
 
+        if (documents.isEmpty()) {
+            displayNoCardsToDeleteToast();
+            return;
+        }
+
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
 
         dialogBuilder.setTitle("Delete verb flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
-            Toast.makeText(getBaseContext(), "Deleting verb..." , Toast.LENGTH_SHORT).show();
+            displayToast("Deleting verb...");
             deleteDocument();
             dialog.dismiss();
         });
