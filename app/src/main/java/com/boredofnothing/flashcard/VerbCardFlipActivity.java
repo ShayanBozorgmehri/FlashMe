@@ -86,9 +86,22 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         return true;
     }
 
+
+    @Override
+    protected void showSearchSuggestion() { //left off here not sure if i need to fix the manifest for the searchable or just create a search dialog thing
+        if (Intent.ACTION_SEARCH.equals(getIntent().getAction())) {
+            displayToast("search clicked...");
+            Log.d("DEBUG", "showSearchSuggestion");
+            //String query = intent.getStringExtra(SearchManager.QUERY);
+            //doSearch(query);
+        } else {
+            displayToast("intent: " + getIntent() + ". intent action: " + getIntent().getAction());
+
+        }
+    }
+
     @Override
     protected void showInputDialog() {
-
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.verb_input_layout, null);

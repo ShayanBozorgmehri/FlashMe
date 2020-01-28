@@ -23,6 +23,7 @@ package com.boredofnothing.flashcard;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -31,10 +32,13 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -119,6 +123,39 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
 
+        MenuItem createSearchItem = menu.add(Menu.NONE, R.id.search_card, 1, R.string.search_card);
+        createSearchItem.setIcon(R.drawable.search);
+        createSearchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        //left off here, trying to add the auto search feature but cant find the action view frmo search_menu.xml
+//        getMenuInflater().inflate(R.menu.search_menu, menu);
+//
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (android.support.v7.widget.SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()) );
+//something here should be changed. dont use the onSearchRequested shit
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.search_menu, menu);
+//
+//        // Get the SearchView and set the searchable configuration
+//        SearchView searchView = (SearchView) createSearchItem.getActionView();
+//        if (searchView != null) {
+//            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//                @Override
+//                public boolean onQueryTextSubmit(String s) {
+//                    // do something with s, the entered string
+//                    Toast.makeText(getApplicationContext(),
+//                            "String entered is " + s, Toast.LENGTH_SHORT).show();
+//                    return true;
+//                }
+//                @Override
+//                public boolean onQueryTextChange(String s) {
+//                    Log.d("DEBUG", "omg changing is working: " + s);
+//                    return false;
+//                }
+//            });
+//        }
+
         MenuItem trashCardItem = menu.add(Menu.NONE, R.id.delete_card, 2, R.string.delete_card);
         trashCardItem.setIcon(R.drawable.trash);
         trashCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -158,11 +195,18 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 Log.d("DEBUG", "delete card clicked");
                 showDeleteDialog();
                 return true;
+
+            case R.id.search_card:
+                Log.d("DEBUG", "search card clicked");
+                //onSearchRequested();
+                showSearchSuggestion();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    abstract protected void showSearchSuggestion();
     abstract protected void showInputDialog();
     abstract protected void showEditInputDialog();
     abstract protected void showDeleteDialog();
