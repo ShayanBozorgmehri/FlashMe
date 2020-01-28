@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 database.createIndex("TypeNameIndex",
                         IndexBuilder.valueIndex(ValueIndexItem.property("english word")));
             }
+            Log.d("DEBUG", "created DB in path: " + database.getPath());
+
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
