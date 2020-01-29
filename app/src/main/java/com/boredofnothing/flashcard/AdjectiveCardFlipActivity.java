@@ -25,7 +25,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         loadAllDocumentViaQuery(query);
     }
 
-    @Override
+    //@Override
     protected void showSearchSuggestion() {
 
     }

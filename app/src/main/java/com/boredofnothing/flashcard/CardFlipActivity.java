@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;

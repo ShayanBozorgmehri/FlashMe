@@ -27,5 +27,6 @@
     <item type="id" name="create_card" />
     <item type="id" name="delete_card" />
     <item type="id" name="edit_card" />
+    <item type="id" name="search_card" />
 
 </resources>

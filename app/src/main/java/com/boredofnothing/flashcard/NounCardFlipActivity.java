@@ -28,7 +28,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         loadAllDocumentViaQuery(query);
     }
 
-    @Override
+    //@Override
     protected void showSearchSuggestion() {
 
     }
