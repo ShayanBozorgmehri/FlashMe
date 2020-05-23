@@ -2,6 +2,7 @@ package com.boredofnothing.flashcard;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -58,7 +59,10 @@ public class BablaTranslator extends AsyncTask<Void, Void, Void> {
             }
         }
         catch (IOException e) {
-            System.out.println("ERROR: " + e.getMessage());
+            Log.e("ERROR", e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e("ERROR", "MIGHT have failed to find translation: " + e.getMessage());
             e.printStackTrace();
         }
         System.out.println("------------------" + data);

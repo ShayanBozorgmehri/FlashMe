@@ -32,20 +32,21 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -123,38 +124,42 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
 
-        MenuItem createSearchItem = menu.add(Menu.NONE, R.id.search_card, 1, R.string.search_card);
-        createSearchItem.setIcon(R.drawable.search);
-        createSearchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        //left off here, trying to add the auto search feature but cant find the action view frmo search_menu.xml
-//        getMenuInflater().inflate(R.menu.search_menu, menu);
-//
+        MenuItem searchItem = menu.add(Menu.NONE, R.id.search_card, 1, R.string.search_card);
+        searchItem.setIcon(R.drawable.search);
+        searchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (android.support.v7.widget.SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()) );
-//something here should be changed. dont use the onSearchRequested shit
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.search_menu, menu);
-//
+        LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
+        SearchView searchView = searchLayout.findViewById(R.id.searchVieww);
+        searchItem.setActionView(searchView);
+
+        List<ListViewItem> suggestionList = new ArrayList<>();
+        //TODO: might have to populate list specifically for each word type, e.g. menu.getItem(0)
+        // override onCreateOptionsMenu and have it return the appropriate list for each word type
 //        // Get the SearchView and set the searchable configuration
 //        SearchView searchView = (SearchView) createSearchItem.getActionView();
 //        if (searchView != null) {
-//            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-//                @Override
+        ListView searchViewList = searchLayout.findViewById(R.id.searchViewList);
+        searchViewList.setActivated(true);
 //                public boolean onQueryTextSubmit(String s) {
-//                    // do something with s, the entered string
+
 //                    Toast.makeText(getApplicationContext(),
-//                            "String entered is " + s, Toast.LENGTH_SHORT).show();
-//                    return true;
-//                }
-//                @Override
-//                public boolean onQueryTextChange(String s) {
-//                    Log.d("DEBUG", "omg changing is working: " + s);
-//                    return false;
-//                }
-//            });
-//        }
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String word) {
+                searchCardsForWord(word.trim());
+                //left off here. also on flip triggers this shit...
+                searchView.setIconified(true); //first call to clear search bar
+                searchView.setIconified(true); //second call to close search bar
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String word) {
+                //searchDbForCardsContainingWord(word);
+                return false;
+            }
+        });
 
         MenuItem trashCardItem = menu.add(Menu.NONE, R.id.delete_card, 2, R.string.delete_card);
         trashCardItem.setIcon(R.drawable.trash);
@@ -175,8 +180,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // Navigate "up" the demo structure to the launchpad activity.
-                // See http://developer.android.com/design/patterns/navigation.html for more.
                 Log.d("DEBUG", "going back to main screen");
                 NavUtils.navigateUpTo(this, new Intent(this, MainActivity.class));
                 return true;
@@ -198,7 +201,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
             case R.id.search_card:
                 Log.d("DEBUG", "search card clicked");
-                //onSearchRequested();
                 showSearchSuggestion();
                 return true;
         }
@@ -206,6 +208,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return super.onOptionsItemSelected(item);
     }
 
+    abstract protected void searchCardsForWord(String word);
+    abstract protected void searchCardsContainingWord(String word);
     abstract protected void showSearchSuggestion();
     abstract protected void showInputDialog();
     abstract protected void showEditInputDialog();
@@ -249,7 +253,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return input == null || input.trim().isEmpty();
     }
 
-    protected void loadAllDocumentViaQuery(Query query) {
+    protected void loadAllDocumentsViaQuery(Query query) {
         try {
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();
@@ -632,6 +636,16 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 }
+
+
+// use logic if you wanna add a search thing at the MAIN menu, instead of choosing a word type first and then searching
+//     Query query = QueryBuilder
+//             .select(SelectResult.expression(Meta.id),
+//                     SelectResult.property(CardSideType.ENGLISH_ADJECTIVE.toString()),
+//                     SelectResult.property(CardSideType.ADJECTIVE_INFO.toString()))
+//             .from(DataSource.database(MainActivity.database))
+//             .where(Expression.property(CardSideType.ENGLISH_ADJECTIVE.toString()).like(Expression.string(word)));
+//     loadAllDocumentsViaQuery(query);
 
 //commenting this out for now but apply same logic when you want to add buttons at the end of the test in the FRAGMENTS
 //        @Override

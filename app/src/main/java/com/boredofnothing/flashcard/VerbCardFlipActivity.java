@@ -24,7 +24,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(
                 CardSideType.ENGLISH_VERB.toString(),
                 CardSideType.VERB_INFO.toString());
-        loadAllDocumentViaQuery(query);
+        loadAllDocumentsViaQuery(query);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             }
 
             Verb verb = bablaTranslator.getVerb();
-            if (verb == null) {
+            if (verb == null || verb.getSwedishWord() == null) {
                 displayToast("Could not find translation for verb: " + engInput);
                 return false;
             }
@@ -86,9 +86,30 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         return true;
     }
 
-
     @Override
-    protected void showSearchSuggestion() { //left off here not sure if i need to fix the manifest for the searchable or just create a search dialog thing
+    protected void searchCardsForWord(String word){
+        Gson gson = new Gson();
+        Document doc = null;
+        for(int i = 0; i < documents.size(); i++){
+            Document document = documents.get(i);
+            String englishWord = document.getString(CardSideType.ENGLISH_VERB.toString());
+            Verb verb = gson.fromJson(document.getString(CardSideType.VERB_INFO.toString()), Verb.class);
+            if(englishWord.contains(word) || verb.getSwedishWord().contains(word)){
+                doc = documents.get(i);
+                currentIndex = i;
+                break;
+            }
+        }
+        if(doc != null) {
+            displayToast("found card!");
+            //TODO: left off here, have the card update automatically
+
+        } else {
+            displayToast("no verb card found for word: " + word);
+        }
+    }
+    @Override
+    protected void showSearchSuggestion() {
         if (Intent.ACTION_SEARCH.equals(getIntent().getAction())) {
             displayToast("search clicked...");
             Log.d("DEBUG", "showSearchSuggestion");
@@ -96,7 +117,6 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             //doSearch(query);
         } else {
             displayToast("intent: " + getIntent() + ". intent action: " + getIntent().getAction());
-
         }
     }
 

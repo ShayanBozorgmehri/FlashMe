@@ -22,9 +22,31 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(
                 CardSideType.ENGLISH_ADJECTIVE.toString(),
                 CardSideType.ADJECTIVE_INFO.toString());
-        loadAllDocumentViaQuery(query);
+        loadAllDocumentsViaQuery(query);
     }
 
+    @Override
+    protected void searchCardsForWord(String word){
+        Gson gson = new Gson();
+        Document doc = null;
+        for(int i = 0; i < documents.size(); i++){
+            Document document = documents.get(i);
+            String englishWord = document.getString(CardSideType.ENGLISH_ADJECTIVE.toString());
+            Adjective adj = gson.fromJson(document.getString(CardSideType.ADJECTIVE_INFO.toString()), Adjective.class);
+            if(englishWord.contains(word) || adj.getSwedishWord().contains(word)){
+                doc = documents.get(i);
+                currentIndex = i;
+                break;
+            }
+        }
+        if(doc != null) {
+            displayToast("found card!");
+            //TODO: left off here, have the card update automatically
+
+        } else {
+            displayToast("no adj card found for word: " + word);
+        }
+    }
     @Override
     protected void showSearchSuggestion() {
 
