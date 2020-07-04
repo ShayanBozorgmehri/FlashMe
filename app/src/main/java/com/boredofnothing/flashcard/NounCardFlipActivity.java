@@ -13,7 +13,9 @@ import com.couchbase.lite.Query;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NounCardFlipActivity extends CardFlipActivity {
@@ -44,15 +46,25 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
         if(doc != null) {
             displayToast("found card!");
-            //TODO: left off here, have the card update automatically
-
+            displayNewlyAddedCard();
         } else {
             displayToast("no noun found for word: " + word);
         }
     }
-    @Override
-    protected void showSearchSuggestion() {
 
+    @Override
+    protected List<ListViewItem> getSearchSuggestionList() {
+
+        List<ListViewItem> suggestionList = new ArrayList<>();
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        for (Document doc: documents){
+            Verb verb = gson.fromJson(doc.getString(CardSideType.NOUN_INFO.toString()), Verb.class);
+            String engWord = doc.getString(CardSideType.ENGLISH_NOUN.toString());
+            suggestionList.add(new ListViewItem(engWord, verb.getSwedishWord()));
+        }
+
+        return suggestionList;
     }
 
     @Override

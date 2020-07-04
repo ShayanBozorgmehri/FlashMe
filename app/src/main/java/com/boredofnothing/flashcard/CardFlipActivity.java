@@ -32,6 +32,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
+import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -129,26 +130,24 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         searchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
-        SearchView searchView = searchLayout.findViewById(R.id.searchVieww);
+        SearchView searchView = searchLayout.findViewById(R.id.searchView);
         searchItem.setActionView(searchView);
 
-        List<ListViewItem> suggestionList = new ArrayList<>();
-        //TODO: might have to populate list specifically for each word type, e.g. menu.getItem(0)
-        // override onCreateOptionsMenu and have it return the appropriate list for each word type
-//        // Get the SearchView and set the searchable configuration
-//        SearchView searchView = (SearchView) createSearchItem.getActionView();
-//        if (searchView != null) {
-        ListView searchViewList = searchLayout.findViewById(R.id.searchViewList);
-        searchViewList.setActivated(true);
-//                public boolean onQueryTextSubmit(String s) {
+        ViewGroup rootLayout = findViewById(android.R.id.content);
+        rootLayout.addView(searchLayout);
 
-//                    Toast.makeText(getApplicationContext(),
+        List<ListViewItem> suggestionList = getSearchSuggestionList();
+        ListViewAdapter adapter = new ListViewAdapter(suggestionList);
+
+        ListView listView = searchLayout.findViewById(R.id.searchViewList);
+        listView.setAdapter(adapter);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String word) {
-                searchCardsForWord(word.trim());
-                //left off here. also on flip triggers this shit...
+                if (!word.trim().isEmpty()) {
+                    searchCardsForWord(word.trim());
+                }
                 searchView.setIconified(true); //first call to clear search bar
                 searchView.setIconified(true); //second call to close search bar
                 return true;
@@ -156,9 +155,16 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
             @Override
             public boolean onQueryTextChange(String word) {
-                //searchDbForCardsContainingWord(word);
+                adapter.getFilter().filter(word.trim());
                 return false;
             }
+        });
+        searchView.setOnCloseListener(() -> {
+            listView.setVisibility(View.GONE);
+            return false;
+        });
+        searchView.setOnSearchClickListener(v -> {
+            listView.setVisibility(View.VISIBLE);
         });
 
         MenuItem trashCardItem = menu.add(Menu.NONE, R.id.delete_card, 2, R.string.delete_card);
@@ -201,16 +207,26 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
             case R.id.search_card:
                 Log.d("DEBUG", "search card clicked");
-                showSearchSuggestion();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    public void onClickTextView(View v){
+        int position = (int) v.getTag();
+        currentIndex = position;
+        displayNewlyAddedCard();
+
+        LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
+        SearchView searchView = searchLayout.findViewById(R.id.searchView);
+        searchView.setQuery("", false);
+        searchView.setIconified(true);
+        searchView.onActionViewCollapsed();
+    }
+
     abstract protected void searchCardsForWord(String word);
-    abstract protected void searchCardsContainingWord(String word);
-    abstract protected void showSearchSuggestion();
+    abstract protected List<ListViewItem> getSearchSuggestionList();
     abstract protected void showInputDialog();
     abstract protected void showEditInputDialog();
     abstract protected void showDeleteDialog();

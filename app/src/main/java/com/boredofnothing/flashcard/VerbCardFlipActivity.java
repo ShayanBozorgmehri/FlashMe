@@ -13,7 +13,9 @@ import com.couchbase.lite.Query;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -102,22 +104,24 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         }
         if(doc != null) {
             displayToast("found card!");
-            //TODO: left off here, have the card update automatically
-
+            displayNewlyAddedCard();
         } else {
             displayToast("no verb card found for word: " + word);
         }
     }
+
     @Override
-    protected void showSearchSuggestion() {
-        if (Intent.ACTION_SEARCH.equals(getIntent().getAction())) {
-            displayToast("search clicked...");
-            Log.d("DEBUG", "showSearchSuggestion");
-            //String query = intent.getStringExtra(SearchManager.QUERY);
-            //doSearch(query);
-        } else {
-            displayToast("intent: " + getIntent() + ". intent action: " + getIntent().getAction());
+    protected List<ListViewItem> getSearchSuggestionList() {
+        List<ListViewItem> suggestionList = new ArrayList<>();
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        for (Document doc: documents){
+            Verb verb = gson.fromJson(doc.getString(CardSideType.VERB_INFO.toString()), Verb.class);
+            String engWord = doc.getString(CardSideType.ENGLISH_VERB.toString());
+            suggestionList.add(new ListViewItem(engWord, verb.getSwedishWord()));
         }
+
+        return suggestionList;
     }
 
     @Override
