@@ -1,12 +1,15 @@
 package com.boredofnothing.flashcard;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.provider.BablaTranslator;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -45,7 +48,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingYandex(swedInput);
+            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English translation for: " + swedInput);
                 return false;
@@ -53,19 +56,19 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             setEditText(dialogView, R.id.englishVerb, engTranslation);
 
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
-            // first, get a translation from yandex
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            // then, use the yandex translation to get the conjugations from babel
-            String yandexInfinitiveForm = getSwedishTextUsingYandex(engInput);
-            if (isNullOrEmpty(yandexInfinitiveForm)) {
+            // first, get a translation from azure
+            String azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
+            if (isNullOrEmpty(azureInfinitiveForm)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return false;
             }
-            //BablaTranslator bablaTranslator = new BablaTranslator(getBaseContext(), yandexInfinitiveForm);
-            BablaTranslator bablaTranslator = new BablaTranslator(yandexInfinitiveForm);
+            // then, use the azure translation to get the conjugations from babel
+            //BablaTranslator bablaTranslator = new BablaTranslator(getBaseContext(), azureInfinitiveForm);
+            BablaTranslator bablaTranslator = new BablaTranslator(azureInfinitiveForm);
             try {
                 bablaTranslator.execute().get();//execute and wait until the call is done
             } catch (InterruptedException e) {

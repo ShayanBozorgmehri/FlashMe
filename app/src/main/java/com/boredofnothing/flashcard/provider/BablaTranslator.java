@@ -1,8 +1,9 @@
-package com.boredofnothing.flashcard;
+package com.boredofnothing.flashcard.provider;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.boredofnothing.flashcard.model.cards.Verb;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

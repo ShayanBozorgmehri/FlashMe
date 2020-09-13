@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard;
+package com.boredofnothing.flashcard.model;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -18,7 +18,7 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
     private List<ListViewItem> itemListFull;
     private LayoutInflater inflater;
 
-    ListViewAdapter(List<ListViewItem> itemList) {
+    public ListViewAdapter(List<ListViewItem> itemList) {
         this.itemList = itemList;
         itemListFull = new ArrayList<>(itemList);
     }

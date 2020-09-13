@@ -5,8 +5,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ListView;
 
+import com.boredofnothing.flashcard.model.cards.Adjective;
+import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.cards.Verb;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -136,7 +139,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingYandex(swedInput);
+            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
             if(isNullOrEmpty(engTranslation)){
                 displayToast("Could not find English translation for: " + swedInput);
                 return false;
@@ -147,7 +150,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return false;
             }
-            swedTranslation = getSwedishTextUsingYandex(engInput);//could fiddle with this here by making it a sentence too to get the context
+            swedTranslation = getSwedishTextUsingAzureTranslator(engInput);//could fiddle with this here by making it a sentence too to get the context
             if(isNullOrEmpty(swedTranslation)){
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return false;

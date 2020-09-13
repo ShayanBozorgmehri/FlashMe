@@ -23,7 +23,6 @@ package com.boredofnothing.flashcard;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -32,7 +31,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -42,6 +40,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -51,6 +50,10 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.ListViewAdapter;
+import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.provider.AzureTranslator;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Document;
@@ -257,12 +260,12 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return true;
     }
 
-    protected String getSwedishTextUsingYandex(String englishText){
-        return new YandexTranslator().getTranslationFromYandex(englishText, YandexTranslator.ENG_TO_SWED);
+    protected String getSwedishTextUsingAzureTranslator(String englishText){
+        return new AzureTranslator(getBaseContext()).getTranslation(englishText, AzureTranslator.ENG_TO_SWED);
     }
 
-    protected String getEnglishTextUsingYandex(String swedishText){
-        return new YandexTranslator().getTranslationFromYandex(swedishText, YandexTranslator.SWED_TO_ENG);
+    protected String getEnglishTextUsingAzureTranslator(String swedishText){
+        return new AzureTranslator(getBaseContext()).getTranslation(swedishText, AzureTranslator.SWED_TO_ENG);
     }
 
     public boolean isNullOrEmpty(String input){

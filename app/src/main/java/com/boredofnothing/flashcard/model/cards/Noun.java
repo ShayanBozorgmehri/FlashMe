@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard;
+package com.boredofnothing.flashcard.model.cards;
 
 public class Noun extends Word{
 

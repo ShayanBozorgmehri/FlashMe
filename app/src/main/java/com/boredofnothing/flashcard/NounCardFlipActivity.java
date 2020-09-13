@@ -7,6 +7,11 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
+import com.boredofnothing.flashcard.model.cards.Article;
+import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.cards.Noun;
+import com.boredofnothing.flashcard.model.cards.Verb;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -140,37 +145,31 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if(!validateInputFields(translationType, engInput, swedInput)){
             return false;
         }
-        if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
-            if(!isNetworkAvailable()){
+        if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
+            if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingYandex(swedInput);
-            if(isNullOrEmpty(engTranslation)){
+            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
+            if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishNoun, engTranslation);
-        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
-            if(!isNetworkAvailable()){
+        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+            if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            swedTranslation = getSwedishTextUsingYandex("a " + engInput);//get both the article an noun
-            if(swedTranslation != null){
-                String[] result = swedTranslation.split(" ");
-                if(result.length != 1){
-                    article = result[0];
-                    swedTranslation = result[1];
-                } else {
-                    article = "no article"; //example, vatten. there is no en/ett vatten
-                }
-                //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
-            }
-            if(isNullOrEmpty(swedTranslation)){
+            swedTranslation = getSwedishTextUsingAzureTranslator(engInput + "! the " + engInput);//get both the article and noun
+            if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return false;
             }
+            String[] result = swedTranslation.split("!");
+            article = result[1].endsWith("n") ? "en" : "ett";
+            swedTranslation = result[0];
+            //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
         }
         return true;
