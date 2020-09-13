@@ -7,13 +7,20 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
+import com.boredofnothing.flashcard.model.cards.Article;
+import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.cards.Noun;
+import com.boredofnothing.flashcard.model.cards.Verb;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NounCardFlipActivity extends CardFlipActivity {
@@ -25,12 +32,44 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(
                 CardSideType.ENGLISH_NOUN.toString(),
                 CardSideType.NOUN_INFO.toString());
-        loadAllDocumentViaQuery(query);
+        loadAllDocumentsViaQuery(query);
     }
 
-    //@Override
-    protected void showSearchSuggestion() {
+    @Override
+    protected void searchCardsForWord(String word){
+        Gson gson = new Gson();
+        Document doc = null;
+        for(int i = 0; i < documents.size(); i++){
+            Document document = documents.get(i);
+            String englishWord = document.getString(CardSideType.ENGLISH_NOUN.toString());
+            Noun noun = gson.fromJson(document.getString(CardSideType.NOUN_INFO.toString()), Noun.class);
+            if(englishWord.contains(word) || noun.getSwedishWord().contains(word)){
+                doc = documents.get(i);
+                currentIndex = i;
+                break;
+            }
+        }
+        if(doc != null) {
+            displayToast("found card!");
+            displayNewlyAddedCard();
+        } else {
+            displayToast("no noun found for word: " + word);
+        }
+    }
 
+    @Override
+    protected List<ListViewItem> getSearchSuggestionList() {
+
+        List<ListViewItem> suggestionList = new ArrayList<>();
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        for (Document doc: documents){
+            Verb verb = gson.fromJson(doc.getString(CardSideType.NOUN_INFO.toString()), Verb.class);
+            String engWord = doc.getString(CardSideType.ENGLISH_NOUN.toString());
+            suggestionList.add(new ListViewItem(engWord, verb.getSwedishWord()));
+        }
+
+        return suggestionList;
     }
 
     @Override
@@ -106,37 +145,31 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if(!validateInputFields(translationType, engInput, swedInput)){
             return false;
         }
-        if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
-            if(!isNetworkAvailable()){
+        if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
+            if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingYandex(swedInput);
-            if(isNullOrEmpty(engTranslation)){
+            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
+            if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishNoun, engTranslation);
-        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
-            if(!isNetworkAvailable()){
+        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+            if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            swedTranslation = getSwedishTextUsingYandex("a " + engInput);//get both the article an noun
-            if(swedTranslation != null){
-                String[] result = swedTranslation.split(" ");
-                if(result.length != 1){
-                    article = result[0];
-                    swedTranslation = result[1];
-                } else {
-                    article = "no article"; //example, vatten. there is no en/ett vatten
-                }
-                //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
-            }
-            if(isNullOrEmpty(swedTranslation)){
+            swedTranslation = getSwedishTextUsingAzureTranslator(engInput + "! the " + engInput);//get both the article and noun
+            if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return false;
             }
+            String[] result = swedTranslation.split("!");
+            article = result[1].endsWith("n") ? "en" : "ett";
+            swedTranslation = result[0];
+            //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
         }
         return true;

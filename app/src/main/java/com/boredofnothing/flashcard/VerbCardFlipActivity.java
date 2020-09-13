@@ -1,19 +1,24 @@
 package com.boredofnothing.flashcard;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.provider.BablaTranslator;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -24,7 +29,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(
                 CardSideType.ENGLISH_VERB.toString(),
                 CardSideType.VERB_INFO.toString());
-        loadAllDocumentViaQuery(query);
+        loadAllDocumentsViaQuery(query);
     }
 
     @Override
@@ -43,7 +48,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingYandex(swedInput);
+            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English translation for: " + swedInput);
                 return false;
@@ -51,19 +56,19 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             setEditText(dialogView, R.id.englishVerb, engTranslation);
 
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
-            // first, get a translation from yandex
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            // then, use the yandex translation to get the conjugations from babel
-            String yandexInfinitiveForm = getSwedishTextUsingYandex(engInput);
-            if (isNullOrEmpty(yandexInfinitiveForm)) {
+            // first, get a translation from azure
+            String azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
+            if (isNullOrEmpty(azureInfinitiveForm)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return false;
             }
-            //BablaTranslator bablaTranslator = new BablaTranslator(getBaseContext(), yandexInfinitiveForm);
-            BablaTranslator bablaTranslator = new BablaTranslator(yandexInfinitiveForm);
+            // then, use the azure translation to get the conjugations from babel
+            //BablaTranslator bablaTranslator = new BablaTranslator(getBaseContext(), azureInfinitiveForm);
+            BablaTranslator bablaTranslator = new BablaTranslator(azureInfinitiveForm);
             try {
                 bablaTranslator.execute().get();//execute and wait until the call is done
             } catch (InterruptedException e) {
@@ -75,7 +80,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             }
 
             Verb verb = bablaTranslator.getVerb();
-            if (verb == null) {
+            if (verb == null || verb.getSwedishWord() == null) {
                 displayToast("Could not find translation for verb: " + engInput);
                 return false;
             }
@@ -87,8 +92,43 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected void showInputDialog() {
+    protected void searchCardsForWord(String word){
+        Gson gson = new Gson();
+        Document doc = null;
+        for(int i = 0; i < documents.size(); i++){
+            Document document = documents.get(i);
+            String englishWord = document.getString(CardSideType.ENGLISH_VERB.toString());
+            Verb verb = gson.fromJson(document.getString(CardSideType.VERB_INFO.toString()), Verb.class);
+            if(englishWord.contains(word) || verb.getSwedishWord().contains(word)){
+                doc = documents.get(i);
+                currentIndex = i;
+                break;
+            }
+        }
+        if(doc != null) {
+            displayToast("found card!");
+            displayNewlyAddedCard();
+        } else {
+            displayToast("no verb card found for word: " + word);
+        }
+    }
 
+    @Override
+    protected List<ListViewItem> getSearchSuggestionList() {
+        List<ListViewItem> suggestionList = new ArrayList<>();
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        for (Document doc: documents){
+            Verb verb = gson.fromJson(doc.getString(CardSideType.VERB_INFO.toString()), Verb.class);
+            String engWord = doc.getString(CardSideType.ENGLISH_VERB.toString());
+            suggestionList.add(new ListViewItem(engWord, verb.getSwedishWord()));
+        }
+
+        return suggestionList;
+    }
+
+    @Override
+    protected void showInputDialog() {
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.verb_input_layout, null);

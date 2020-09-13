@@ -40,12 +40,20 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.ListViewAdapter;
+import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.provider.AzureTranslator;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Document;
@@ -120,6 +128,48 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
 
+        MenuItem searchItem = menu.add(Menu.NONE, R.id.search_card, 1, R.string.search_card);
+        searchItem.setIcon(R.drawable.search);
+        searchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+        LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
+        SearchView searchView = searchLayout.findViewById(R.id.searchView);
+        searchItem.setActionView(searchView);
+
+        ViewGroup rootLayout = findViewById(android.R.id.content);
+        rootLayout.addView(searchLayout);
+
+        List<ListViewItem> suggestionList = getSearchSuggestionList();
+        ListViewAdapter adapter = new ListViewAdapter(suggestionList);
+
+        ListView listView = searchLayout.findViewById(R.id.searchViewList);
+        listView.setAdapter(adapter);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String word) {
+                if (!word.trim().isEmpty()) {
+                    searchCardsForWord(word.trim());
+                }
+                searchView.setIconified(true); //first call to clear search bar
+                searchView.setIconified(true); //second call to close search bar
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String word) {
+                adapter.getFilter().filter(word.trim());
+                return false;
+            }
+        });
+        searchView.setOnCloseListener(() -> {
+            listView.setVisibility(View.GONE);
+            return false;
+        });
+        searchView.setOnSearchClickListener(v -> {
+            listView.setVisibility(View.VISIBLE);
+        });
+
         MenuItem trashCardItem = menu.add(Menu.NONE, R.id.delete_card, 2, R.string.delete_card);
         trashCardItem.setIcon(R.drawable.trash);
         trashCardItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -139,8 +189,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // Navigate "up" the demo structure to the launchpad activity.
-                // See http://developer.android.com/design/patterns/navigation.html for more.
                 Log.d("DEBUG", "going back to main screen");
                 NavUtils.navigateUpTo(this, new Intent(this, MainActivity.class));
                 return true;
@@ -159,11 +207,29 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 Log.d("DEBUG", "delete card clicked");
                 showDeleteDialog();
                 return true;
+
+            case R.id.search_card:
+                Log.d("DEBUG", "search card clicked");
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    public void onClickTextView(View v){
+        int position = (int) v.getTag();
+        currentIndex = position;
+        displayNewlyAddedCard();
+
+        LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
+        SearchView searchView = searchLayout.findViewById(R.id.searchView);
+        searchView.setQuery("", false);
+        searchView.setIconified(true);
+        searchView.onActionViewCollapsed();
+    }
+
+    abstract protected void searchCardsForWord(String word);
+    abstract protected List<ListViewItem> getSearchSuggestionList();
     abstract protected void showInputDialog();
     abstract protected void showEditInputDialog();
     abstract protected void showDeleteDialog();
@@ -194,19 +260,19 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return true;
     }
 
-    protected String getSwedishTextUsingYandex(String englishText){
-        return new YandexTranslator().getTranslationFromYandex(englishText, YandexTranslator.ENG_TO_SWED);
+    protected String getSwedishTextUsingAzureTranslator(String englishText){
+        return new AzureTranslator(getBaseContext()).getTranslation(englishText, AzureTranslator.ENG_TO_SWED);
     }
 
-    protected String getEnglishTextUsingYandex(String swedishText){
-        return new YandexTranslator().getTranslationFromYandex(swedishText, YandexTranslator.SWED_TO_ENG);
+    protected String getEnglishTextUsingAzureTranslator(String swedishText){
+        return new AzureTranslator(getBaseContext()).getTranslation(swedishText, AzureTranslator.SWED_TO_ENG);
     }
 
     public boolean isNullOrEmpty(String input){
         return input == null || input.trim().isEmpty();
     }
 
-    protected void loadAllDocumentViaQuery(Query query) {
+    protected void loadAllDocumentsViaQuery(Query query) {
         try {
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();
@@ -589,6 +655,16 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 }
+
+
+// use logic if you wanna add a search thing at the MAIN menu, instead of choosing a word type first and then searching
+//     Query query = QueryBuilder
+//             .select(SelectResult.expression(Meta.id),
+//                     SelectResult.property(CardSideType.ENGLISH_ADJECTIVE.toString()),
+//                     SelectResult.property(CardSideType.ADJECTIVE_INFO.toString()))
+//             .from(DataSource.database(MainActivity.database))
+//             .where(Expression.property(CardSideType.ENGLISH_ADJECTIVE.toString()).like(Expression.string(word)));
+//     loadAllDocumentsViaQuery(query);
 
 //commenting this out for now but apply same logic when you want to add buttons at the end of the test in the FRAGMENTS
 //        @Override

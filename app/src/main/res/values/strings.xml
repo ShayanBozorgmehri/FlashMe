@@ -14,6 +14,8 @@
     <string name="delete_card">Delete card</string>
     <string name="edit_card">Edit card</string>
     <string name="search_card">Search card</string>
+    <string name="search_hint">Search hint poop</string>
+    <string name="search_label">Search label</string>
 
     <string name="english_auto_translation">Auto English</string>
     <string name="swedish_auto_translation">Auto Swedish</string>
