@@ -7,6 +7,7 @@
     <string name="title_card_flip">Card Flip</string>
     <string name="intro">Time to get flashed!</string>
     <string name="adjective_count">Adjective count: </string>
+    <string name="adverb_count">Adverb count: </string>
     <string name="noun_count">Noun count: </string>
     <string name="verb_count">Verb count: </string>
 
@@ -25,6 +26,9 @@
 
     <string name="english_adjective">Input the English adjective</string>
     <string name="swedish_adjective">Input the Swedish adjective</string>
+
+    <string name="english_adverb">Input the English adverb</string>
+    <string name="swedish_adverb">Input the Swedish adverb</string>
 
     <string name="english_noun">Input the English noun</string>
     <string name="swedish_noun">Input the Swedish noun</string>

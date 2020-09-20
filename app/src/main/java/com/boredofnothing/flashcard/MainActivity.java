@@ -114,6 +114,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Log.i("INFO", "adjectives selected");
             intent = new Intent(MainActivity.this, AdjectiveCardFlipActivity.class);
         }
+        else if (id == R.id.adverb) {
+            Log.i("INFO", "adverb selected");
+            intent = new Intent(MainActivity.this, AdverbCardFlipActivity.class);
+        }
         else {
             //just doing this so anything else wont do shit, remove this once all the menu items actually have fucntionalyiy
             DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -133,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onResume(){
         super.onResume();
         displayCardCount(CardSideType.ENGLISH_ADJECTIVE, CardSideType.ADJECTIVE_INFO, R.id.adjectiveCount, getString(R.string.adjective_count));
+        displayCardCount(CardSideType.ENGLISH_ADVERB, CardSideType.ADVERB_INFO, R.id.adverbCount, getString(R.string.adverb_count));
         displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount, getString(R.string.noun_count));
         displayCardCount(CardSideType.ENGLISH_VERB, CardSideType.VERB_INFO, R.id.verbCount, getString(R.string.verb_count));
     }

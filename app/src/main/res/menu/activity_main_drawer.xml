@@ -10,6 +10,11 @@
         android:title="Adjectives" />
 
     <item
+        android:id="@+id/adverb"
+        android:icon="@drawable/adjective_icon"
+        android:title="Adverb" />
+
+    <item
         android:id="@+id/noun"
         android:icon="@drawable/noun_icon"
         android:title="Nouns" />
