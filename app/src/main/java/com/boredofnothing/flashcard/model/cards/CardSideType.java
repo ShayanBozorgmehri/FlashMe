@@ -6,6 +6,8 @@ public enum CardSideType {
     ENGLISH_ADJECTIVE("english adjective"),
     ADVERB_INFO("adverb info"),
     ENGLISH_ADVERB("english adverb"),
+    PHRASE_INFO("phrase info"),
+    ENGLISH_PHRASE("english phrase"),
     NOUN_INFO("noun info"),
     ENGLISH_NOUN("english noun"),
     VERB_INFO("verb info"),

@@ -117,6 +117,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         else if (id == R.id.adverb) {
             Log.i("INFO", "adverb selected");
             intent = new Intent(MainActivity.this, AdverbCardFlipActivity.class);
+        } else if (id == R.id.phrase) {
+            Log.i("INFO", "phrase selected");
+            intent = new Intent(MainActivity.this, PhraseCardFlipActivity.class);
         }
         else {
             //just doing this so anything else wont do shit, remove this once all the menu items actually have fucntionalyiy
@@ -139,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         displayCardCount(CardSideType.ENGLISH_ADJECTIVE, CardSideType.ADJECTIVE_INFO, R.id.adjectiveCount, getString(R.string.adjective_count));
         displayCardCount(CardSideType.ENGLISH_ADVERB, CardSideType.ADVERB_INFO, R.id.adverbCount, getString(R.string.adverb_count));
         displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount, getString(R.string.noun_count));
+        displayCardCount(CardSideType.ENGLISH_PHRASE, CardSideType.PHRASE_INFO, R.id.phraseCount, getString(R.string.phrase_count));
         displayCardCount(CardSideType.ENGLISH_VERB, CardSideType.VERB_INFO, R.id.verbCount, getString(R.string.verb_count));
     }
 

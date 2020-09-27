@@ -20,6 +20,11 @@
         android:title="Nouns" />
 
     <item
+        android:id="@+id/phrase"
+        android:icon="@drawable/p_icon"
+        android:title="Phrase" />
+
+    <item
         android:id="@+id/verb"
         android:icon="@drawable/verb_icon"
         android:title="Verbs" />

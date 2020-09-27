@@ -9,6 +9,7 @@
     <string name="adjective_count">Adjective count: </string>
     <string name="adverb_count">Adverb count: </string>
     <string name="noun_count">Noun count: </string>
+    <string name="phrase_count">Phrase count: </string>
     <string name="verb_count">Verb count: </string>
 
     <string name="create_card">Create card</string>
@@ -29,6 +30,9 @@
 
     <string name="english_adverb">Input the English adverb</string>
     <string name="swedish_adverb">Input the Swedish adverb</string>
+
+    <string name="english_phrase">Input the English phrase</string>
+    <string name="swedish_phrase">Input the Swedish phrase</string>
 
     <string name="english_noun">Input the English noun</string>
     <string name="swedish_noun">Input the Swedish noun</string>

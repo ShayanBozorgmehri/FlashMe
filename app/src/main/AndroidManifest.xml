@@ -62,6 +62,18 @@
 
         </activity>
 
+        <activity android:name=".PhraseCardFlipActivity"
+            android:label="@string/title_card_flip"
+            android:configChanges="orientation|screenSize"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/DarkTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data android:name="android.app.default_searchable" android:value=".SearchResultsActivity" />
+
+        </activity>
+
         <activity android:name=".NounCardFlipActivity"
             android:label="@string/title_card_flip"
             android:configChanges="orientation|screenSize"
