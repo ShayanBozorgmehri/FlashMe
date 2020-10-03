@@ -261,11 +261,19 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     protected String getSwedishTextUsingAzureTranslator(String englishText){
-        return new AzureTranslator(getBaseContext()).getTranslation(englishText, AzureTranslator.ENG_TO_SWED);
+        return new AzureTranslator(getBaseContext()).getTranslation(englishText, AzureTranslator.LanguageDirection.ENG_TO_SWED);
     }
 
     protected String getEnglishTextUsingAzureTranslator(String swedishText){
-        return new AzureTranslator(getBaseContext()).getTranslation(swedishText, AzureTranslator.SWED_TO_ENG);
+        return new AzureTranslator(getBaseContext()).getTranslation(swedishText, AzureTranslator.LanguageDirection.SWED_TO_ENG);
+    }
+
+    protected String getSwedishTextUsingAzureDictionaryLookup(String englishText, PartOfSpeechTag posTag){
+        return new AzureTranslator(getBaseContext()).getDictionaryLookup(englishText, posTag, AzureTranslator.LanguageDirection.ENG_TO_SWED);
+    }
+
+    protected String getEnglishTextUsingAzureDictionaryLookup(String swedishText, PartOfSpeechTag posTag){
+        return new AzureTranslator(getBaseContext()).getDictionaryLookup(swedishText, posTag, AzureTranslator.LanguageDirection.SWED_TO_ENG);
     }
 
     public boolean isNullOrEmpty(String input){

@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard.model;
+package com.boredofnothing.flashcard.model.azureData.translation;
 
 import java.util.List;
 

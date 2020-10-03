@@ -3,10 +3,14 @@ package com.boredofnothing.flashcard.provider;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
 import android.widget.Toast;
 
 import com.boredofnothing.flashcard.exception.AzureTranslateException;
-import com.boredofnothing.flashcard.model.AzureTranslateResponse;
+import com.boredofnothing.flashcard.model.azureData.dictionary.AzureDictionaryResponse;
+import com.boredofnothing.flashcard.model.azureData.dictionary.DictionaryTranslation;
+import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
+import com.boredofnothing.flashcard.model.azureData.translation.AzureTranslateResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -16,70 +20,163 @@ import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.SneakyThrows;
 
-public class AzureTranslator extends AsyncTask<String, String, String> {
+public class AzureTranslator {
 
-    private static final String SUBSCRIPTION_KEY = "eb7ecc03dd80409c8e462e6b4e3ec0dd";
-    private static final String SUBSCRIPTION_REGION = "northeurope";
-    private static final String ENDPOINT = "https://api.cognitive.microsofttranslator.com";
-    private static final String BASE_URL = ENDPOINT + "/translate?api-version=3.0";
-    public static final String ENG_TO_SWED = "&from=en&to=sv";
-    public static final String SWED_TO_ENG = "&from=sv&to=en";
-
-    private final OkHttpClient okHttpClient;
+    private static Pair<String, String> SUBSCRIPTION_KEY_PAIR = Pair.create("Ocp-Apim-Subscription-Key", "eb7ecc03dd80409c8e462e6b4e3ec0dd");
+    private static Pair<String, String> SUBSCRIPTION_REGION_PAIR = Pair.create("Ocp-Apim-Subscription-Region", "northeurope");
+    private static Pair<String, String> CONTENT_TYPE_PAIR = Pair.create("Content-type", "application/json");
     private final Context context;
-
 
     public AzureTranslator(Context context) {
         this.context = context;
-        okHttpClient = new OkHttpClient();
-        okHttpClient.setProtocols(Arrays.asList(Protocol.HTTP_1_1));
     }
 
-    public String getTranslation(String word, String translationType) {
+    public String getTranslation(String word, LanguageDirection languageDirection) {
         try {
-            return execute(word, translationType).get().toLowerCase();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e("ERROR", "Something went wrong during Azure translation....:" + e);
+            AzureTranslateResponse translationResponse = new TranslationTask().execute(word, languageDirection.name()).get();
+            if (!translationResponse.getTranslations().isEmpty()) {
+                return translationResponse.getTranslations().get(0).getText().toLowerCase();
+            }
         } catch (AzureTranslateException e){
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (Exception e){
+            Toast.makeText(context, "Unexpected error occurred for Azure Translation", Toast.LENGTH_SHORT).show();
+            Log.e("ERROR", "Unexpected error occurred for Azure Translation: " + e);
         }
         return null;
     }
 
-    @SneakyThrows
-    protected String doInBackground(String... params) {
+    public String getDictionaryLookup(String word, PartOfSpeechTag posTag, LanguageDirection languageDirection) {
+        try {
+            AzureDictionaryResponse dictionaryResponse = new DictionaryTask().execute(word, languageDirection.name()).get();
+            List<DictionaryTranslation> translations = dictionaryResponse.getTranslations().stream()
+                    .filter(t -> t.getPosTag() == posTag)
+                    .sorted((f1, f2) -> Float.compare(f2.getConfidence(), f1.getConfidence()))
+                    .collect(Collectors.toList());
 
-        String word = params[0];
-        String translationType = params[1];
-
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType,
-                "[{\n\t\"Text\": \"" + word + "\"\n}]");
-        Request request = new Request.Builder()
-                .url(BASE_URL + translationType)
-                .post(body)
-                .addHeader("Ocp-Apim-Subscription-Key", SUBSCRIPTION_KEY)
-                .addHeader("Ocp-Apim-Subscription-Region", SUBSCRIPTION_REGION)
-                .addHeader("Content-type", "application/json")
-                .build();
-
-        Response response = okHttpClient.newCall(request)
-                .execute();
-        if (!response.isSuccessful()) {
-            throw new AzureTranslateException("Failed to get translations from Azure Translator API, due to: "
-                    + response.message());
+            if (!translations.isEmpty()) {
+                return translations.get(0).getNormalizedTarget();
+            }
+        } catch (AzureTranslateException e){
+            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (Exception e){
+            Toast.makeText(context, "Unexpected error occurred for Azure Dictionary lookup", Toast.LENGTH_SHORT).show();
+            Log.e("ERROR", "Unexpected error occurred for Azure Dictionary lookup: " + e);
         }
-        String json = response.body().string();
-        // remove the first and last characters, which are brackets, for ObjectMapper
-        json = json.substring(1, json.length() - 1);
+        return null;
+    }
 
-        // this will only have ONE translation
-        AzureTranslateResponse r = new ObjectMapper().readValue(json, AzureTranslateResponse.class);
+    private static class TranslationTask extends AsyncTask<String, String, AzureTranslateResponse> {
 
-        return r.getTranslations().get(0).getText();
+        private final OkHttpClient okHttpClient;
+
+        TranslationTask() {
+            okHttpClient = new OkHttpClient();
+            okHttpClient.setProtocols(Arrays.asList(Protocol.HTTP_1_1));
+        }
+
+        @SneakyThrows
+        protected AzureTranslateResponse doInBackground(String... params) {
+
+            String word = params[0];
+            LanguageDirection languageDirection = LanguageDirection.valueOf(params[1]);
+
+            MediaType mediaType = MediaType.parse("application/json");
+            RequestBody body = RequestBody.create(mediaType,
+                    "[{\n\t\"Text\": \"" + word + "\"\n}]");
+
+            Request request = new Request.Builder()
+                    .url(TranslatorType.TRANSLATION.getUrl() + languageDirection.getDirectionParam())
+                    .post(body)
+                    .addHeader(SUBSCRIPTION_KEY_PAIR.first, SUBSCRIPTION_KEY_PAIR.second)
+                    .addHeader(SUBSCRIPTION_REGION_PAIR.first, SUBSCRIPTION_REGION_PAIR.second)
+                    .addHeader(CONTENT_TYPE_PAIR.first, CONTENT_TYPE_PAIR.second)
+                    .build();
+
+            Response response = okHttpClient.newCall(request)
+                    .execute();
+            if (!response.isSuccessful()) {
+                throw new AzureTranslateException("Failed to get translations from Azure Translator API, due to: "
+                        + response.message());
+            }
+            String json = response.body().string();
+            // remove the first and last characters, which are brackets, for ObjectMapper
+            json = json.substring(1, json.length() - 1);
+
+            return new ObjectMapper().readValue(json, AzureTranslateResponse.class);
+        }
+    }
+
+    private static class DictionaryTask extends AsyncTask<String, String, AzureDictionaryResponse> {
+
+        private final OkHttpClient okHttpClient;
+
+        DictionaryTask() {
+            okHttpClient = new OkHttpClient();
+            okHttpClient.setProtocols(Arrays.asList(Protocol.HTTP_1_1));
+        }
+
+        @SneakyThrows
+        protected AzureDictionaryResponse doInBackground(String... params) {
+
+            String word = params[0];
+            LanguageDirection languageDirection = LanguageDirection.valueOf(params[1]);
+
+            MediaType mediaType = MediaType.parse("application/json");
+            RequestBody body = RequestBody.create(mediaType,
+                    "[{\n\t\"Text\": \"" + word + "\"\n}]");
+
+            Request request = new Request.Builder()
+                    .url(TranslatorType.DICTIONARY.getUrl() + languageDirection.getDirectionParam())
+                    .post(body)
+                    .addHeader(SUBSCRIPTION_KEY_PAIR.first, SUBSCRIPTION_KEY_PAIR.second)
+                    .addHeader(SUBSCRIPTION_REGION_PAIR.first, SUBSCRIPTION_REGION_PAIR.second)
+                    .addHeader(CONTENT_TYPE_PAIR.first, CONTENT_TYPE_PAIR.second)
+                    .build();
+
+            Response response = okHttpClient.newCall(request)
+                    .execute();
+            if (!response.isSuccessful()) {
+                throw new AzureTranslateException("Failed to get dictionary lookup from Azure Translator API, due to: "
+                        + response.message());
+            }
+            String json = response.body().string();
+            // remove the first and last characters, which are brackets, for ObjectMapper
+            json = json.substring(1, json.length() - 1);
+
+            return new ObjectMapper().readValue(json, AzureDictionaryResponse.class);
+        }
+    }
+
+    @AllArgsConstructor
+    private enum TranslatorType {
+
+        TRANSLATION(getBaseEndpoint() + "/translate?api-version=3.0"),
+        DICTIONARY(getBaseEndpoint() + "/dictionary/lookup?api-version=3.0");
+
+        @Getter
+        private final String url;
+
+        private static String getBaseEndpoint() {
+            return "https://api.cognitive.microsofttranslator.com";
+        }
+
+    }
+
+    @AllArgsConstructor
+    public enum LanguageDirection {
+
+        ENG_TO_SWED("&from=en&to=sv"),
+        SWED_TO_ENG("&from=sv&to=en");
+
+        @Getter
+        private final String directionParam;
     }
 }

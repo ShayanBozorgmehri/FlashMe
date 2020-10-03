@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adjective;
 import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -131,28 +132,28 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         String engTranslation;
         String swedTranslation;
 
-        if(!validateInputFields(translationType, engInput, swedInput)){
+        if (!validateInputFields(translationType, engInput, swedInput)) {
             return false;
         }
-        if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
-            if(!isNetworkAvailable()){
+        if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
+            if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
-            if(isNullOrEmpty(engTranslation)){
-                displayToast("Could not find English translation for: " + swedInput);
+            engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
+            if (isNullOrEmpty(engTranslation)) {
+                displayToast("Could not find English adjective translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishAdjective, engTranslation);
-        } else if(translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
-            if(!isNetworkAvailable()){
+        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+            if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return false;
             }
-            swedTranslation = getSwedishTextUsingAzureTranslator(engInput);//could fiddle with this here by making it a sentence too to get the context
-            if(isNullOrEmpty(swedTranslation)){
-                displayToast("Could not find Swedish translation for: " + engInput);
+            swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADJ);
+            if (isNullOrEmpty(swedTranslation)) {
+                displayToast("Could not find Swedish adjective translation for: " + engInput);
                 return false;
             }
             setEditText(dialogView, R.id.swedishAdjective, swedTranslation);

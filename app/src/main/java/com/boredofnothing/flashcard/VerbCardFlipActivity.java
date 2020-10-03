@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.cards.Verb;
@@ -48,9 +49,9 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
+            engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.VERB);
             if (isNullOrEmpty(engTranslation)) {
-                displayToast("Could not find English translation for: " + swedInput);
+                displayToast("Could not find English verb translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishVerb, engTranslation);
@@ -61,9 +62,9 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 return false;
             }
             // first, get a translation from azure
-            String azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
+            String azureInfinitiveForm = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
             if (isNullOrEmpty(azureInfinitiveForm)) {
-                displayToast("Could not find Swedish translation for: " + engInput);
+                displayToast("Could not find Swedish verb translation for: " + engInput);
                 return false;
             }
             // then, use the azure translation to get the conjugations from babel

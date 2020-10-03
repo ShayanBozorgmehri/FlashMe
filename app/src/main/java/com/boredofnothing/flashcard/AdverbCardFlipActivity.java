@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adverb;
 import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.cards.Verb;
@@ -140,9 +141,9 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return false;
             }
-            engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
+            engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADV);
             if (isNullOrEmpty(engTranslation)) {
-                displayToast("Could not find English translation for: " + swedInput);
+                displayToast("Could not find English adverb translation for: " + swedInput);
                 return false;
             }
             setEditText(dialogView, R.id.englishAdverb, engTranslation);
@@ -151,9 +152,9 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return false;
             }
-            swedTranslation = getSwedishTextUsingAzureTranslator(engInput);//could fiddle with this here by making it a sentence too to get the context
+            swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
             if (isNullOrEmpty(swedTranslation)) {
-                displayToast("Could not find Swedish translation for: " + engInput);
+                displayToast("Could not find Swedish adverb translation for: " + engInput);
                 return false;
             }
             setEditText(dialogView, R.id.swedishAdverb, swedTranslation);
