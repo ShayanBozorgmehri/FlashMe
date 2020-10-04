@@ -465,8 +465,9 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                     final int SWIPE_MAX_OFF_PATH = 250;
                     final int SWIPE_THRESHOLD_VELOCITY = 200;
                     try {
-                        if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
+                        if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH || documents.isEmpty()){
                             return false;
+                        }
                         if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "*************Right to Left");
@@ -552,9 +553,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            Document document;
-            if (currentIndex != -1 && (document = documents.get(currentIndex)) != null) {
-
+            if (!documents.isEmpty()) {
+                Document document = documents.get(currentIndex);
                 String cardType = getArguments().getString("card_type");
 
                 if (CardSideType.fromValue(cardType) == CardSideType.UNKNOWN_CARD_TYPE) {
@@ -606,8 +606,9 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                     final int SWIPE_MAX_OFF_PATH = 250;
                     final int SWIPE_THRESHOLD_VELOCITY = 200;
                     try {
-                        if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
+                        if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH || documents.isEmpty()){
                             return false;
+                        }
                         if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
                                 && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                             Log.i("INFO", "*************Right to Left");
@@ -662,9 +663,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            Document document;
-            if (currentIndex != -1 && (document = documents.get(currentIndex)) != null) {
-
+            if (!documents.isEmpty()) {
+                Document document = documents.get(currentIndex);
                 String infoType = getArguments().getString("info_type");
 
                 if (CardSideType.fromValue(infoType) == CardSideType.UNKNOWN_CARD_TYPE) {

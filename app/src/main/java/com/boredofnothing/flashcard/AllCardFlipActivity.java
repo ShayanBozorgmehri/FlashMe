@@ -34,7 +34,6 @@ import java.util.Map;
 
 public class AllCardFlipActivity extends CardFlipActivity {
 
-
     @Override
     protected void loadAllDocuments() {
         Query query = QueryBuilder
