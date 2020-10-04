@@ -16,12 +16,16 @@ import android.widget.TextView;
 import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.IndexBuilder;
+import com.couchbase.lite.Meta;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.ValueIndexItem;
 
 import java.util.List;
@@ -120,6 +124,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.phrase) {
             Log.i("INFO", "phrase selected");
             intent = new Intent(MainActivity.this, PhraseCardFlipActivity.class);
+        } else if (id == R.id.allCards) {
+            Log.i("INFO", "all cards selected");
+            intent = new Intent(MainActivity.this, AllCardFlipActivity.class);
         }
         else {
             //just doing this so anything else wont do shit, remove this once all the menu items actually have fucntionalyiy
@@ -139,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onResume(){
         super.onResume();
+        displayCardCount(R.id.allCardCount, getString(R.string.all_card_count));
         displayCardCount(CardSideType.ENGLISH_ADJECTIVE, CardSideType.ADJECTIVE_INFO, R.id.adjectiveCount, getString(R.string.adjective_count));
         displayCardCount(CardSideType.ENGLISH_ADVERB, CardSideType.ADVERB_INFO, R.id.adverbCount, getString(R.string.adverb_count));
         displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount, getString(R.string.noun_count));
@@ -150,6 +158,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Query query = CardFlipActivity.createQueryForCardTypeWithNonNullOrMissingValues(
                 wordType.toString(),
                 infoType.toString());
+        try {
+            ResultSet resultSet = query.execute();
+            List<Result> results = resultSet.allResults();
+            TextView tv = findViewById(tvId);
+            tv.setText(String.format(countPrefix + results.size()));
+        } catch (CouchbaseLiteException e) {
+            Log.e("ERROR", "Failed to get count due to: " + e);
+            e.printStackTrace();
+        }
+    }
+
+    private void displayCardCount(int tvId, String countPrefix) {
+        Query query = QueryBuilder
+                .select(SelectResult.all(), SelectResult.expression(Meta.id))
+                .from(DataSource.database(MainActivity.database));
         try {
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();

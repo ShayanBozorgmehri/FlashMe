@@ -34,13 +34,11 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void searchCardsForWord(String word){
-        Gson gson = new Gson();
         Document doc = null;
         for(int i = 0; i < documents.size(); i++){
             Document document = documents.get(i);
-            String englishWord = document.getString(CardSideType.ENGLISH_ADJECTIVE.toString());
-            Adjective adj = gson.fromJson(document.getString(CardSideType.ADJECTIVE_INFO.toString()), Adjective.class);
-            if(englishWord.contains(word) || adj.getSwedishWord().contains(word)){
+            Adjective adj = Adjective.createAdjectiveFromDocument(document);
+            if(adj.getEnglishWord().contains(word) || adj.getSwedishWord().contains(word)){
                 doc = documents.get(i);
                 currentIndex = i;
                 break;
@@ -59,11 +57,9 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     protected List<ListViewItem> getSearchSuggestionList() {
         List<ListViewItem> suggestionList = new ArrayList<>();
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (Document doc: documents){
-            Verb verb = gson.fromJson(doc.getString(CardSideType.ADJECTIVE_INFO.toString()), Verb.class);
-            String engWord = doc.getString(CardSideType.ENGLISH_ADJECTIVE.toString());
-            suggestionList.add(new ListViewItem(engWord, verb.getSwedishWord()));
+            Adjective adj = Adjective.createAdjectiveFromDocument(doc);
+            suggestionList.add(new ListViewItem(adj.getEnglishWord(), adj.getSwedishWord()));
         }
 
         return suggestionList;
@@ -111,10 +107,8 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         });
 
         Document document = documents.get(currentIndex);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Adjective adjective = gson.fromJson(document.getString(CardSideType.ADJECTIVE_INFO.toString()), Adjective.class);
-        //TODO: find out why the next line wont work when setting via adjective.getEnglishWord()...
-        ((EditText)dialogView.findViewById(R.id.englishAdjective)).setText(document.getString(CardSideType.ENGLISH_ADJECTIVE.toString()));
+        Adjective adjective = Adjective.createAdjectiveFromDocument(document);
+        ((EditText)dialogView.findViewById(R.id.englishAdjective)).setText(adjective.getEnglishWord());
         ((EditText)dialogView.findViewById(R.id.swedishAdjective)).setText(adjective.getSwedishWord());
 
         dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit adjective card."));
@@ -170,7 +164,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
         String eng = getEditText(dialogView, R.id.englishAdjective);
         String swed = getEditText(dialogView, R.id.swedishAdjective);
-        MutableDocument mutableDocument = new MutableDocument();
+        MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Adjective adjective = new Adjective(eng, swed);

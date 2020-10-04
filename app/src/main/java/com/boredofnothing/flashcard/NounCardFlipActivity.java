@@ -11,7 +11,6 @@ import com.boredofnothing.flashcard.model.cards.Article;
 import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.cards.Noun;
-import com.boredofnothing.flashcard.model.cards.Verb;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -37,19 +36,17 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void searchCardsForWord(String word){
-        Gson gson = new Gson();
         Document doc = null;
         for(int i = 0; i < documents.size(); i++){
             Document document = documents.get(i);
-            String englishWord = document.getString(CardSideType.ENGLISH_NOUN.toString());
-            Noun noun = gson.fromJson(document.getString(CardSideType.NOUN_INFO.toString()), Noun.class);
-            if(englishWord.contains(word) || noun.getSwedishWord().contains(word)){
+            Noun noun = Noun.createNounFromDocument(document);
+            if(noun.getEnglishWord().contains(word) || noun.getSwedishWord().contains(word)){
                 doc = documents.get(i);
                 currentIndex = i;
                 break;
             }
         }
-        if(doc != null) {
+        if (doc != null) {
             displayToast("found card!");
             displayNewlyAddedCard();
         } else {
@@ -62,11 +59,9 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
         List<ListViewItem> suggestionList = new ArrayList<>();
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (Document doc: documents){
-            Verb verb = gson.fromJson(doc.getString(CardSideType.NOUN_INFO.toString()), Verb.class);
-            String engWord = doc.getString(CardSideType.ENGLISH_NOUN.toString());
-            suggestionList.add(new ListViewItem(engWord, verb.getSwedishWord()));
+            Noun noun = Noun.createNounFromDocument(doc);
+            suggestionList.add(new ListViewItem(noun.getEnglishWord(), noun.getSwedishWord()));
         }
 
         return suggestionList;
@@ -114,10 +109,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         });
 
         Document document = documents.get(currentIndex);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Noun noun = gson.fromJson(document.getString(CardSideType.NOUN_INFO.toString()), Noun.class);
-        //TODO: find out why the next line wont work when setting via noun.getEnglishWord()...
-        ((EditText)dialogView.findViewById(R.id.englishNoun)).setText(document.getString(CardSideType.ENGLISH_NOUN.toString()));
+        Noun noun = Noun.createNounFromDocument(document);
+        ((EditText)dialogView.findViewById(R.id.englishNoun)).setText(noun.getEnglishWord());
         ((EditText)dialogView.findViewById(R.id.swedishNoun)).setText(noun.getSwedishWord());
         if(Article.NO_ARTICLE.getValue().equals(noun.getArticle())){
             ((RadioButton)dialogView.findViewById(R.id.no_article)).setChecked(true);
@@ -189,7 +182,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if(getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.english_auto_translation))){
             article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         }
-        MutableDocument mutableDocument = new MutableDocument();
+        MutableDocument mutableDocument = new MutableDocument(engTranslation + "_" + swedTranslation);
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Noun noun = new Noun(engTranslation, swedTranslation, article);

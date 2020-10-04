@@ -35,13 +35,11 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void searchCardsForWord(String word) {
-        Gson gson = new Gson();
         Document doc = null;
         for (int i = 0; i < documents.size(); i++) {
             Document document = documents.get(i);
-            String englishWord = document.getString(CardSideType.ENGLISH_ADVERB.toString());
-            Adverb adverb = gson.fromJson(document.getString(CardSideType.ADVERB_INFO.toString()), Adverb.class);
-            if (englishWord.contains(word) || adverb.getSwedishWord().contains(word)) {
+            Adverb adverb = Adverb.createAdverbFromDocument(document);
+            if (adverb.getEnglishWord().contains(word) || adverb.getSwedishWord().contains(word)) {
                 doc = documents.get(i);
                 currentIndex = i;
                 break;
@@ -60,11 +58,9 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
     protected List<ListViewItem> getSearchSuggestionList() {
         List<ListViewItem> suggestionList = new ArrayList<>();
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (Document doc : documents) {
-            Verb verb = gson.fromJson(doc.getString(CardSideType.ADVERB_INFO.toString()), Verb.class);
-            String engWord = doc.getString(CardSideType.ENGLISH_ADVERB.toString());
-            suggestionList.add(new ListViewItem(engWord, verb.getSwedishWord()));
+            Adverb adverb = Adverb.createAdverbFromDocument(doc);
+            suggestionList.add(new ListViewItem(adverb.getEnglishWord(), adverb.getSwedishWord()));
         }
 
         return suggestionList;
@@ -112,10 +108,8 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         });
 
         Document document = documents.get(currentIndex);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Adverb adverb = gson.fromJson(document.getString(CardSideType.ADVERB_INFO.toString()), Adverb.class);
-        //TODO: find out why the next line wont work when setting via adverb.getEnglishWord()...
-        ((EditText) dialogView.findViewById(R.id.englishAdverb)).setText(document.getString(CardSideType.ENGLISH_ADVERB.toString()));
+        Adverb adverb = Adverb.createAdverbFromDocument(document);
+        ((EditText) dialogView.findViewById(R.id.englishAdverb)).setText(adverb.getEnglishWord());
         ((EditText) dialogView.findViewById(R.id.swedishAdverb)).setText(adverb.getSwedishWord());
 
         dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit adverb card."));
@@ -171,7 +165,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
 
         String eng = getEditText(dialogView, R.id.englishAdverb);
         String swed = getEditText(dialogView, R.id.swedishAdverb);
-        MutableDocument mutableDocument = new MutableDocument();
+        MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Adverb adverb = new Adverb(eng, swed);

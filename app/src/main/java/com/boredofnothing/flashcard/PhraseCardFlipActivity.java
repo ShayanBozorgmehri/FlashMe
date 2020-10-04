@@ -6,10 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
-import com.boredofnothing.flashcard.CardFlipActivity;
-import com.boredofnothing.flashcard.R;
 import com.boredofnothing.flashcard.model.ListViewItem;
-import com.boredofnothing.flashcard.model.cards.Phrase;
 import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.cards.Phrase;
 import com.couchbase.lite.Document;
@@ -36,13 +33,11 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void searchCardsForWord(String word) {
-        Gson gson = new Gson();
         Document doc = null;
         for (int i = 0; i < documents.size(); i++) {
             Document document = documents.get(i);
-            String englishWord = document.getString(CardSideType.ENGLISH_PHRASE.toString());
-            Phrase phrase = gson.fromJson(document.getString(CardSideType.PHRASE_INFO.toString()), Phrase.class);
-            if (englishWord.contains(word) || phrase.getSwedishWord().contains(word)) {
+            Phrase phrase = Phrase.createPhraseFromDocument(document);
+            if (phrase.getEnglishWord().contains(word) || phrase.getSwedishWord().contains(word)) {
                 doc = documents.get(i);
                 currentIndex = i;
                 break;
@@ -61,11 +56,9 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
     protected List<ListViewItem> getSearchSuggestionList() {
         List<ListViewItem> suggestionList = new ArrayList<>();
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (Document doc : documents) {
-            Phrase phrase = gson.fromJson(doc.getString(CardSideType.PHRASE_INFO.toString()), Phrase.class);
-            String engWord = doc.getString(CardSideType.ENGLISH_PHRASE.toString());
-            suggestionList.add(new ListViewItem(engWord, phrase.getSwedishWord()));
+            Phrase phrase = Phrase.createPhraseFromDocument(doc);
+            suggestionList.add(new ListViewItem(phrase.getEnglishWord(), phrase.getSwedishWord()));
         }
 
         return suggestionList;
@@ -113,10 +106,8 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         });
 
         Document document = documents.get(currentIndex);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Phrase phrase = gson.fromJson(document.getString(CardSideType.PHRASE_INFO.toString()), Phrase.class);
-        //TODO: find out why the next line wont work when setting via phrase.getEnglishWord()...
-        ((EditText) dialogView.findViewById(R.id.englishPhrase)).setText(document.getString(CardSideType.ENGLISH_PHRASE.toString()));
+        Phrase phrase = Phrase.createPhraseFromDocument(document);
+        ((EditText) dialogView.findViewById(R.id.englishPhrase)).setText(phrase.getEnglishWord());
         ((EditText) dialogView.findViewById(R.id.swedishPhrase)).setText(phrase.getSwedishWord());
 
         dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit phrase card."));
@@ -172,7 +163,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
 
         String eng = getEditText(dialogView, R.id.englishPhrase);
         String swed = getEditText(dialogView, R.id.swedishPhrase);
-        MutableDocument mutableDocument = new MutableDocument();
+        MutableDocument mutableDocument = new MutableDocument(eng);
         Map<String, Object> map = new HashMap<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Phrase phrase = new Phrase(eng, swed);

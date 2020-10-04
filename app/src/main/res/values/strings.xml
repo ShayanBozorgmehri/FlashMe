@@ -6,6 +6,7 @@
 
     <string name="title_card_flip">Card Flip</string>
     <string name="intro">Time to get flashed!</string>
+    <string name="all_card_count">All card count: </string>
     <string name="adjective_count">Adjective count: </string>
     <string name="adverb_count">Adverb count: </string>
     <string name="noun_count">Noun count: </string>

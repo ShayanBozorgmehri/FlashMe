@@ -1,5 +1,8 @@
 package com.boredofnothing.flashcard.model.cards;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public enum CardSideType {
 
     ADJECTIVE_INFO("adjective info"),
@@ -12,25 +15,21 @@ public enum CardSideType {
     ENGLISH_NOUN("english noun"),
     VERB_INFO("verb info"),
     ENGLISH_VERB("english verb"),
-    INVALID_CARD_SIDE("invalid card side");
+    UNKNOWN_CARD_TYPE("unknown card type");
 
-    private String value;
-
-    CardSideType(String value) {
-        this.value = value;
-    }
+    private final String value;
 
     @Override
     public String toString() {
         return value;
     }
 
-    public static String getEnumByConstructor(String value){
-        for(CardSideType cardSideType: CardSideType.values()){
-            if(cardSideType.toString().equals(value)){
-                return cardSideType.toString();
+    public static CardSideType fromValue(String value){
+        for (CardSideType cardSideType: CardSideType.values()){
+            if (cardSideType.toString().equals(value)){
+                return cardSideType;
             }
         }
-        return INVALID_CARD_SIDE.toString();
+        return UNKNOWN_CARD_TYPE;
     }
 }

@@ -50,6 +50,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.ListViewAdapter;
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -109,7 +110,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             Bundle args = new Bundle();
             String navigationItem = getIntent().getStringExtra("selected_navigation_item");
             args.putString("navigation_item", navigationItem);
-            args.putString("card_type", CardSideType.getEnumByConstructor("english " + navigationItem));
+            args.putString("card_type", CardSideType.fromValue("english " + navigationItem).toString());
             frontCardFragment.setArguments(args);
 
             getFragmentManager()
@@ -291,7 +292,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 Log.d("DEBUG", "DB is NOT empty: " + results.size());
                 for(Result res: results){
                     // Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
-                    documents.add(MainActivity.database.getDocument(res.getString(0)));
+                    documents.add(MainActivity.database.getDocument(res.getString("id")));
                 }
                 Collections.shuffle(documents);
                 currentIndex = 0;
@@ -408,7 +409,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             Bundle args = new Bundle();
             String navigationItem = getIntent().getStringExtra("selected_navigation_item");
             args.putString("navigation_item", navigationItem);
-            args.putString("card_type", CardSideType.getEnumByConstructor("english " + navigationItem));
+            args.putString("card_type", CardSideType.fromValue("english " + navigationItem).toString());
             FrontCardFragment frontCardFragment = new FrontCardFragment();
             frontCardFragment.setArguments(args);
             getFragmentManager()
@@ -519,7 +520,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         Bundle args = new Bundle();
                         String navigationItem = getArguments().getString("navigation_item");
                         args.putString("navigation_item", navigationItem);
-                        args.putString("card_type", CardSideType.getEnumByConstructor(navigationItem + " info"));
+                        args.putString("info_type", CardSideType.fromValue(navigationItem + " info").toString());
                         backCardFragment.setArguments(args);
 
                         getFragmentManager()
@@ -551,15 +552,23 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            if(currentIndex != -1 && documents.get(currentIndex) != null) {
-                ((TextView) getView().findViewById(R.id.frontText))
-                        .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
+            Document document;
+            if (currentIndex != -1 && (document = documents.get(currentIndex)) != null) {
+
+                String cardType = getArguments().getString("card_type");
+
+                if (CardSideType.fromValue(cardType) == CardSideType.UNKNOWN_CARD_TYPE) {
+                    cardType = document.getKeys().get(0).contains("english")
+                            ? document.getKeys().get(0)
+                            : document.getKeys().get(1);
+                }
+                ((TextView) getView().findViewById(R.id.frontText)).setText(document.getString(cardType));
+
             } else {
                 ((TextView) getView().findViewById(R.id.frontText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");
             }
         }
-
     }
     /**
      * A fragment representing the back of the card.
@@ -570,7 +579,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             BackCardFragment clone = new BackCardFragment();
             Bundle args = new Bundle();
             args.putString("navigation_item", backCardFragment.getArguments().getString("navigation_item"));
-            args.putString("card_type", backCardFragment.getArguments().getString("card_type"));
+            args.putString("info_type", backCardFragment.getArguments().getString("info_type"));
             clone.setArguments(args);
             return clone;
         }
@@ -653,9 +662,18 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
 
-            if(currentIndex != -1 && documents.get(currentIndex) != null) {
-                ((TextView) getView().findViewById(R.id.backText))
-                        .setText(documents.get(currentIndex).getString(getArguments().getString("card_type")));
+            Document document;
+            if (currentIndex != -1 && (document = documents.get(currentIndex)) != null) {
+
+                String infoType = getArguments().getString("info_type");
+
+                if (CardSideType.fromValue(infoType) == CardSideType.UNKNOWN_CARD_TYPE) {
+                    infoType = document.getKeys().get(0).contains("info")
+                                ? document.getKeys().get(0)
+                                : document.getKeys().get(1);
+                }
+                ((TextView) getView().findViewById(R.id.backText)).setText(document.getString(infoType));
+
             } else {
                 ((TextView) getView().findViewById(R.id.backText))
                         .setText("DB is empty for " + getArguments().getString("navigation_item") + " cards");

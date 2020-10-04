@@ -5,6 +5,11 @@
 
 
     <item
+        android:id="@+id/allCards"
+        android:icon="@drawable/adjective_icon"
+        android:title="All cards" />
+
+    <item
         android:id="@+id/adjective"
         android:icon="@drawable/adjective_icon"
         android:title="Adjectives" />

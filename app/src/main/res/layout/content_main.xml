@@ -19,7 +19,7 @@
         app:layout_constraintVertical_bias="0.185" />
 
     <TextView
-        android:id="@+id/adjectiveCount"
+        android:id="@+id/allCardCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -30,7 +30,7 @@
         app:layout_constraintVertical_bias="0.322" />
 
     <TextView
-        android:id="@+id/adverbCount"
+        android:id="@+id/adjectiveCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -41,7 +41,7 @@
         app:layout_constraintVertical_bias="0.422" />
 
     <TextView
-        android:id="@+id/nounCount"
+        android:id="@+id/adverbCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -52,7 +52,7 @@
         app:layout_constraintVertical_bias="0.522" />
 
     <TextView
-        android:id="@+id/phraseCount"
+        android:id="@+id/nounCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -63,7 +63,7 @@
         app:layout_constraintVertical_bias="0.622" />
 
     <TextView
-        android:id="@+id/verbCount"
+        android:id="@+id/phraseCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -72,6 +72,17 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.722" />
+
+    <TextView
+        android:id="@+id/verbCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.822" />
 
 
 </android.support.constraint.ConstraintLayout>
