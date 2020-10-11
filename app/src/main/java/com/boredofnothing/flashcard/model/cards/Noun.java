@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
@@ -16,7 +17,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper=true)
 public class Noun extends Word {
 
-    private String article;
+    @NonNull private String article;
 
     public static Noun createNounFromDocument(Document document){
         Map<String, Object> map = document.toMap();

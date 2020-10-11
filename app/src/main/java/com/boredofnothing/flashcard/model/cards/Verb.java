@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
@@ -16,8 +17,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper=true)
 public class Verb extends Word {
 
-    private String imperfect; // ie, past tense
-    private String infinitive; // ie, stem form
+    @NonNull private String imperfect; // ie, past tense
+    @NonNull private String infinitive; // ie, stem form
 
     public static Verb createVerbFromDocument(Document document){
         Map<String, Object> map = document.toMap();
