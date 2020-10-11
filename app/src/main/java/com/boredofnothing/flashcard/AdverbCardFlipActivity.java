@@ -9,13 +9,11 @@ import android.widget.EditText;
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adverb;
-import com.boredofnothing.flashcard.model.cards.CardSideType;
-import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
+import com.boredofnothing.flashcard.model.cards.CardType;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +25,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void loadAllDocuments() {
-        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
-                CardSideType.ENGLISH_ADVERB.toString(),
-                CardSideType.ADVERB_INFO.toString());
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(CardType.ADV);
         loadAllDocumentsViaQuery(query);
     }
 
@@ -167,14 +163,12 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         String swed = getEditText(dialogView, R.id.swedishAdverb);
         MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Adverb adverb = new Adverb(eng, swed);
-        String jsonString = gson.toJson(adverb);
-        map.put(CardSideType.ENGLISH_ADVERB.toString(), adverb.getEnglishWord());
-        map.put(CardSideType.ADVERB_INFO.toString(), jsonString);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
         mutableDocument.setData(map);
 
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
         return true;
@@ -185,19 +179,17 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         Document document = documents.get(currentIndex);
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         String engAdverb = getEditText(dialogView, R.id.englishAdverb).trim();
         String swedAdverb = getEditText(dialogView, R.id.swedishAdverb).trim();
-        Adverb adverb = new Adverb(engAdverb, swedAdverb);
-        String jsonString = gson.toJson(adverb);
-        map.put(CardSideType.ENGLISH_ADVERB.toString(), adverb.getEnglishWord());
-        map.put(CardSideType.ADVERB_INFO.toString(), jsonString);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), engAdverb);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdverb);
 
         mutableDocument.setData(map);
 
         displayToast("Editing adverb...");
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         updateDocumentInDB(mutableDocument);
     }
 

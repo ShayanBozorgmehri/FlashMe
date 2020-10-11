@@ -7,13 +7,12 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
-import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
+import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Phrase;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,9 +24,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void loadAllDocuments() {
-        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
-                CardSideType.ENGLISH_PHRASE.toString(),
-                CardSideType.PHRASE_INFO.toString());
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(CardType.PHR);
         loadAllDocumentsViaQuery(query);
     }
 
@@ -165,14 +162,12 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         String swed = getEditText(dialogView, R.id.swedishPhrase);
         MutableDocument mutableDocument = new MutableDocument(eng);
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Phrase phrase = new Phrase(eng, swed);
-        String jsonString = gson.toJson(phrase);
-        map.put(CardSideType.ENGLISH_PHRASE.toString(), phrase.getEnglishWord());
-        map.put(CardSideType.PHRASE_INFO.toString(), jsonString);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
         mutableDocument.setData(map);
 
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
         return true;
@@ -183,19 +178,17 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         Document document = documents.get(currentIndex);
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         String engPhrase = getEditText(dialogView, R.id.englishPhrase).trim();
         String swedPhrase = getEditText(dialogView, R.id.swedishPhrase).trim();
-        Phrase phrase = new Phrase(engPhrase, swedPhrase);
-        String jsonString = gson.toJson(phrase);
-        map.put(CardSideType.ENGLISH_PHRASE.toString(), phrase.getEnglishWord());
-        map.put(CardSideType.PHRASE_INFO.toString(), jsonString);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), engPhrase);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedPhrase);
 
         mutableDocument.setData(map);
 
         displayToast("Editing phrase...");
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         updateDocumentInDB(mutableDocument);
     }
 

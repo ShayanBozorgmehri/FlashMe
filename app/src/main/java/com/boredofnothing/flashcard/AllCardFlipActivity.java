@@ -2,16 +2,14 @@ package com.boredofnothing.flashcard;
 
 import android.app.AlertDialog;
 import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.RadioButton;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.cards.Adjective;
 import com.boredofnothing.flashcard.model.cards.Adverb;
-import com.boredofnothing.flashcard.model.cards.Article;
-import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
+import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Noun;
 import com.boredofnothing.flashcard.model.cards.Phrase;
 import com.boredofnothing.flashcard.model.cards.Verb;
@@ -20,17 +18,12 @@ import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
-import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.SelectResult;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AllCardFlipActivity extends CardFlipActivity {
 
@@ -45,13 +38,12 @@ public class AllCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void searchCardsForWord(String word) {
-        Gson gson = new Gson();
         Document doc = null;
         for (int i = 0; i < documents.size(); i++) {
             Document document = documents.get(i);
-            String englishWord = document.getString(CardSideType.ENGLISH_NOUN.toString());
-            Noun noun = gson.fromJson(document.getString(CardSideType.NOUN_INFO.toString()), Noun.class);
-            if (englishWord.contains(word) || noun.getSwedishWord().contains(word)) {
+            String englishWord = document.getString(CardKeyName.ENGLISH_KEY.toString());
+            String swedishWord = document.getString(CardKeyName.SWEDISH_KEY.toString());
+            if (englishWord.contains(word) || swedishWord.contains(word)) {
                 doc = documents.get(i);
                 currentIndex = i;
                 break;
@@ -71,38 +63,52 @@ public class AllCardFlipActivity extends CardFlipActivity {
         List<ListViewItem> suggestionList = new ArrayList<>();
 
         for (Document doc : documents) {
-            CardSideType infoType;
-            if (doc.getKeys().get(0).contains("info")) {
-                infoType = CardSideType.fromValue(doc.getKeys().get(0));
-            } else {
-                infoType = CardSideType.fromValue(doc.getKeys().get(1));
-            }
-            Word word = createCardTypeFromDocument(doc, infoType);
+            Word word = createCardTypeFromDocument(doc);
             suggestionList.add(new ListViewItem(word.getEnglishWord(), word.getSwedishWord()));
         }
 
         return suggestionList;
     }
 
-    private Word createCardTypeFromDocument(Document doc, CardSideType infoType) {
+    private Word createCardTypeFromDocument(Document doc) {
 
-        if (infoType == CardSideType.ADJECTIVE_INFO) {
+        CardType cardType = CardType.valueOf(doc.getString(CardKeyName.TYPE_KEY.getValue()));
+        if (cardType == CardType.ADJ) {
             return Adjective.createAdjectiveFromDocument(doc);
-        } else if (infoType == CardSideType.ADVERB_INFO) {
+        } else if (cardType == CardType.ADV) {
             return Adverb.createAdverbFromDocument(doc);
-        } else if (infoType == CardSideType.NOUN_INFO) {
+        } else if (cardType == CardType.NOUN) {
             return Noun.createNounFromDocument(doc);
-        } else if (infoType == CardSideType.PHRASE_INFO) {
+        } else if (cardType == CardType.PHR) {
             return Phrase.createPhraseFromDocument(doc);
         } else {
             return Verb.createVerbFromDocument(doc);
         }
     }
 
-    //TODO: remove the add button from the view for this, also update all of other methods accordingly
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        menu.removeItem(R.id.create_card);
+        menu.removeItem(R.id.edit_card);
+        return true;
+    }
+
     @Override
     protected void showInputDialog() {
-        displayToast("Not gonna let you add a new card here because I am lazy");
+        // do nothing
+    }
+
+    @Override
+    protected boolean getTranslationBasedOnTranslationType(final View dialogView) {
+        // do nothing
+        return false;
+    }
+
+    @Override
+    protected boolean addCardToDocument(final View dialogView) {
+        // do nothing
+        return false;
     }
 
     @Override
@@ -141,16 +147,6 @@ public class AllCardFlipActivity extends CardFlipActivity {
 //        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit noun card."));
 //        AlertDialog b = dialogBuilder.create();
 //        b.show();
-    }
-
-    @Override
-    protected boolean getTranslationBasedOnTranslationType(final View dialogView) {
-        return false;
-    }
-
-    @Override
-    protected boolean addCardToDocument(final View dialogView) {
-        return false;
     }
 
     @Override

@@ -6,16 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
+import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adjective;
-import com.boredofnothing.flashcard.model.cards.CardSideType;
-import com.boredofnothing.flashcard.model.ListViewItem;
-import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
+import com.boredofnothing.flashcard.model.cards.CardType;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,9 +24,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void loadAllDocuments(){
-        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
-                CardSideType.ENGLISH_ADJECTIVE.toString(),
-                CardSideType.ADJECTIVE_INFO.toString());
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(CardType.ADJ);
         loadAllDocumentsViaQuery(query);
     }
 
@@ -166,14 +162,11 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         String swed = getEditText(dialogView, R.id.swedishAdjective);
         MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Adjective adjective = new Adjective(eng, swed);
-        String jsonString = gson.toJson(adjective);
-        map.put(CardSideType.ENGLISH_ADJECTIVE.toString(), adjective.getEnglishWord());
-        map.put(CardSideType.ADJECTIVE_INFO.toString(), jsonString);
-        mutableDocument.setData(map);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
 
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
         return true;
@@ -184,19 +177,18 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         Document document = documents.get(currentIndex);
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         String engAdjective = getEditText(dialogView, R.id.englishAdjective).trim();
         String swedAdjective = getEditText(dialogView, R.id.swedishAdjective).trim();
-        Adjective adjective = new Adjective(engAdjective, swedAdjective);
-        String jsonString = gson.toJson(adjective);
-        map.put(CardSideType.ENGLISH_ADJECTIVE.toString(), adjective.getEnglishWord());
-        map.put(CardSideType.ADJECTIVE_INFO.toString(), jsonString);
+
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), engAdjective);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdjective);
 
         mutableDocument.setData(map);
 
         displayToast("Editing adjective..." );
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         updateDocumentInDB(mutableDocument);
     }
 

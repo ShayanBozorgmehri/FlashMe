@@ -1,22 +1,16 @@
 package com.boredofnothing.flashcard.model.cards;
 
 import com.couchbase.lite.Document;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Map;
 
 public class Adjective extends Word {
 
-    public Adjective(String englishAdjective, String swedishAdjective) {
-        super(englishAdjective, swedishAdjective);
-    }
-
     public static Adjective createAdjectiveFromDocument(Document document){
-        String englishWord = document.getString(CardSideType.ENGLISH_ADJECTIVE.toString());
-        String adjectiveInfo = document.getString(CardSideType.ADJECTIVE_INFO.toString());
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Adjective adjective = gson.fromJson(adjectiveInfo, Adjective.class);
-        adjective.setEnglishWord(englishWord);
-        return adjective;
+        Map<String, Object> map = document.toMap();
+        map.remove(CardKeyName.TYPE_KEY.getValue());
+        return new ObjectMapper().convertValue(map, Adjective.class);
     }
     
     @Override

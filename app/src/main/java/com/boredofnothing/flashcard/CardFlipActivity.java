@@ -30,6 +30,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -50,10 +51,16 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
-import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.ListViewAdapter;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
+import com.boredofnothing.flashcard.model.cards.Adjective;
+import com.boredofnothing.flashcard.model.cards.Adverb;
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
+import com.boredofnothing.flashcard.model.cards.CardType;
+import com.boredofnothing.flashcard.model.cards.Noun;
+import com.boredofnothing.flashcard.model.cards.Phrase;
+import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.provider.AzureTranslator;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
@@ -66,6 +73,8 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,7 +119,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             Bundle args = new Bundle();
             String navigationItem = getIntent().getStringExtra("selected_navigation_item");
             args.putString("navigation_item", navigationItem);
-            args.putString("card_type", CardSideType.fromValue("english " + navigationItem).toString());
+            args.putString("card_type", CardType.fromValue(navigationItem).getValue());
             frontCardFragment.setArguments(args);
 
             getFragmentManager()
@@ -285,14 +294,18 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         try {
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();
-            if(results.size() == 0){
+            if (results.size() == 0){
                 Log.d("DEBUG", "DB is empty");
                 currentIndex = -1;
             } else {
                 Log.d("DEBUG", "DB is NOT empty: " + results.size());
-                for(Result res: results){
+                for (Result res: results){
                     // Log.d("----doc info: ", res.getString(0) + ", " + res.getString(1) + ", " + res.getString(2));
                     documents.add(MainActivity.database.getDocument(res.getString("id")));
+//                    Document d = MainActivity.database.getDocument(res.getString("id"));
+//                    Log.d("----doc info:: ", d.getId()
+//                            + ",\n" + d.getValue(d.getKeys().get(0))
+//                            + ",\n" + d.getValue(d.getKeys().get(1)) );
                 }
                 Collections.shuffle(documents);
                 currentIndex = 0;
@@ -377,13 +390,11 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return ((RadioButton) dialogView.findViewById(radioGroup.getCheckedRadioButtonId())).getText().toString();
     }
 
-    protected static Query createQueryForCardTypeWithNonNullOrMissingValues(String wordType, String infoType) {
+    protected static Query createQueryForCardTypeWithNonNullOrMissingValues(CardType cardType) {
         return QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property(wordType),
-                        SelectResult.property(infoType))
+                .select(SelectResult.all(), SelectResult.expression(Meta.id))
                 .from(DataSource.database(MainActivity.database))
-                .where(Expression.property(wordType).notNullOrMissing());
+                .where(Expression.property(CardKeyName.TYPE_KEY.getValue()).equalTo(Expression.string(cardType.name())));
     }
 
     private static void incrementCurrentIndex(){
@@ -402,6 +413,32 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
+
+    @Nullable
+    protected static String getJsonFromDoc(Document document) {
+        String json = null;
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        switch (CardType.valueOf(document.getString(CardKeyName.TYPE_KEY.getValue()))){
+            case ADJ:
+                json = gson.toJson(Adjective.createAdjectiveFromDocument(document));
+                break;
+            case ADV:
+                json = gson.toJson(Adverb.createAdverbFromDocument(document));
+                break;
+            case NOUN:
+                json = gson.toJson(Noun.createNounFromDocument(document));
+                break;
+            case PHR:
+                json = gson.toJson(Phrase.createPhraseFromDocument(document));
+                break;
+            case VERB:
+                json = gson.toJson(Verb.createVerbFromDocument(document));
+                break;
+        }
+        return json;
+    }
+
     protected void displayNewlyAddedCard() {
 
         // only auto update the display if the front card is show
@@ -409,7 +446,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             Bundle args = new Bundle();
             String navigationItem = getIntent().getStringExtra("selected_navigation_item");
             args.putString("navigation_item", navigationItem);
-            args.putString("card_type", CardSideType.fromValue("english " + navigationItem).toString());
             FrontCardFragment frontCardFragment = new FrontCardFragment();
             frontCardFragment.setArguments(args);
             getFragmentManager()
@@ -432,7 +468,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             FrontCardFragment clone = new FrontCardFragment();
             Bundle args = new Bundle();
             args.putString("navigation_item", frontCardFragment.getArguments().getString("navigation_item"));
-            args.putString("card_type", frontCardFragment.getArguments().getString("card_type"));
             clone.setArguments(args);
             System.out.println("nav is==============" + frontCardFragment.getArguments().getString("navigation_item"));
             System.out.println("****the fragments are the same: " + (clone == frontCardFragment || frontCardFragment.equals(clone)));
@@ -521,7 +556,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         Bundle args = new Bundle();
                         String navigationItem = getArguments().getString("navigation_item");
                         args.putString("navigation_item", navigationItem);
-                        args.putString("info_type", CardSideType.fromValue(navigationItem + " info").toString());
+                        args.putString("info_type", CardType.fromValue(navigationItem).getValue());
                         backCardFragment.setArguments(args);
 
                         getFragmentManager()
@@ -555,14 +590,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
             if (!documents.isEmpty()) {
                 Document document = documents.get(currentIndex);
-                String cardType = getArguments().getString("card_type");
-
-                if (CardSideType.fromValue(cardType) == CardSideType.UNKNOWN_CARD_TYPE) {
-                    cardType = document.getKeys().get(0).contains("english")
-                            ? document.getKeys().get(0)
-                            : document.getKeys().get(1);
-                }
-                ((TextView) getView().findViewById(R.id.frontText)).setText(document.getString(cardType));
+                ((TextView) getView().findViewById(R.id.frontText)).setText(document.getString(CardKeyName.ENGLISH_KEY.getValue()));
 
             } else {
                 ((TextView) getView().findViewById(R.id.frontText))
@@ -579,7 +607,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             BackCardFragment clone = new BackCardFragment();
             Bundle args = new Bundle();
             args.putString("navigation_item", backCardFragment.getArguments().getString("navigation_item"));
-            args.putString("info_type", backCardFragment.getArguments().getString("info_type"));
             clone.setArguments(args);
             return clone;
         }
@@ -665,14 +692,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
             if (!documents.isEmpty()) {
                 Document document = documents.get(currentIndex);
-                String infoType = getArguments().getString("info_type");
-
-                if (CardSideType.fromValue(infoType) == CardSideType.UNKNOWN_CARD_TYPE) {
-                    infoType = document.getKeys().get(0).contains("info")
-                                ? document.getKeys().get(0)
-                                : document.getKeys().get(1);
-                }
-                ((TextView) getView().findViewById(R.id.backText)).setText(document.getString(infoType));
+                String json = getJsonFromDoc(document);
+                ((TextView) getView().findViewById(R.id.backText)).setText(json);
 
             } else {
                 ((TextView) getView().findViewById(R.id.backText))

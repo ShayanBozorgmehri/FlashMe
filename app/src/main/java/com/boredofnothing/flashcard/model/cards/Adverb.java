@@ -1,23 +1,16 @@
 package com.boredofnothing.flashcard.model.cards;
 
 import com.couchbase.lite.Document;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Map;
 
 public class Adverb extends Word {
 
-    public Adverb(String englishAdverb, String swedishAdverb) {
-        super(englishAdverb, swedishAdverb);
-    }
-
     public static Adverb createAdverbFromDocument(Document document){
-        String englishWord = document.getString(CardSideType.ENGLISH_ADVERB.toString());
-        String adverbInfo = document.getString(CardSideType.ADVERB_INFO.toString());
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Adverb adverb = gson.fromJson(adverbInfo, Adverb.class);
-        //TODO: find out why this has to be set....same for all other word types (maybe cuz engWord is transient?)
-        adverb.setEnglishWord(englishWord);
-        return adverb;
+        Map<String, Object> map = document.toMap();
+        map.remove(CardKeyName.TYPE_KEY.getValue());
+        return new ObjectMapper().convertValue(map, Adverb.class);
     }
     
     @Override

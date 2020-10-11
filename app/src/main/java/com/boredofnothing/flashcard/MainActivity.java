@@ -13,7 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.boredofnothing.flashcard.model.cards.CardSideType;
+import com.boredofnothing.flashcard.model.cards.CardType;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
@@ -58,8 +58,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Log.d("DEBUG", "searching for/creating DB...");
             database = new Database("flash_me_db", config);
             if(database.getIndexes().size() == 0){
-                database.createIndex("TypeNameIndex",
-                        IndexBuilder.valueIndex(ValueIndexItem.property("english word")));
+                database.createIndex("englishWord",
+                        IndexBuilder.valueIndex(ValueIndexItem.property("englishWord")));
+                database.createIndex("swedishWord",
+                        IndexBuilder.valueIndex(ValueIndexItem.property("swedishWord")));
+                database.createIndex("wordType",
+                        IndexBuilder.valueIndex(ValueIndexItem.property("wordType")));
             }
             Log.d("DEBUG", "created DB in path: " + database.getPath());
 
@@ -147,17 +151,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onResume(){
         super.onResume();
         displayCardCount(R.id.allCardCount, getString(R.string.all_card_count));
-        displayCardCount(CardSideType.ENGLISH_ADJECTIVE, CardSideType.ADJECTIVE_INFO, R.id.adjectiveCount, getString(R.string.adjective_count));
-        displayCardCount(CardSideType.ENGLISH_ADVERB, CardSideType.ADVERB_INFO, R.id.adverbCount, getString(R.string.adverb_count));
-        displayCardCount(CardSideType.ENGLISH_NOUN, CardSideType.NOUN_INFO, R.id.nounCount, getString(R.string.noun_count));
-        displayCardCount(CardSideType.ENGLISH_PHRASE, CardSideType.PHRASE_INFO, R.id.phraseCount, getString(R.string.phrase_count));
-        displayCardCount(CardSideType.ENGLISH_VERB, CardSideType.VERB_INFO, R.id.verbCount, getString(R.string.verb_count));
+        displayCardCount(CardType.ADJ, R.id.adjectiveCount, getString(R.string.adjective_count));
+        displayCardCount(CardType.ADV, R.id.adverbCount, getString(R.string.adverb_count));
+        displayCardCount(CardType.NOUN, R.id.nounCount, getString(R.string.noun_count));
+        displayCardCount(CardType.PHR, R.id.phraseCount, getString(R.string.phrase_count));
+        displayCardCount(CardType.VERB, R.id.verbCount, getString(R.string.verb_count));
     }
 
-    private void displayCardCount(CardSideType wordType, CardSideType infoType, int tvId, String countPrefix) {
-        Query query = CardFlipActivity.createQueryForCardTypeWithNonNullOrMissingValues(
-                wordType.toString(),
-                infoType.toString());
+    private void displayCardCount(CardType cardType, int tvId, String countPrefix) {
+        Query query = CardFlipActivity.createQueryForCardTypeWithNonNullOrMissingValues(cardType);
         try {
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();

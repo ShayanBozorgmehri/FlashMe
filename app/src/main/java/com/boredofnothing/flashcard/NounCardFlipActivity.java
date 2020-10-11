@@ -7,15 +7,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
-import com.boredofnothing.flashcard.model.cards.Article;
-import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.cards.Article;
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
+import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Noun;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,9 +27,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void loadAllDocuments(){
-        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
-                CardSideType.ENGLISH_NOUN.toString(),
-                CardSideType.NOUN_INFO.toString());
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(CardType.NOUN);
         loadAllDocumentsViaQuery(query);
     }
 
@@ -184,14 +181,13 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
         MutableDocument mutableDocument = new MutableDocument(engTranslation + "_" + swedTranslation);
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Noun noun = new Noun(engTranslation, swedTranslation, article);
-        String jsonString = gson.toJson(noun);
-        map.put(CardSideType.ENGLISH_NOUN.toString(), noun.getEnglishWord());
-        map.put(CardSideType.NOUN_INFO.toString(), jsonString);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), engTranslation);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedTranslation);
+        map.put(CardKeyName.ARTICLE_KEY.getValue(), article);
         mutableDocument.setData(map);
 
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
        return true;
@@ -203,20 +199,19 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Document document = documents.get(currentIndex);
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         String engNoun = getEditText(dialogView, R.id.englishNoun).trim();
         String swedNoun = getEditText(dialogView, R.id.swedishNoun).trim();
         String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
-        Noun noun = new Noun(engNoun, swedNoun, article);
-        String jsonString = gson.toJson(noun);
-        map.put(CardSideType.ENGLISH_NOUN.toString(), noun.getEnglishWord());
-        map.put(CardSideType.NOUN_INFO.toString(), jsonString);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), engNoun);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedNoun);
+        map.put(CardKeyName.ARTICLE_KEY.getValue(), article);
 
         mutableDocument.setData(map);
 
         displayToast("Editing noun..." );
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         updateDocumentInDB(mutableDocument);
     }
 

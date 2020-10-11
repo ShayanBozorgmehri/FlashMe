@@ -6,16 +6,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
-import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
-import com.boredofnothing.flashcard.model.cards.CardSideType;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
+import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.provider.BablaTranslator;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,9 +26,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void loadAllDocuments(){
-        Query query = createQueryForCardTypeWithNonNullOrMissingValues(
-                CardSideType.ENGLISH_VERB.toString(),
-                CardSideType.VERB_INFO.toString());
+        Query query = createQueryForCardTypeWithNonNullOrMissingValues(CardType.VERB);
         loadAllDocumentsViaQuery(query);
     }
 
@@ -189,14 +186,14 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
         MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Verb verb = new Verb(eng, swed, imperative, imperfect);
-        String jsonString = gson.toJson(verb);
-        map.put(CardSideType.ENGLISH_VERB.toString(), verb.getEnglishWord());
-        map.put(CardSideType.VERB_INFO.toString(), jsonString);
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
+        map.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
         mutableDocument.setData(map);
 
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
         return true;
     }
@@ -206,21 +203,22 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         Document document = documents.get(currentIndex);
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         String eng = getEditText(dialogView, R.id.englishVerb);
         String swed = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
-        Verb verb = new Verb(eng, swed, imperative, imperfect);
-        String jsonString = gson.toJson(verb);
-        map.put(CardSideType.ENGLISH_VERB.toString(), verb.getEnglishWord());
-        map.put(CardSideType.VERB_INFO.toString(), jsonString);
+
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
+        map.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
 
         mutableDocument.setData(map);
 
         displayToast("Editing verb...");
-        Log.d("DEBUG", jsonString);
+        Log.d("DEBUG", map.toString());
         updateDocumentInDB(mutableDocument);
     }
 

@@ -12,7 +12,7 @@
     <item
         android:id="@+id/adjective"
         android:icon="@drawable/adjective_icon"
-        android:title="Adjectives" />
+        android:title="Adjective" />
 
     <item
         android:id="@+id/adverb"
@@ -22,7 +22,7 @@
     <item
         android:id="@+id/noun"
         android:icon="@drawable/noun_icon"
-        android:title="Nouns" />
+        android:title="Noun" />
 
     <item
         android:id="@+id/phrase"
@@ -32,7 +32,7 @@
     <item
         android:id="@+id/verb"
         android:icon="@drawable/verb_icon"
-        android:title="Verbs" />
+        android:title="Verb" />
 
     <item android:title="Communicate">
         <menu>
