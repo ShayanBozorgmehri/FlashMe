@@ -79,6 +79,7 @@ import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Demonstrates a "card-flip" animation using custom fragment transactions ({@link
@@ -365,6 +366,26 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         } catch (CouchbaseLiteException e) {
             Log.e("ERROR", "Failed to delete document " + documents.get(currentIndex)
                     + " from DB due to: " + e);
+        }
+    }
+
+    protected void editOrReplaceDocument(Map<String, Object> updatedData){
+        Document currentDocument = documents.get(currentIndex);
+        String updatedEngWord = (String) updatedData.get(CardKeyName.ENGLISH_KEY.getValue());
+        String updatedSwedWord = (String) updatedData.get(CardKeyName.SWEDISH_KEY.getValue());
+        String newId = updatedEngWord + "_" + updatedSwedWord;
+
+        if (currentDocument.getId().equals(newId)){
+            MutableDocument mutableDocument = new MutableDocument(currentDocument.getId());
+            mutableDocument.setData(updatedData);
+            updateDocumentInDB(mutableDocument);
+        } else {
+            deleteDocument();
+            currentIndex--;
+
+            MutableDocument replacementDocument = new MutableDocument(newId);
+            replacementDocument.setData(updatedData);
+            storeDocumentToDB(replacementDocument);
         }
     }
 

@@ -176,21 +176,17 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void updateCurrentCard(final View dialogView) {
-        Document document = documents.get(currentIndex);
-        MutableDocument mutableDocument = document.toMutable();
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> updatedData = new HashMap<>();
 
         String engAdverb = getEditText(dialogView, R.id.englishAdverb);
         String swedAdverb = getEditText(dialogView, R.id.swedishAdverb);
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), engAdverb);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdverb);
-
-        mutableDocument.setData(map);
+        updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
+        updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engAdverb);
+        updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdverb);
 
         displayToast("Editing adverb...");
-        Log.d("DEBUG", map.toString());
-        updateDocumentInDB(mutableDocument);
+        Log.d("DEBUG", updatedData.toString());
+        editOrReplaceDocument(updatedData);
     }
 
     @Override

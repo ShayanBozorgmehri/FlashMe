@@ -200,26 +200,22 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void updateCurrentCard(final View dialogView){
-        Document document = documents.get(currentIndex);
-        MutableDocument mutableDocument = document.toMutable();
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> updatedData = new HashMap<>();
 
         String eng = getEditText(dialogView, R.id.englishVerb);
         String swed = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
 
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
-        map.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
-        map.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
-
-        mutableDocument.setData(map);
+        updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
+        updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        updatedData.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
+        updatedData.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
 
         displayToast("Editing verb...");
-        Log.d("DEBUG", map.toString());
-        updateDocumentInDB(mutableDocument);
+        Log.d("DEBUG", updatedData.toString());
+        editOrReplaceDocument(updatedData);
     }
 
     @Override

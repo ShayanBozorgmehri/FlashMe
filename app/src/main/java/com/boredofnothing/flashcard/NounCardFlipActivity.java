@@ -196,23 +196,19 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void updateCurrentCard(final View dialogView){
-        Document document = documents.get(currentIndex);
-        MutableDocument mutableDocument = document.toMutable();
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> updatedData = new HashMap<>();
 
         String engNoun = getEditText(dialogView, R.id.englishNoun);
         String swedNoun = getEditText(dialogView, R.id.swedishNoun);
         String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), engNoun);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedNoun);
-        map.put(CardKeyName.ARTICLE_KEY.getValue(), article);
-
-        mutableDocument.setData(map);
+        updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
+        updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engNoun);
+        updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedNoun);
+        updatedData.put(CardKeyName.ARTICLE_KEY.getValue(), article);
 
         displayToast("Editing noun..." );
-        Log.d("DEBUG", map.toString());
-        updateDocumentInDB(mutableDocument);
+        Log.d("DEBUG", updatedData.toString());
+        editOrReplaceDocument(updatedData);
     }
 
     @Override

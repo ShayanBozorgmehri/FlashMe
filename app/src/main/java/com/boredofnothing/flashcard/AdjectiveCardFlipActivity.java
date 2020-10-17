@@ -175,22 +175,18 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void updateCurrentCard(final View dialogView){
-        Document document = documents.get(currentIndex);
-        MutableDocument mutableDocument = document.toMutable();
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> updatedData = new HashMap<>();
 
         String engAdjective = getEditText(dialogView, R.id.englishAdjective);
         String swedAdjective = getEditText(dialogView, R.id.swedishAdjective);
 
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), engAdjective);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdjective);
-
-        mutableDocument.setData(map);
+        updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
+        updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engAdjective);
+        updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdjective);
 
         displayToast("Editing adjective..." );
-        Log.d("DEBUG", map.toString());
-        updateDocumentInDB(mutableDocument);
+        Log.d("DEBUG", updatedData.toString());
+        editOrReplaceDocument(updatedData);
     }
 
     @Override

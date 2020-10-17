@@ -175,21 +175,17 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void updateCurrentCard(final View dialogView) {
-        Document document = documents.get(currentIndex);
-        MutableDocument mutableDocument = document.toMutable();
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> updatedData = new HashMap<>();
 
         String engPhrase = getEditText(dialogView, R.id.englishPhrase);
         String swedPhrase = getEditText(dialogView, R.id.swedishPhrase);
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), engPhrase);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedPhrase);
-
-        mutableDocument.setData(map);
+        updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
+        updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engPhrase);
+        updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedPhrase);
 
         displayToast("Editing phrase...");
-        Log.d("DEBUG", map.toString());
-        updateDocumentInDB(mutableDocument);
+        Log.d("DEBUG", updatedData.toString());
+        editOrReplaceDocument(updatedData);
     }
 
     @Override
