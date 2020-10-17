@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class VerbCardFlipActivity extends CardFlipActivity {
 
@@ -69,20 +68,10 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                     displayToast("Found secondary translation...");
                 }
             }
-            BablaTranslator bablaTranslator = new BablaTranslator(azureInfinitiveForm);
-            try {
-                bablaTranslator.execute().get();//execute and wait until the call is done
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return false;
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-                return false;
-            }
-
-            Verb verb = bablaTranslator.getVerb();
+            BablaTranslator bablaTranslator = new BablaTranslator();
+            Verb verb = bablaTranslator.getConjugations(azureInfinitiveForm);
             if (verb == null || verb.getSwedishWord() == null) {
-                displayToast("Could not find translation for verb: " + engInput);
+                displayToast("Could not find conjugations for verb: " + engInput);
                 return false;
             }
             setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());

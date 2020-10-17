@@ -11,21 +11,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
-public class BablaTranslator extends AsyncTask<Void, Void, Void> {
+public class BablaTranslator extends AsyncTask<String, String, Verb> {
 
     //private final Context context;
-    private Verb verb;
     //private ProgressDialog progressDialog;
 
-    public BablaTranslator(String presentTense){
+    public BablaTranslator(){
         //this.context = context;
-        verb = new Verb();
-        verb.setInfinitive(presentTense);
-    }
-
-    public Verb getVerb(){
-        return verb;
     }
 
     @Override
@@ -35,9 +29,22 @@ public class BablaTranslator extends AsyncTask<Void, Void, Void> {
         //progressDialog.show();
     }
 
+    public Verb getConjugations(String presentTense){
+
+        try {
+            return execute(presentTense).get();//execute and wait until the call is done
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
-    protected Void doInBackground(Void... voids) {
-        String data = "";
+    protected Verb doInBackground(String... data) {
+        Verb verb = new Verb();
+        verb.setInfinitive(data[0]);
 
         try {
             //Connect to the website
@@ -52,11 +59,7 @@ public class BablaTranslator extends AsyncTask<Void, Void, Void> {
                     } else if("Preteritum".equals(tense)){
                         verb.setImperfect(value);
                     }
-                    data += tense + ": " + value + "\n";
                 }
-            } else {
-                verb = null;
-                data = null;
             }
         }
         catch (IOException e) {
@@ -66,12 +69,12 @@ public class BablaTranslator extends AsyncTask<Void, Void, Void> {
             Log.e("ERROR", "MIGHT have failed to find translation: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("------------------" + data);
-        return null;
+        System.out.println("------------------" + verb);
+        return verb;
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
+    protected void onPostExecute(Verb verb) {
+        super.onPostExecute(verb);
     }
 }
