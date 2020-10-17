@@ -144,8 +144,13 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
             }
             swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
             if (isNullOrEmpty(swedTranslation)) {
-                displayToast("Could not find Swedish adverb translation for: " + engInput);
-                return false;
+                swedTranslation = getSwedishTextUsingAzureTranslator(engInput);
+                if (isNullOrEmpty(swedTranslation)) {
+                    displayToast("Could not find Swedish adverb translation for: " + engInput);
+                    return false;
+                } else {
+                    displayToast("Found secondary translation...");
+                }
             }
             setEditText(dialogView, R.id.swedishAdverb, swedTranslation);
         }

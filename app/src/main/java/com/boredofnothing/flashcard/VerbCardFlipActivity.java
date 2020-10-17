@@ -61,11 +61,14 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             // first, get a translation from azure
             String azureInfinitiveForm = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
             if (isNullOrEmpty(azureInfinitiveForm)) {
-                displayToast("Could not find Swedish verb translation for: " + engInput);
-                return false;
+                azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
+                if (isNullOrEmpty(engInput)) {
+                    displayToast("Could not find Swedish verb translation for: " + engInput);
+                    return false;
+                } else {
+                    displayToast("Found secondary translation...");
+                }
             }
-            // then, use the azure translation to get the conjugations from babel
-            //BablaTranslator bablaTranslator = new BablaTranslator(getBaseContext(), azureInfinitiveForm);
             BablaTranslator bablaTranslator = new BablaTranslator(azureInfinitiveForm);
             try {
                 bablaTranslator.execute().get();//execute and wait until the call is done
