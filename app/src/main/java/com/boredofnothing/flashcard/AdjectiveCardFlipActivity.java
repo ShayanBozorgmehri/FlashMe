@@ -179,8 +179,8 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
 
-        String engAdjective = getEditText(dialogView, R.id.englishAdjective).trim();
-        String swedAdjective = getEditText(dialogView, R.id.swedishAdjective).trim();
+        String engAdjective = getEditText(dialogView, R.id.englishAdjective);
+        String swedAdjective = getEditText(dialogView, R.id.swedishAdjective);
 
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), engAdjective);

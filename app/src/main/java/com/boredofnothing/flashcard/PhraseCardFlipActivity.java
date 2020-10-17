@@ -179,8 +179,8 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
 
-        String engPhrase = getEditText(dialogView, R.id.englishPhrase).trim();
-        String swedPhrase = getEditText(dialogView, R.id.swedishPhrase).trim();
+        String engPhrase = getEditText(dialogView, R.id.englishPhrase);
+        String swedPhrase = getEditText(dialogView, R.id.swedishPhrase);
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), engPhrase);
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swedPhrase);

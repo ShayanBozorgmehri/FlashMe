@@ -125,8 +125,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
     @Override
     protected boolean getTranslationBasedOnTranslationType(final View dialogView){
         final String translationType = getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group);
-        final String engInput = getEditText(dialogView, R.id.englishNoun).trim();
-        final String swedInput = getEditText(dialogView, R.id.swedishNoun).trim();
+        final String engInput = getEditText(dialogView, R.id.englishNoun);
+        final String swedInput = getEditText(dialogView, R.id.swedishNoun);
 
         //TODO: possible improvement is to just to create a Noun obj, set the vars for it and then return the obj, instead of returning boolean
         String engTranslation;
@@ -200,8 +200,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
 
-        String engNoun = getEditText(dialogView, R.id.englishNoun).trim();
-        String swedNoun = getEditText(dialogView, R.id.swedishNoun).trim();
+        String engNoun = getEditText(dialogView, R.id.englishNoun);
+        String swedNoun = getEditText(dialogView, R.id.swedishNoun);
         String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), engNoun);

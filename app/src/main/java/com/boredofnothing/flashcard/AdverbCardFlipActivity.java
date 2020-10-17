@@ -180,8 +180,8 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         MutableDocument mutableDocument = document.toMutable();
         Map<String, Object> map = new HashMap<>();
 
-        String engAdverb = getEditText(dialogView, R.id.englishAdverb).trim();
-        String swedAdverb = getEditText(dialogView, R.id.swedishAdverb).trim();
+        String engAdverb = getEditText(dialogView, R.id.englishAdverb);
+        String swedAdverb = getEditText(dialogView, R.id.swedishAdverb);
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), engAdverb);
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdverb);

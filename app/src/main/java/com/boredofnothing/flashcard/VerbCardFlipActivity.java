@@ -33,8 +33,8 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     @Override
     protected boolean getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.verb_translate_radio_group);
-        final String engInput = getEditText(dialogView, R.id.englishVerb).trim();
-        final String swedInput = getEditText(dialogView, R.id.swedishVerb).trim();
+        final String engInput = getEditText(dialogView, R.id.englishVerb);
+        final String swedInput = getEditText(dialogView, R.id.swedishVerb);
 
         String engTranslation;
 
