@@ -336,7 +336,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     protected void storeDocumentToDB(MutableDocument mutableDocument) {
         try {
-            Log.d("DEBUG", "Adding properties to document: " + mutableDocument.getId());
+            Log.d("DEBUG", "Saving document: " + mutableDocument.getId());
             MainActivity.database.save(mutableDocument);
             documents.add(++currentIndex, MainActivity.database.getDocument(mutableDocument.getId()));
             Log.d("DEBUG", "Successfully created new card document with id: " + documents.get(currentIndex).getId());
@@ -378,7 +378,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     protected String getEditText(final View dialogView, int id){
-        return ((EditText)dialogView.findViewById(id)).getText().toString();
+        return ((EditText)dialogView.findViewById(id)).getText().toString().trim();
     }
 
     protected void setEditText(final View dialogView, int id, String text){

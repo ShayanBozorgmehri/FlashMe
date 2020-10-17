@@ -165,6 +165,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
