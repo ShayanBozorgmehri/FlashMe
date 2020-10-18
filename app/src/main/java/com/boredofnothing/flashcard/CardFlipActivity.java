@@ -104,7 +104,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     protected static ArrayList<Document> documents;
 
     protected enum SubmissionState {
-        FILLED_IN_CORRECTLY,
         FILLED_IN_CORRECTLY_BUT_NO_CONNECTION,
         FILLED_IN_INCORRECTLY,
         SUBMITTED_WITH_NO_RESULTS_FOUND,

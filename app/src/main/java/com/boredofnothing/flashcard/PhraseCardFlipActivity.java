@@ -106,11 +106,21 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.phrase_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Edit phrase flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.phraseSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
             Log.d("DEBUG", "Editing phrase card.");
             updateCurrentCard(dialogView);
+            dialog.dismiss();
+        });
+        Button negativeButton = dialogView.findViewById(R.id.phraseCancelButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled editing phrase card.");
             dialog.dismiss();
         });
 
@@ -119,9 +129,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         ((EditText) dialogView.findViewById(R.id.englishPhrase)).setText(phrase.getEnglishWord());
         ((EditText) dialogView.findViewById(R.id.swedishPhrase)).setText(phrase.getSwedishWord());
 
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit phrase card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        dialog.show();
     }
 
     @Override

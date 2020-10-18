@@ -105,11 +105,21 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.adjective_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Edit adjective flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.adjectiveSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
             Log.d("DEBUG", "Editing adjective card.");
             updateCurrentCard(dialogView);
+            dialog.dismiss();
+        });
+        Button negativeButton = dialogView.findViewById(R.id.adjectiveCancelButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled editing adjective card.");
             dialog.dismiss();
         });
 
@@ -118,9 +128,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         ((EditText)dialogView.findViewById(R.id.englishAdjective)).setText(adjective.getEnglishWord());
         ((EditText)dialogView.findViewById(R.id.swedishAdjective)).setText(adjective.getSwedishWord());
 
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit adjective card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        dialog.show();
     }
 
     @Override

@@ -135,7 +135,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                     break;
             }
         });
-        Button negativeButton = dialogView.findViewById(R.id.verbSubmitButton);
+        Button negativeButton = dialogView.findViewById(R.id.verbCancelButton);
         negativeButton.setText("Cancel");
         negativeButton.setOnClickListener(view -> {
             Log.d("DEBUG", "Cancelled creating new verb card.");
@@ -157,11 +157,21 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.verb_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Edit verb flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.verbSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
             Log.d("DEBUG", "Editing verb card.");
             updateCurrentCard(dialogView);
+            dialog.dismiss();
+        });
+        Button negativeButton = dialogView.findViewById(R.id.verbCancelButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled editing verb card.");
             dialog.dismiss();
         });
 
@@ -172,9 +182,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         ((EditText)dialogView.findViewById(R.id.imperfectForm)).setText(verb.getImperfect());
         ((EditText)dialogView.findViewById(R.id.infinitiveForm)).setText(verb.getInfinitive());
 
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit noun card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        dialog.show();
     }
 
     @Override

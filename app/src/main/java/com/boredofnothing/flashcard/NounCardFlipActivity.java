@@ -109,28 +109,37 @@ public class NounCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.noun_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Edit noun flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.nounSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
             Log.d("DEBUG", "Editing noun card.");
-             updateCurrentCard(dialogView);
+            updateCurrentCard(dialogView);
+            dialog.dismiss();
+        });
+        Button negativeButton = dialogView.findViewById(R.id.nounCancelButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled editing noun card.");
             dialog.dismiss();
         });
 
         Document document = documents.get(currentIndex);
         Noun noun = Noun.createNounFromDocument(document);
-        ((EditText)dialogView.findViewById(R.id.englishNoun)).setText(noun.getEnglishWord());
-        ((EditText)dialogView.findViewById(R.id.swedishNoun)).setText(noun.getSwedishWord());
-        if(Article.NO_ARTICLE.getValue().equals(noun.getArticle())){
-            ((RadioButton)dialogView.findViewById(R.id.no_article)).setChecked(true);
-        } else if(Article.EN.getValue().equals(noun.getArticle())){
-            ((RadioButton)dialogView.findViewById(R.id.en_article)).setChecked(true);
+        ((EditText) dialogView.findViewById(R.id.englishNoun)).setText(noun.getEnglishWord());
+        ((EditText) dialogView.findViewById(R.id.swedishNoun)).setText(noun.getSwedishWord());
+        if (Article.NO_ARTICLE.getValue().equals(noun.getArticle())) {
+            ((RadioButton) dialogView.findViewById(R.id.no_article)).setChecked(true);
+        } else if (Article.EN.getValue().equals(noun.getArticle())) {
+            ((RadioButton) dialogView.findViewById(R.id.en_article)).setChecked(true);
         } else {
-            ((RadioButton)dialogView.findViewById(R.id.ett_article)).setChecked(true);
+            ((RadioButton) dialogView.findViewById(R.id.ett_article)).setChecked(true);
         }
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit noun card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+
+        dialog.show();
     }
 
     @Override

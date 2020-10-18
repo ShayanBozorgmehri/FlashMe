@@ -85,7 +85,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
                     break;
             }
         });
-        Button negativeButton = dialogView.findViewById(R.id.adverbSubmitButton);
+        Button negativeButton = dialogView.findViewById(R.id.adverbCancelButton);
         negativeButton.setText("Cancel");
         negativeButton.setOnClickListener(view -> {
             Log.d("DEBUG", "Cancelled creating new adverb card.");
@@ -107,11 +107,21 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.adverb_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Edit adverb flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.adverbSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
             Log.d("DEBUG", "Editing adverb card.");
             updateCurrentCard(dialogView);
+            dialog.dismiss();
+        });
+        Button negativeButton = dialogView.findViewById(R.id.adverbCancelButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled editing adverb card.");
             dialog.dismiss();
         });
 
@@ -120,9 +130,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         ((EditText) dialogView.findViewById(R.id.englishAdverb)).setText(adverb.getEnglishWord());
         ((EditText) dialogView.findViewById(R.id.swedishAdverb)).setText(adverb.getSwedishWord());
 
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled edit adverb card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        dialog.show();
     }
 
     @Override
