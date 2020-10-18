@@ -71,7 +71,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginLeft="14dp"
         android:layout_marginBottom="4dp"
-        android:text="Select an article for the new word"
+        android:text="Select an article for the noun"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
     <RadioGroup

@@ -186,6 +186,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         ((EditText)dialogView.findViewById(R.id.infinitiveForm)).setText(verb.getInfinitive());
 
         dialog.show();
+        removeTranslationRadioGroupFields(dialog, R.id.verb_translate_radio_group, R.id.verb_translate_radio_group_header);
     }
 
     @Override

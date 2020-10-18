@@ -131,6 +131,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         ((EditText) dialogView.findViewById(R.id.swedishPhrase)).setText(phrase.getSwedishWord());
 
         dialog.show();
+        removeTranslationRadioGroupFields(dialog, R.id.phrase_translate_radio_group, R.id.phrase_translate_radio_group_header);
     }
 
     @Override

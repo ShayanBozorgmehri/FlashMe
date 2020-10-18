@@ -130,6 +130,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         ((EditText)dialogView.findViewById(R.id.swedishAdjective)).setText(adjective.getSwedishWord());
 
         dialog.show();
+        removeTranslationRadioGroupFields(dialog, R.id.adjective_translate_radio_group, R.id.adjective_translate_radio_group_header);
     }
 
     @Override

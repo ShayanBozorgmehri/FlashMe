@@ -21,6 +21,7 @@ package com.boredofnothing.flashcard;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -395,6 +396,11 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             replacementDocument.setData(updatedData);
             storeDocumentToDB(replacementDocument);
         }
+    }
+
+    protected void removeTranslationRadioGroupFields(AlertDialog dialog, int radioGroup, int radioGroupHeader) {
+        ((RadioGroup) dialog.findViewById(radioGroup)).removeAllViews();
+        dialog.findViewById(radioGroupHeader).setVisibility(View.GONE);
     }
 
     @Override

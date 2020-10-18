@@ -142,6 +142,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
 
         dialog.show();
+        removeTranslationRadioGroupFields(dialog, R.id.noun_translate_radio_group, R.id.noun_translate_radio_group_header);
     }
 
     @Override

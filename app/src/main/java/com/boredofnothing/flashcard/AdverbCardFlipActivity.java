@@ -132,6 +132,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         ((EditText) dialogView.findViewById(R.id.swedishAdverb)).setText(adverb.getSwedishWord());
 
         dialog.show();
+        removeTranslationRadioGroupFields(dialog, R.id.adverb_translate_radio_group, R.id.adverb_translate_radio_group_header);
     }
 
     @Override
