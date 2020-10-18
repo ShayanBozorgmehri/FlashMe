@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -68,18 +69,28 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.adjective_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Create new adjective flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
-            Log.d("DEBUG", "Creating new adjective card.");
-            if (addCardToDocument(dialogView)){
-                dialog.dismiss();
-                displayNewlyAddedCard();
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.adjectiveSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
+            SubmissionState state = addCardToDocument(dialogView);
+            switch (state){
+                case SUBMITTED_WITH_NO_RESULTS_FOUND:
+                case SUBMITTED_WITH_RESULTS_FOUND:
+                    dialog.dismiss();
+                    break;
             }
         });
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new adjective card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        Button negativeButton = dialogView.findViewById(R.id.adjectiveCancelButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled creating new adjective card.");
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     @Override
@@ -113,53 +124,53 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected boolean getTranslationBasedOnTranslationType(View dialogView) {
+    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.adjective_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishAdjective).trim();
         final String swedInput = getEditText(dialogView, R.id.swedishAdjective).trim();
 
-        //TODO: possible improvement is to just to create a Adj obj, set the vars for it and then return the obj, instead of returning boolean
         String engTranslation;
         String swedTranslation;
 
         if (!validateInputFields(translationType, engInput, swedInput)) {
-            return false;
+            return SubmissionState.FILLED_IN_INCORRECTLY;
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English adjective translation for: " + swedInput);
-                return false;
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             setEditText(dialogView, R.id.englishAdjective, engTranslation);
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADJ);
             if (isNullOrEmpty(swedTranslation)) {
                 swedTranslation = getSwedishTextUsingAzureTranslator(engInput);
                 if (isNullOrEmpty(swedTranslation)) {
                     displayToast("Could not find Swedish adjective translation for: " + engInput);
-                    return false;
+                    return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
                 } else {
                     displayToast("Found secondary translation...");
                 }
             }
             setEditText(dialogView, R.id.swedishAdjective, swedTranslation);
         }
-        return true;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
-    protected boolean addCardToDocument(View dialogView) {
-        if(!getTranslationBasedOnTranslationType(dialogView)){
-            return false;
+    protected SubmissionState addCardToDocument(View dialogView) {
+        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
+        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            return state;
         }
         displayToast("Adding adjective...");
 
@@ -175,7 +186,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
-        return true;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override

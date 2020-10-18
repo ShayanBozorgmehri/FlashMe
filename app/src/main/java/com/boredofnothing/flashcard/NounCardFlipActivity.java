@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
@@ -71,18 +72,29 @@ public class NounCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.noun_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Create new noun flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
-            Log.d("DEBUG", "Creating new noun card.");
-            if(addCardToDocument(dialogView)){
-                dialog.dismiss();
-                displayNewlyAddedCard();
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.nounSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
+            SubmissionState state = addCardToDocument(dialogView);
+            switch (state){
+                case SUBMITTED_WITH_NO_RESULTS_FOUND:
+                case SUBMITTED_WITH_RESULTS_FOUND:
+                    dialog.dismiss();
+                    break;
             }
         });
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new noun card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        Button negativeButton = dialogView.findViewById(R.id.nounCancelButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled creating new noun card.");
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     @Override
@@ -122,7 +134,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected boolean getTranslationBasedOnTranslationType(final View dialogView){
+    protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView){
         final String translationType = getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishNoun);
         final String swedInput = getEditText(dialogView, R.id.swedishNoun);
@@ -132,32 +144,32 @@ public class NounCardFlipActivity extends CardFlipActivity {
         String swedTranslation;
 
         if(!validateInputFields(translationType, engInput, swedInput)){
-            return false;
+            return SubmissionState.FILLED_IN_INCORRECTLY;
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English translation for: " + swedInput);
-                return false;
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             setEditText(dialogView, R.id.englishNoun, engTranslation);
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             if (engInput.trim().split(" ").length > 1) {
                 displayToast("Please only input one word");
-                return false;
+                return SubmissionState.FILLED_IN_INCORRECTLY;
             }
             swedTranslation = getSwedishTextUsingAzureTranslator("a " + engInput + "! the " + engInput);//get both the article and noun
             if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
-                return false;
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             String[] results = swedTranslation.replace("!", "").split(" ");
             article = results[0].equals("en") ? "en" : "ett";
@@ -168,15 +180,14 @@ public class NounCardFlipActivity extends CardFlipActivity {
             //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
         }
-        return true;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
-    protected boolean addCardToDocument(final View dialogView) {
-
-        // determine if all manual, auto eng or auto swed
-        if(!getTranslationBasedOnTranslationType(dialogView)){//it's invalid
-            return false;
+    protected SubmissionState addCardToDocument(final View dialogView) {
+        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
+        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            return state;
         }
         displayToast("Adding noun..." );
 
@@ -196,7 +207,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
-       return true;
+       return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
 

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -30,7 +31,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected boolean getTranslationBasedOnTranslationType(View dialogView) {
+    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.verb_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishVerb);
         final String swedInput = getEditText(dialogView, R.id.swedishVerb);
@@ -38,24 +39,24 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String engTranslation;
 
         if(!validateInputFields(translationType, engInput, swedInput)){
-            return false;
+            return SubmissionState.FILLED_IN_INCORRECTLY;
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.VERB);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English verb translation for: " + swedInput);
-                return false;
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             setEditText(dialogView, R.id.englishVerb, engTranslation);
 
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             // first, get a translation from azure
             String azureInfinitiveForm = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
@@ -63,7 +64,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
                 if (isNullOrEmpty(engInput)) {
                     displayToast("Could not find Swedish verb translation for: " + engInput);
-                    return false;
+                    return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
                 } else {
                     displayToast("Found secondary translation...");
                 }
@@ -72,13 +73,13 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             Verb verb = bablaTranslator.getConjugations(azureInfinitiveForm);
             if (verb == null || verb.getSwedishWord() == null) {
                 displayToast("Could not find conjugations for verb: " + engInput);
-                return false;
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
             setEditText(dialogView, R.id.infinitiveForm, verb.getInfinitive());
             setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
         }
-        return true;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
@@ -119,18 +120,29 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.verb_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Create new verb flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
-            Log.d("DEBUG", "Creating new verb card.");
-            if (addCardToDocument(dialogView)){
-                dialog.dismiss();
-                displayNewlyAddedCard();
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.verbSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
+            SubmissionState state = addCardToDocument(dialogView);
+            switch (state){
+                case SUBMITTED_WITH_NO_RESULTS_FOUND:
+                case SUBMITTED_WITH_RESULTS_FOUND:
+                    dialog.dismiss();
+                    break;
             }
         });
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new verb card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        Button negativeButton = dialogView.findViewById(R.id.verbSubmitButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled creating new verb card.");
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     @Override
@@ -166,9 +178,10 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected boolean addCardToDocument(final View dialogView) {
-        if(!getTranslationBasedOnTranslationType(dialogView)){
-            return false;
+    protected SubmissionState addCardToDocument(final View dialogView) {
+        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
+        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            return state;
         }
         displayToast("Adding verb...");
 
@@ -187,7 +200,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
-        return true;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override

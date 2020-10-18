@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -69,18 +70,29 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.adverb_input_layout, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle("Create new adverb flashcard");
-        dialogBuilder.setPositiveButton("Done", (dialog, whichButton) -> {
-            Log.d("DEBUG", "Creating new adverb card.");
-            if (addCardToDocument(dialogView)) {
-                dialog.dismiss();
-                displayNewlyAddedCard();
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Button positiveButton = dialogView.findViewById(R.id.adverbSubmitButton);
+        positiveButton.setText("Submit");
+        positiveButton.setOnClickListener(view -> {
+            SubmissionState state = addCardToDocument(dialogView);
+            switch (state){
+                case SUBMITTED_WITH_NO_RESULTS_FOUND:
+                case SUBMITTED_WITH_RESULTS_FOUND:
+                    dialog.dismiss();
+                    break;
             }
         });
-        dialogBuilder.setNegativeButton("Cancel", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled creating new adverb card."));
-        AlertDialog b = dialogBuilder.create();
-        b.show();
+        Button negativeButton = dialogView.findViewById(R.id.adverbSubmitButton);
+        negativeButton.setText("Cancel");
+        negativeButton.setOnClickListener(view -> {
+            Log.d("DEBUG", "Cancelled creating new adverb card.");
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     @Override
@@ -114,7 +126,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected boolean getTranslationBasedOnTranslationType(View dialogView) {
+    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.adverb_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishAdverb).trim();
         final String swedInput = getEditText(dialogView, R.id.swedishAdverb).trim();
@@ -124,43 +136,44 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         String swedTranslation;
 
         if (!validateInputFields(translationType, engInput, swedInput)) {
-            return false;
+            return SubmissionState.FILLED_IN_INCORRECTLY;
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADV);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English adverb translation for: " + swedInput);
-                return false;
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             setEditText(dialogView, R.id.englishAdverb, engTranslation);
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return false;
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
             swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
             if (isNullOrEmpty(swedTranslation)) {
                 swedTranslation = getSwedishTextUsingAzureTranslator(engInput);
                 if (isNullOrEmpty(swedTranslation)) {
                     displayToast("Could not find Swedish adverb translation for: " + engInput);
-                    return false;
+                    return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
                 } else {
                     displayToast("Found secondary translation...");
                 }
             }
             setEditText(dialogView, R.id.swedishAdverb, swedTranslation);
         }
-        return true;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
-    protected boolean addCardToDocument(View dialogView) {
-        if (!getTranslationBasedOnTranslationType(dialogView)) {
-            return false;
+    protected SubmissionState addCardToDocument(View dialogView) {
+        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
+        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            return state;
         }
         displayToast("Adding adverb...");
 
@@ -176,7 +189,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
-        return true;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override

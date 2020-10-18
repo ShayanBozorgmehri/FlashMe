@@ -100,15 +100,15 @@ public class AllCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected boolean getTranslationBasedOnTranslationType(final View dialogView) {
+    protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView) {
         // do nothing
-        return false;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
-    protected boolean addCardToDocument(final View dialogView) {
+    protected SubmissionState addCardToDocument(final View dialogView) {
         // do nothing
-        return false;
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
