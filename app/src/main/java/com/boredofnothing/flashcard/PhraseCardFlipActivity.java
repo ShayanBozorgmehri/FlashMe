@@ -113,9 +113,10 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         Button positiveButton = dialogView.findViewById(R.id.phraseSubmitButton);
         positiveButton.setText("Submit");
         positiveButton.setOnClickListener(view -> {
-            Log.d("DEBUG", "Editing phrase card.");
-            updateCurrentCard(dialogView);
-            dialog.dismiss();
+            if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
+                Log.d("DEBUG", "Editing phrase card.");
+                dialog.dismiss();
+            }
         });
         Button negativeButton = dialogView.findViewById(R.id.phraseCancelButton);
         negativeButton.setText("Cancel");
@@ -195,11 +196,17 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected void updateCurrentCard(final View dialogView) {
+    protected SubmissionState updateCurrentCard(final View dialogView) {
         Map<String, Object> updatedData = new HashMap<>();
 
         String engPhrase = getEditText(dialogView, R.id.englishPhrase);
         String swedPhrase = getEditText(dialogView, R.id.swedishPhrase);
+
+        String translationType = getResources().getString(R.string.manual_translation);
+        if (!validateInputFields(translationType, engPhrase, swedPhrase)){
+            return SubmissionState.FILLED_IN_INCORRECTLY;
+        }
+
         updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engPhrase);
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedPhrase);
@@ -207,6 +214,8 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         displayToast("Editing phrase...");
         Log.d("DEBUG", updatedData.toString());
         editOrReplaceDocument(updatedData);
+
+        return SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS;
     }
 
     @Override

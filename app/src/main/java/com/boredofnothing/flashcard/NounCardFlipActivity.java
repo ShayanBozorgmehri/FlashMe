@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.cards.Article;
@@ -116,9 +117,10 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Button positiveButton = dialogView.findViewById(R.id.nounSubmitButton);
         positiveButton.setText("Submit");
         positiveButton.setOnClickListener(view -> {
-            Log.d("DEBUG", "Editing noun card.");
-            updateCurrentCard(dialogView);
-            dialog.dismiss();
+            if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
+                Log.d("DEBUG", "Editing noun card.");
+                dialog.dismiss();
+            }
         });
         Button negativeButton = dialogView.findViewById(R.id.nounCancelButton);
         negativeButton.setText("Cancel");
@@ -221,12 +223,18 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
 
     @Override
-    protected void updateCurrentCard(final View dialogView){
+    protected SubmissionState updateCurrentCard(final View dialogView){
         Map<String, Object> updatedData = new HashMap<>();
 
         String engNoun = getEditText(dialogView, R.id.englishNoun);
         String swedNoun = getEditText(dialogView, R.id.swedishNoun);
         String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
+
+        String translationType = getResources().getString(R.string.manual_translation);
+        if (!validateInputFields(translationType, engNoun, swedNoun)){
+            return SubmissionState.FILLED_IN_INCORRECTLY;
+        }
+
         updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engNoun);
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedNoun);
@@ -235,6 +243,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         displayToast("Editing noun..." );
         Log.d("DEBUG", updatedData.toString());
         editOrReplaceDocument(updatedData);
+
+        return SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS;
     }
 
     @Override

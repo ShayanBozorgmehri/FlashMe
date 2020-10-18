@@ -150,7 +150,9 @@ public class AllCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected void updateCurrentCard(final View dialogView) {
+    protected SubmissionState updateCurrentCard(final View dialogView) {
+        return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+
 //        Document document = documents.get(currentIndex);
 //        MutableDocument mutableDocument = document.toMutable();
 //        Map<String, Object> map = new HashMap<>();

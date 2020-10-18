@@ -107,7 +107,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         FILLED_IN_CORRECTLY_BUT_NO_CONNECTION,
         FILLED_IN_INCORRECTLY,
         SUBMITTED_WITH_NO_RESULTS_FOUND,
-        SUBMITTED_WITH_RESULTS_FOUND
+        SUBMITTED_WITH_RESULTS_FOUND,
+        SUBMITTED_WITH_MANUAL_RESULTS
     }
 
     @Override
@@ -252,7 +253,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected void showEditInputDialog();
     abstract protected void showDeleteDialog();
     abstract protected SubmissionState addCardToDocument(final View dialogView);
-    abstract protected void updateCurrentCard(final View dialogView);
+    abstract protected SubmissionState updateCurrentCard(final View dialogView);
     abstract protected void loadAllDocuments();
     abstract protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView);
 

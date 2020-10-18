@@ -35,10 +35,12 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         final String translationType = getSelectedRadioOption(dialogView, R.id.verb_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishVerb);
         final String swedInput = getEditText(dialogView, R.id.swedishVerb);
+        String imperative = getEditText(dialogView, R.id.infinitiveForm);
+        String imperfect = getEditText(dialogView, R.id.imperfectForm);
 
         String engTranslation;
 
-        if(!validateInputFields(translationType, engInput, swedInput)){
+        if(!validateInputFields(translationType, engInput, swedInput, imperative, imperfect)){
             return SubmissionState.FILLED_IN_INCORRECTLY;
         }
         if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
@@ -164,9 +166,10 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         Button positiveButton = dialogView.findViewById(R.id.verbSubmitButton);
         positiveButton.setText("Submit");
         positiveButton.setOnClickListener(view -> {
-            Log.d("DEBUG", "Editing verb card.");
-            updateCurrentCard(dialogView);
-            dialog.dismiss();
+            if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
+                Log.d("DEBUG", "Editing verb card.");
+                dialog.dismiss();
+            }
         });
         Button negativeButton = dialogView.findViewById(R.id.verbCancelButton);
         negativeButton.setText("Cancel");
@@ -197,6 +200,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String swed = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
+
         MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
@@ -211,14 +215,35 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
+    protected boolean validateInputFields(String translationType, String engInput, String swedInput, String infinitive, String imperfect) {
+        if (translationType.equals(getResources().getString(R.string.manual_translation))
+                && (engInput.isEmpty() || swedInput.isEmpty() || infinitive.isEmpty() || imperfect.isEmpty())) {
+            displayToast("Cannot leave manual input fields blank!");
+            return false;
+        } else if (translationType.equals(getResources().getString(R.string.english_auto_translation))
+                && (swedInput.isEmpty() || infinitive.isEmpty() || imperfect.isEmpty())) {
+            displayToast("Swedish input fields required to find English auto translation!");
+            return false;
+        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation)) && engInput.isEmpty()) {
+            displayToast("English input field required to find Swedish auto translation!");
+            return false;
+        }
+        return true;
+    }
+
     @Override
-    protected void updateCurrentCard(final View dialogView){
+    protected SubmissionState updateCurrentCard(final View dialogView){
         Map<String, Object> updatedData = new HashMap<>();
 
         String eng = getEditText(dialogView, R.id.englishVerb);
         String swed = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
+
+        String translationType = getResources().getString(R.string.manual_translation);
+        if (!validateInputFields(translationType, eng, swed, imperative, imperfect)){
+            return SubmissionState.FILLED_IN_INCORRECTLY;
+        }
 
         updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
@@ -229,6 +254,8 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         displayToast("Editing verb...");
         Log.d("DEBUG", updatedData.toString());
         editOrReplaceDocument(updatedData);
+
+        return SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS;
     }
 
     @Override

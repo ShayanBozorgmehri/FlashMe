@@ -112,9 +112,10 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         Button positiveButton = dialogView.findViewById(R.id.adjectiveSubmitButton);
         positiveButton.setText("Submit");
         positiveButton.setOnClickListener(view -> {
-            Log.d("DEBUG", "Editing adjective card.");
-            updateCurrentCard(dialogView);
-            dialog.dismiss();
+            if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
+                Log.d("DEBUG", "Editing adjective card.");
+                dialog.dismiss();
+            }
         });
         Button negativeButton = dialogView.findViewById(R.id.adjectiveCancelButton);
         negativeButton.setText("Cancel");
@@ -198,11 +199,16 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected void updateCurrentCard(final View dialogView){
+    protected SubmissionState updateCurrentCard(final View dialogView){
         Map<String, Object> updatedData = new HashMap<>();
 
         String engAdjective = getEditText(dialogView, R.id.englishAdjective);
         String swedAdjective = getEditText(dialogView, R.id.swedishAdjective);
+
+        String translationType = getResources().getString(R.string.manual_translation);
+        if (!validateInputFields(translationType, engAdjective, swedAdjective)){
+            return SubmissionState.FILLED_IN_INCORRECTLY;
+        }
 
         updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engAdjective);
@@ -211,6 +217,8 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         displayToast("Editing adjective..." );
         Log.d("DEBUG", updatedData.toString());
         editOrReplaceDocument(updatedData);
+
+        return SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS;
     }
 
     @Override
