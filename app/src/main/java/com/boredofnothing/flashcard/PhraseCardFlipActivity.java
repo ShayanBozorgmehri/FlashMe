@@ -188,6 +188,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
@@ -211,6 +212,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engPhrase);
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedPhrase);
+        updatedData.put(CardKeyName.DATE.getValue(), getCurrentDate());
 
         displayToast("Editing phrase...");
         Log.d("DEBUG", updatedData.toString());

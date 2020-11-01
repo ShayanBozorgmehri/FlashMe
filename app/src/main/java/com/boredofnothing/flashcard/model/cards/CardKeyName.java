@@ -12,7 +12,8 @@ public enum CardKeyName {
     TYPE_KEY("wordType", true),
     ARTICLE_KEY("article", false),
     IMPERFECT_KEY("imperfect", false),
-    INFINITIVE_KEY("infinitive", false);
+    INFINITIVE_KEY("infinitive", false),
+    DATE("date", false);
 
     private final String value;
     private final boolean isIndexedKey;

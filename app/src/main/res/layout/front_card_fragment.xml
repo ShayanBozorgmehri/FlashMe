@@ -31,24 +31,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="Fuck you World!"
         android:layout_weight="0"
         android:duplicateParentState="true"
         />
 
-    <LinearLayout
-        android:id="@+id/LinearLayout01"
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="45dip"
         xmlns:android="http://schemas.android.com/apk/res/android">
 
-        <!-- making this invis for now but can use this idea for the last review card-->
-        <Button android:id="@+id/submitButton"
+        <TextView
+            android:id="@+id/frontDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:text="Submit"
-            android:visibility="invisible"/>
-    </LinearLayout>
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"/>
+
+        <TextView
+            android:id="@+id/frontCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"/>
+
+    </RelativeLayout>
 
 </LinearLayout>

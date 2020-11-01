@@ -10,6 +10,7 @@ public class Adverb extends Word {
     public static Adverb createAdverbFromDocument(Document document){
         Map<String, Object> map = document.toMap();
         map.remove(CardKeyName.TYPE_KEY.getValue());
+        map.remove(CardKeyName.DATE.getValue());
         return new ObjectMapper().convertValue(map, Adverb.class);
     }
     

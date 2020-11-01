@@ -22,6 +22,7 @@ public class Noun extends Word {
     public static Noun createNounFromDocument(Document document){
         Map<String, Object> map = document.toMap();
         map.remove(CardKeyName.TYPE_KEY.getValue());
+        map.remove(CardKeyName.DATE.getValue());
         return new ObjectMapper().convertValue(map, Noun.class);
     }
 

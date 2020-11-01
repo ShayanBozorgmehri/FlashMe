@@ -77,8 +77,10 @@ import com.couchbase.lite.SelectResult;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -342,6 +344,11 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         Toast toast = Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
         toast.show();
+    }
+
+    protected final String getCurrentDate(){
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MMM/yyyy");
+        return formatter.format(new Date());
     }
 
     protected void storeDocumentToDB(MutableDocument mutableDocument) {
@@ -626,6 +633,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             if (!documents.isEmpty()) {
                 Document document = documents.get(currentIndex);
                 ((TextView) getView().findViewById(R.id.frontText)).setText(document.getString(CardKeyName.ENGLISH_KEY.getValue()));
+                ((TextView) getView().findViewById(R.id.frontCount)).setText(currentIndex + 1 + "/" + documents.size());
+                ((TextView) getView().findViewById(R.id.frontDate)).setText(document.getString(CardKeyName.DATE.getValue()));
 
             } else {
                 ((TextView) getView().findViewById(R.id.frontText))
@@ -729,6 +738,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 Document document = documents.get(currentIndex);
                 String json = getJsonFromDoc(document);
                 ((TextView) getView().findViewById(R.id.backText)).setText(json);
+                ((TextView) getView().findViewById(R.id.backCount)).setText(currentIndex + 1 + "/" + documents.size());
 
             } else {
                 ((TextView) getView().findViewById(R.id.backText))

@@ -23,6 +23,7 @@ public class Verb extends Word {
     public static Verb createVerbFromDocument(Document document){
         Map<String, Object> map = document.toMap();
         map.remove(CardKeyName.TYPE_KEY.getValue());
+        map.remove(CardKeyName.DATE.getValue());
         return new ObjectMapper().convertValue(map, Verb.class);
     }
 }

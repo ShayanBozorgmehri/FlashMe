@@ -214,6 +214,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         map.put(CardKeyName.ENGLISH_KEY.getValue(), engTranslation);
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swedTranslation);
         map.put(CardKeyName.ARTICLE_KEY.getValue(), article);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
@@ -240,6 +241,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engNoun);
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedNoun);
         updatedData.put(CardKeyName.ARTICLE_KEY.getValue(), article);
+        updatedData.put(CardKeyName.DATE.getValue(), getCurrentDate());
 
         displayToast("Editing noun..." );
         Log.d("DEBUG", updatedData.toString());

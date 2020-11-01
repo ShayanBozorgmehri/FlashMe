@@ -10,6 +10,7 @@ public class Adjective extends Word {
     public static Adjective createAdjectiveFromDocument(Document document){
         Map<String, Object> map = document.toMap();
         map.remove(CardKeyName.TYPE_KEY.getValue());
+        map.remove(CardKeyName.DATE.getValue());
         return new ObjectMapper().convertValue(map, Adjective.class);
     }
     

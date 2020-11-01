@@ -209,6 +209,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
         map.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
         map.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
@@ -251,6 +252,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
         updatedData.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
         updatedData.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
+        updatedData.put(CardKeyName.DATE.getValue(), getCurrentDate());
 
         displayToast("Editing verb...");
         Log.d("DEBUG", updatedData.toString());

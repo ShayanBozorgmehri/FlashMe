@@ -191,6 +191,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
@@ -214,6 +215,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engAdjective);
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdjective);
+        updatedData.put(CardKeyName.DATE.getValue(), getCurrentDate());
 
         displayToast("Editing adjective..." );
         Log.d("DEBUG", updatedData.toString());
