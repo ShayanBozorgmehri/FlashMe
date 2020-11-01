@@ -739,6 +739,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 String json = getJsonFromDoc(document);
                 ((TextView) getView().findViewById(R.id.backText)).setText(json);
                 ((TextView) getView().findViewById(R.id.backCount)).setText(currentIndex + 1 + "/" + documents.size());
+                ((TextView) getView().findViewById(R.id.frontDate)).setText(document.getString(CardKeyName.DATE.getValue()));
 
             } else {
                 ((TextView) getView().findViewById(R.id.backText))
