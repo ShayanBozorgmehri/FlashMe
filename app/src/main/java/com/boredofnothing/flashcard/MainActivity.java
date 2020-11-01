@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -57,13 +58,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         try {
             Log.d("DEBUG", "searching for/creating DB...");
             database = new Database("flash_me_db", config);
-            if(database.getIndexes().size() == 0){
-                database.createIndex("englishWord",
-                        IndexBuilder.valueIndex(ValueIndexItem.property("englishWord")));
-                database.createIndex("swedishWord",
-                        IndexBuilder.valueIndex(ValueIndexItem.property("swedishWord")));
-                database.createIndex("wordType",
-                        IndexBuilder.valueIndex(ValueIndexItem.property("wordType")));
+            if (database.getIndexes().size() == 0){
+                database.createIndex(CardKeyName.ENGLISH_KEY.getValue(),
+                        IndexBuilder.valueIndex(ValueIndexItem.property(CardKeyName.ENGLISH_KEY.getValue())));
+                database.createIndex(CardKeyName.SWEDISH_KEY.getValue(),
+                        IndexBuilder.valueIndex(ValueIndexItem.property(CardKeyName.SWEDISH_KEY.getValue())));
+                database.createIndex(CardKeyName.TYPE_KEY.getValue(),
+                        IndexBuilder.valueIndex(ValueIndexItem.property(CardKeyName.TYPE_KEY.getValue())));
             }
             Log.d("DEBUG", "created DB in path: " + database.getPath());
 
