@@ -43,4 +43,7 @@
     <string name="swedish_verb">Input the Swedish present form</string>
     <string name="infinitive_form">Input the Swedish infinitive form</string>
     <string name="imperfect_form">Input the Swedish imperfect form</string>
+
+    <string name="backup_to_email">Input your email address to backup your data to</string>
+
 </resources>

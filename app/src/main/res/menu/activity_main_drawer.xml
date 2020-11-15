@@ -34,12 +34,12 @@
         android:icon="@drawable/verb_icon"
         android:title="Verb" />
 
-    <item android:title="Communicate">
+    <item android:title="Backup">
         <menu>
             <item
-                android:id="@+id/womenPutYourWeaponDown"
+                android:id="@+id/emailBackup"
                 android:icon="@drawable/ic_menu_share"
-                android:title="This Does Nothing" />
+                android:title="Backup to email" />
         </menu>
     </item>
 </menu>

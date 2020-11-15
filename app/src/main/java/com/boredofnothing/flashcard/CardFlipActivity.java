@@ -31,8 +31,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v4.app.NavUtils;
+import androidx.annotation.Nullable;
+import androidx.core.app.NavUtils;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -739,7 +739,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 String json = getJsonFromDoc(document);
                 ((TextView) getView().findViewById(R.id.backText)).setText(json);
                 ((TextView) getView().findViewById(R.id.backCount)).setText(currentIndex + 1 + "/" + documents.size());
-                ((TextView) getView().findViewById(R.id.frontDate)).setText(document.getString(CardKeyName.DATE.getValue()));
+                ((TextView) getView().findViewById(R.id.backDate)).setText(document.getString(CardKeyName.DATE.getValue()));
 
             } else {
                 ((TextView) getView().findViewById(R.id.backText))
