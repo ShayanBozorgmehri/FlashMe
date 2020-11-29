@@ -204,7 +204,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
         final String engTranslation = getEditText(dialogView, R.id.englishNoun);
         final String swedTranslation = getEditText(dialogView, R.id.swedishNoun);
-        if( !getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.swedish_auto_translation))){
+        if (!getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.swedish_auto_translation))){
             article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         }
         MutableDocument mutableDocument = new MutableDocument(engTranslation + "_" + swedTranslation);

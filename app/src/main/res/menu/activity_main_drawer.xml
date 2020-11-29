@@ -37,9 +37,13 @@
     <item android:title="Backup">
         <menu>
             <item
-                android:id="@+id/emailBackup"
+                android:id="@+id/exportBackup"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Backup to email" />
+                android:title="Export backup to email" />
+            <item
+                android:id="@+id/importBackup"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Import backup from device" />
         </menu>
     </item>
 </menu>

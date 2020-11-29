@@ -1,13 +1,19 @@
 package com.boredofnothing.flashcard;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.LabeledIntent;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,25 +40,32 @@ import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.IndexBuilder;
 import com.couchbase.lite.Meta;
+import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.ValueIndexItem;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +76,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-ZÀ-ÿ0-9._%+-]+@[A-ZÀ-ÿ0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
     private static final String BACKUP_NAME = "flashMeBackupData.json";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final int PICKFILE_RESULT_CODE = 100;
+    private static final int PERMISSION_CODE = 69;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,10 +169,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.allCards) {
             Log.i("INFO", "all cards selected");
             startActivity(new Intent(MainActivity.this, AllCardFlipActivity.class));
-        } else if (id == R.id.emailBackup) {
+        } else if (id == R.id.exportBackup) {
             Log.i("INFO", "backing up to email selected");
-            shouldBackupDialogInput();
-        } else {
+            showBackupDialogInput();
+        } else if (id == R.id.importBackup) {
+            Log.i("INFO", "importing back up from file");
+            showBackupImporter();
+        }
+        else {
             //just doing this so anything else wont do shit, remove this once all the menu items actually have functionality
             DrawerLayout drawer = findViewById(R.id.drawer_layout);
             drawer.closeDrawer(GravityCompat.START);
@@ -177,6 +197,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         displayCardCount(CardType.NOUN, R.id.nounCount, getString(R.string.noun_count));
         displayCardCount(CardType.PHR, R.id.phraseCount, getString(R.string.phrase_count));
         displayCardCount(CardType.VERB, R.id.verbCount, getString(R.string.verb_count));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICKFILE_RESULT_CODE && resultCode == Activity.RESULT_OK) {
+            Uri returnUri = data.getData();
+            String path = returnUri.getPath();
+            if (!path.endsWith(BACKUP_NAME)) {
+                Toast.makeText(getBaseContext(), "Invalid file selected, select file: " + BACKUP_NAME, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            importDataFromFile(path);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_CODE: {
+                if (!(grantResults.length > 1
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
+                    Toast.makeText(getBaseContext(), "Permission required to read required data from your device", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
     }
 
     private void displayCardCount(CardType cardType, int tvId, String countPrefix) {
@@ -207,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    protected void shouldBackupDialogInput() {
+    protected void showBackupDialogInput() {
 
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
@@ -250,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } catch (Exception e){
             Toast.makeText(this, "Something went wrong, failed to backup to email due to: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
+            Log.e("ERROR", "Something went wrong, failed to backup to email due to: " + e);
         }
     }
 
@@ -263,11 +310,49 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             createCardTypeSection(backupMap, cardType, query);
         }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String json = gson.toJson(backupMap);
-        System.out.println("-----------START----------------");
-        System.out.println(json);
-        System.out.println("-----------END----------------");
-        return json;
+        return gson.toJson(backupMap);
+    }
+
+    private void createCardGroupsFromJson(String json) throws JsonProcessingException {
+        Map<String, Object> cardGroupsMap = OBJECT_MAPPER.readValue(json, Map.class);
+        Set<String> cardGroups = cardGroupsMap.keySet();
+
+        int totalCardsToImportCount = 0;
+        int successfulImportCount = 0;
+        for (String cardGroup : cardGroups) {
+
+            List<Map<String, Object>> typeData = (List<Map<String, Object>>) cardGroupsMap.get(cardGroup);
+            Pair<Integer, Integer> backupCounts = createDocumentsFromCardGroup(cardGroup, typeData);
+
+            totalCardsToImportCount += backupCounts.first;
+            successfulImportCount += backupCounts.second;
+        }
+
+        //todo: could also use a better popup that also shows the skipped (already existed) count and error count, maybe with a custom object (or 4-tuple?) instead of Pair
+        Toast.makeText(getBaseContext(), "Imported " + successfulImportCount + " out of " + totalCardsToImportCount + " cards.", Toast.LENGTH_SHORT).show();
+    }
+
+    private Pair<Integer, Integer> createDocumentsFromCardGroup(String cardGroupKey, List<Map<String, Object>> docsMap){
+        CardType cardType = CardType.fromValue(cardGroupKey);
+        Log.d("DEBUG", "Importing cardTypes for: " + cardType);
+        int successfulImportCount = 0;
+        for (Map<String, Object> docMap: docsMap){
+            String docId = (String) docMap.get("id");
+            if (database.getDocument(docId) == null) {
+                Map<String, Object> docData = (Map<String, Object>) docMap.get("data");
+                MutableDocument mutableDocument = new MutableDocument(docId);
+                mutableDocument.setData(docData);
+                try {
+                    database.save(mutableDocument);
+                    successfulImportCount++;
+                } catch (CouchbaseLiteException e) {
+                    Log.e("ERROR", "failed to import doc " + docId + " with data: " + docData + " due to: " + e);
+                }
+            } else {
+                Log.d("DEBUG", "doc already exists, not importing data for: " + docId);
+            }
+        }
+        return Pair.create(docsMap.size(), successfulImportCount);
     }
 
     protected void createCardTypeSection(Map<String, Object> backupMap, CardType cardType, Query query) {
@@ -303,10 +388,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             new File(filePath).delete();
         }
 
-        FileOutputStream fos = new FileOutputStream(filePath);
-        DataOutputStream outStream = new DataOutputStream(new BufferedOutputStream(fos));
-        outStream.writeBytes(json);
-        outStream.close();
+        try (FileOutputStream fos = new FileOutputStream(filePath);
+             OutputStreamWriter osw = new OutputStreamWriter(fos, Charset.forName("UTF-8").newEncoder())) {
+            osw.write(json);
+        }
     }
 
     private void sendToEmail(String emailAddress, String filePath) {
@@ -337,4 +422,62 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startActivity(chooser);
     }
 
+    // TODO: revisit permission stuff to make sure shit work break if they fuck the the permissions after install
+    protected void showBackupImporter(){
+        if (Build.VERSION.SDK_INT > 22) {
+            requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, PERMISSION_CODE);
+        }
+        Intent intent;
+        if (android.os.Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
+            intent = new Intent("com.sec.android.app.myfiles.PICK_DATA");
+            intent.putExtra("CONTENT_TYPE", "*/*");
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+        } else {
+//            String[] mimeTypes =
+//                    {"application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .doc & .docx
+//                            "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .ppt & .pptx
+//                            "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xls & .xlsx
+//                            "text/plain",
+//                            "application/pdf",
+//                            "application/zip", "application/vnd.android.package-archive"};
+
+            intent = new Intent(Intent.ACTION_GET_CONTENT); // or ACTION_OPEN_DOCUMENT
+            intent.setType("*/*");
+            //intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        }
+
+        try {
+            // todo: fix title to show up correctly or have another option to search for the file automatically
+            Toast.makeText(getBaseContext(), "Find backup file: " + BACKUP_NAME, Toast.LENGTH_SHORT).show();
+            startActivityForResult(
+                    Intent.createChooser(intent, "Find backup file: " + BACKUP_NAME),
+                    PICKFILE_RESULT_CODE);
+        } catch (ActivityNotFoundException ex) {
+            Toast.makeText(this, "Please install a File Manager.",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void importDataFromFile(String path) {
+
+        try (FileInputStream fis = new FileInputStream(path);
+             InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8").newDecoder());
+             BufferedReader br = new BufferedReader(isr)) {
+
+            StringBuilder sb = new StringBuilder();
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+
+            createCardGroupsFromJson(sb.toString());
+
+        } catch (Exception e) {
+            Toast.makeText(getBaseContext(), "Failed to import data", Toast.LENGTH_SHORT).show();
+            Log.e("ERROR", "Failed to import data, due to: " + e);
+        }
+    }
 }
