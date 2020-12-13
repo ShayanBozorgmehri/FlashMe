@@ -44,7 +44,6 @@
         </activity>
 
         <activity android:name=".CardFlipActivity"
-            android:label="@string/title_card_flip"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme"
             android:launchMode="singleTop">
@@ -55,7 +54,7 @@
         </activity>
 
         <activity android:name=".AllCardFlipActivity"
-            android:label="@string/title_card_flip"
+            android:label="@string/all_title"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme">
@@ -67,7 +66,7 @@
         </activity>
 
         <activity android:name=".AdjectiveCardFlipActivity"
-            android:label="@string/title_card_flip"
+            android:label="@string/adjective_title"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme">
@@ -79,7 +78,7 @@
         </activity>
 
         <activity android:name=".AdverbCardFlipActivity"
-            android:label="@string/title_card_flip"
+            android:label="@string/adverb_title"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme">
@@ -91,7 +90,7 @@
         </activity>
 
         <activity android:name=".PhraseCardFlipActivity"
-            android:label="@string/title_card_flip"
+            android:label="@string/phrase_title"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme">
@@ -103,7 +102,7 @@
         </activity>
 
         <activity android:name=".NounCardFlipActivity"
-            android:label="@string/title_card_flip"
+            android:label="@string/noun_title"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme">
@@ -115,7 +114,7 @@
         </activity>
 
         <activity android:name=".VerbCardFlipActivity"
-            android:label="@string/title_card_flip"
+            android:label="@string/verb_title"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"
             android:theme="@style/DarkTheme"

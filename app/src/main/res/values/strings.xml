@@ -4,14 +4,21 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="title_card_flip">Card Flip</string>
     <string name="intro">Time to get flashed!</string>
+
     <string name="all_card_count">All card count: </string>
     <string name="adjective_count">Adjective count: </string>
     <string name="adverb_count">Adverb count: </string>
     <string name="noun_count">Noun count: </string>
     <string name="phrase_count">Phrase count: </string>
     <string name="verb_count">Verb count: </string>
+
+    <string name="all_title">All cards</string>
+    <string name="adjective_title">Adjs</string>
+    <string name="adverb_title">Adverbs</string>
+    <string name="noun_title">Nouns</string>
+    <string name="phrase_title">Phrases</string>
+    <string name="verb_title">Verbs</string>
 
     <string name="create_card">Create card</string>
     <string name="delete_card">Delete card</string>
