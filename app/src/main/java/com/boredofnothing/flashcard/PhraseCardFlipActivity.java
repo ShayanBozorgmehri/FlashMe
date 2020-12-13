@@ -44,7 +44,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         }
         if (doc != null) {
             displayToast("found card!");
-            displayNewlyAddedCard();
+            displayCard();
         } else {
             displayToast("no phrase card found for word: " + word);
         }
@@ -82,6 +82,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
                 case SUBMITTED_WITH_NO_RESULTS_FOUND:
                 case SUBMITTED_WITH_RESULTS_FOUND:
                     dialog.dismiss();
+                    displayCard();
                     break;
             }
         });
@@ -117,6 +118,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
             if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
                 Log.d("DEBUG", "Editing phrase card.");
                 dialog.dismiss();
+                displayCard();
             }
         });
         Button negativeButton = dialogView.findViewById(R.id.phraseCancelButton);
@@ -237,6 +239,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
             displayToast("Deleting phrase...");
             deleteDocument();
             dialog.dismiss();
+            displayCard();
         });
 
         dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting phrase card."));

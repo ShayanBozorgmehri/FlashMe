@@ -44,7 +44,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         }
         if(doc != null) {
             displayToast("found card!");
-            displayNewlyAddedCard();
+            displayCard();
         } else {
             displayToast("no adj card found for word: " + word);
         }
@@ -81,6 +81,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
                 case SUBMITTED_WITH_NO_RESULTS_FOUND:
                 case SUBMITTED_WITH_RESULTS_FOUND:
                     dialog.dismiss();
+                    displayCard();
                     break;
             }
         });
@@ -116,6 +117,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
             if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
                 Log.d("DEBUG", "Editing adjective card.");
                 dialog.dismiss();
+                displayCard();
             }
         });
         Button negativeButton = dialogView.findViewById(R.id.adjectiveCancelButton);
@@ -240,6 +242,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
             displayToast("Deleting adjective..." );
             deleteDocument();
             dialog.dismiss();
+            displayCard();
         });
 
         dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting adjective card."));

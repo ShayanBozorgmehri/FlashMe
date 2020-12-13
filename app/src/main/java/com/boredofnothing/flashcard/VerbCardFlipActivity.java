@@ -99,7 +99,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         }
         if (doc != null) {
             displayToast("found card!");
-            displayNewlyAddedCard();
+            displayCard();
         } else {
             displayToast("no verb card found for word: " + word);
         }
@@ -135,6 +135,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 case SUBMITTED_WITH_NO_RESULTS_FOUND:
                 case SUBMITTED_WITH_RESULTS_FOUND:
                     dialog.dismiss();
+                    displayCard();
                     break;
             }
         });
@@ -170,6 +171,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
                 Log.d("DEBUG", "Editing verb card.");
                 dialog.dismiss();
+                displayCard();
             }
         });
         Button negativeButton = dialogView.findViewById(R.id.verbCancelButton);
@@ -277,6 +279,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             displayToast("Deleting verb...");
             deleteDocument();
             dialog.dismiss();
+            displayCard();
         });
 
         dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting verb card."));

@@ -47,7 +47,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
         if (doc != null) {
             displayToast("found card!");
-            displayNewlyAddedCard();
+            displayCard();
         } else {
             displayToast("no noun found for word: " + word);
         }
@@ -85,6 +85,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 case SUBMITTED_WITH_NO_RESULTS_FOUND:
                 case SUBMITTED_WITH_RESULTS_FOUND:
                     dialog.dismiss();
+                    displayCard();
                     break;
             }
         });
@@ -120,6 +121,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
             if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
                 Log.d("DEBUG", "Editing noun card.");
                 dialog.dismiss();
+                displayCard();
             }
         });
         Button negativeButton = dialogView.findViewById(R.id.nounCancelButton);
@@ -265,6 +267,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
             displayToast("Deleting noun..." );
             deleteDocument();
             dialog.dismiss();
+            displayCard();
         });
 
         dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting noun card."));

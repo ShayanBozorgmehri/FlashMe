@@ -51,7 +51,7 @@ public class AllCardFlipActivity extends CardFlipActivity {
         }
         if (doc != null) {
             displayToast("found card!");
-            displayNewlyAddedCard();
+            displayCard();
         } else {
             displayToast("no card found for word: " + word);
         }
@@ -90,7 +90,7 @@ public class AllCardFlipActivity extends CardFlipActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         menu.removeItem(R.id.create_card);
-        menu.removeItem(R.id.edit_card);
+        menu.removeItem(R.id.edit_card); //allow edit and start checking for duplicates based on doc id and maybe use the indexes
         return true;
     }
 
@@ -188,6 +188,7 @@ public class AllCardFlipActivity extends CardFlipActivity {
             displayToast("Deleting flashcard...");
             deleteDocument();
             dialog.dismiss();
+            displayCard();
         });
 
         dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled card deletion."));

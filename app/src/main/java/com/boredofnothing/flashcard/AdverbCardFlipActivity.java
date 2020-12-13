@@ -45,7 +45,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         }
         if (doc != null) {
             displayToast("found card!");
-            displayNewlyAddedCard();
+            displayCard();
         } else {
             displayToast("no adverb card found for word: " + word);
         }
@@ -83,6 +83,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
                 case SUBMITTED_WITH_NO_RESULTS_FOUND:
                 case SUBMITTED_WITH_RESULTS_FOUND:
                     dialog.dismiss();
+                    displayCard();
                     break;
             }
         });
@@ -118,6 +119,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
             if (updateCurrentCard(dialogView) == SubmissionState.SUBMITTED_WITH_MANUAL_RESULTS) {
                 Log.d("DEBUG", "Editing adverb card.");
                 dialog.dismiss();
+                displayCard();
             }
         });
         Button negativeButton = dialogView.findViewById(R.id.adverbCancelButton);
@@ -243,6 +245,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
             displayToast("Deleting adverb...");
             deleteDocument();
             dialog.dismiss();
+            displayCard();
         });
 
         dialogBuilder.setNegativeButton("No", (dialog, whichButton) -> Log.d("DEBUG", "Cancelled deleting adverb card."));

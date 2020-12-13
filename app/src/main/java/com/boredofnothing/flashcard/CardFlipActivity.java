@@ -481,7 +481,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return json;
     }
 
-    protected void displayNewlyAddedCard() {
+    protected void displayCard() {
 
         // only auto update the display if the front card is show
         if (!isShowingBack) {
