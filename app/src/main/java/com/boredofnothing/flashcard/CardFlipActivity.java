@@ -31,8 +31,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.annotation.Nullable;
-import androidx.core.app.NavUtils;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -51,6 +49,9 @@ import android.widget.RadioGroup;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.NavUtils;
 
 import com.boredofnothing.flashcard.model.ListViewAdapter;
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -239,8 +240,9 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     public void onClickTextView(View v){
-        int position = (int) v.getTag();
-        currentIndex = position;
+        String tag = (String) v.getTag();
+        Document doc = documents.stream().filter(d -> d.getId().equals(tag)).findFirst().get();
+        currentIndex = documents.indexOf(doc);
         displayNewlyAddedCard();
 
         LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);

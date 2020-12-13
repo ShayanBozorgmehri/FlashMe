@@ -14,23 +14,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListViewAdapter extends BaseAdapter implements Filterable {
-    private List<ListViewItem> itemList;
-    private List<ListViewItem> itemListFull;
+    private List<ListViewItem> originalList;
+    private List<ListViewItem> filteredList;
     private LayoutInflater inflater;
 
-    public ListViewAdapter(List<ListViewItem> itemList) {
-        this.itemList = itemList;
-        itemListFull = new ArrayList<>(itemList);
+    public ListViewAdapter(List<ListViewItem> originalList) {
+        this.originalList = originalList;
+        filteredList = new ArrayList<>(originalList);
     }
 
     @Override
     public int getCount() {
-        return itemList.size();
+        return originalList.size();
     }
 
     @Override
     public ListViewItem getItem(int position) {
-        return itemList.get(position);
+        return originalList.get(position);
     }
 
     @Override
@@ -49,11 +49,11 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
             List<ListViewItem> filteredList = new ArrayList<>();
 
             if (constraint == null || constraint.length() == 0) {
-                filteredList.addAll(itemListFull);
+                filteredList.addAll(ListViewAdapter.this.filteredList);
             } else {
                 String filterPattern = constraint.toString().toLowerCase().trim();
 
-                for (ListViewItem item : itemListFull) {
+                for (ListViewItem item : ListViewAdapter.this.filteredList) {
                     if (item.getText1().toLowerCase().contains(filterPattern)
                         || item.getText2().toLowerCase().contains(filterPattern)) {
                         filteredList.add(item);
@@ -69,7 +69,7 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            itemList = (List) results.values;
+            originalList = (List) results.values;
             notifyDataSetChanged();
         }
     };
@@ -82,11 +82,13 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
         }
 
         ListViewItemBinding listViewItemBinding = ListViewItemBinding.inflate(inflater);
-        listViewItemBinding.englishTextView.setText((itemList.get(position).getText1()));
-        listViewItemBinding.swedishTextView.setText((itemList.get(position).getText2()));
+        listViewItemBinding.englishTextView.setText((originalList.get(position).getText1()));
+        listViewItemBinding.swedishTextView.setText((originalList.get(position).getText2()));
 
-        // tag will be used to fetch the position of the document
-        listViewItemBinding.englishTextView.setTag(position);
+        // tag will be used to fetch the position of the document for on click
+        String tag = originalList.get(position).getText1() + "_" + originalList.get(position).getText2();
+        listViewItemBinding.englishTextView.setTag(tag);
+        listViewItemBinding.swedishTextView.setTag(tag);
 
         return listViewItemBinding.getRoot();
     }
