@@ -33,7 +33,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,7 +47,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NavUtils;
@@ -64,6 +62,8 @@ import com.boredofnothing.flashcard.model.cards.Noun;
 import com.boredofnothing.flashcard.model.cards.Phrase;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.provider.AzureTranslator;
+import com.boredofnothing.flashcard.util.DocumentUtil;
+import com.boredofnothing.flashcard.util.ToastUtil;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Document;
@@ -343,9 +343,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     protected final void displayToast(String message) {
-        Toast toast = Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
-        toast.show();
+        ToastUtil.show(getBaseContext(), message);
     }
 
     protected final String getCurrentDate(){
@@ -391,7 +389,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         Document currentDocument = documents.get(currentIndex);
         String updatedEngWord = (String) updatedData.get(CardKeyName.ENGLISH_KEY.getValue());
         String updatedSwedWord = (String) updatedData.get(CardKeyName.SWEDISH_KEY.getValue());
-        String newId = updatedEngWord + "_" + updatedSwedWord;
+        String newId = DocumentUtil.createDocId(updatedEngWord, updatedSwedWord);
 
         if (currentDocument.getId().equals(newId)){
             MutableDocument mutableDocument = new MutableDocument(currentDocument.getId());
@@ -442,7 +440,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     private static void incrementCurrentIndex(){
-        if(currentIndex < documents.size() - 1){
+        if (currentIndex < documents.size() - 1){
             currentIndex++;
         } else {
             currentIndex = 0;
@@ -450,10 +448,10 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     private static void decrementCurrentIndex(){
-        if(currentIndex != 0){
+        if (currentIndex != 0){
             currentIndex--;
         } else {
-            currentIndex = 0;
+            currentIndex = documents.size() - 1;
         }
     }
 

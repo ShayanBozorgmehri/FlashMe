@@ -13,6 +13,7 @@ import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.provider.BablaTranslator;
+import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -202,7 +203,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
 
-        MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);

@@ -4,13 +4,13 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
-import android.widget.Toast;
 
 import com.boredofnothing.flashcard.exception.AzureTranslateException;
 import com.boredofnothing.flashcard.model.azureData.dictionary.AzureDictionaryResponse;
 import com.boredofnothing.flashcard.model.azureData.dictionary.DictionaryTranslation;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.azureData.translation.AzureTranslateResponse;
+import com.boredofnothing.flashcard.util.ToastUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -45,9 +45,9 @@ public class AzureTranslator {
                 return translationResponse.getTranslations().get(0).getText().toLowerCase();
             }
         } catch (AzureTranslateException e){
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            ToastUtil.show(context, e.getMessage());
         } catch (Exception e){
-            Toast.makeText(context, "Unexpected error occurred for Azure Translation", Toast.LENGTH_SHORT).show();
+            ToastUtil.show(context, "Unexpected error occurred for Azure Translation");
             Log.e("ERROR", "Unexpected error occurred for Azure Translation: " + e);
         }
         return null;
@@ -65,9 +65,9 @@ public class AzureTranslator {
                 return translations.get(0).getNormalizedTarget();
             }
         } catch (AzureTranslateException e){
-            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+            ToastUtil.show(context, e.getMessage());
         } catch (Exception e){
-            Toast.makeText(context, "Unexpected error occurred for Azure Dictionary lookup", Toast.LENGTH_SHORT).show();
+            ToastUtil.show(context, "Unexpected error occurred for Azure Dictionary lookup");
             Log.e("ERROR", "Unexpected error occurred for Azure Dictionary lookup: " + e);
         }
         return null;

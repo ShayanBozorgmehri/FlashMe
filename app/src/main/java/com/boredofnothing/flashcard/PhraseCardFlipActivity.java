@@ -11,6 +11,7 @@ import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Phrase;
+import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -183,7 +184,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
 
         String eng = getEditText(dialogView, R.id.englishPhrase);
         String swed = getEditText(dialogView, R.id.swedishPhrase);
-        MutableDocument mutableDocument = new MutableDocument(eng);
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);

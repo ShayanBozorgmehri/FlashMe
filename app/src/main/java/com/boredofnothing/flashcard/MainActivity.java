@@ -32,6 +32,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
+import com.boredofnothing.flashcard.util.ToastUtil;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
@@ -207,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Uri returnUri = data.getData();
             String path = returnUri.getPath();
             if (!path.endsWith(BACKUP_NAME)) {
-                Toast.makeText(getBaseContext(), "Invalid file selected, select file: " + BACKUP_NAME, Toast.LENGTH_SHORT).show();
+                ToastUtil.show(getBaseContext(), "Invalid file selected, select file: " + BACKUP_NAME);
                 return;
             }
             importDataFromFile(path);
@@ -220,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case PERMISSION_CODE: {
                 if (!(grantResults.length > 1
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
-                    Toast.makeText(getBaseContext(), "Permission required to read required data from your device", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show(getBaseContext(), "Permission required to read required data from your device");
                 }
             }
         }
@@ -275,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 backupCardsToEmail(email);
                 dialog.dismiss();
             } else {
-                Toast.makeText(getBaseContext(), "Invalid email address", Toast.LENGTH_SHORT).show();
+                ToastUtil.show(getBaseContext(), "Invalid email address");
             }
         });
         Button negativeButton = dialogView.findViewById(R.id.emailBackupCancelButton);
@@ -296,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             sendToEmail(emailAddress, filePath);
 
         } catch (Exception e){
-            Toast.makeText(this, "Something went wrong, failed to backup to email due to: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            ToastUtil.show(this, "Something went wrong, failed to backup to email due to: " + e.getMessage());
             Log.e("ERROR", "Something went wrong, failed to backup to email due to: " + e);
         }
     }
@@ -329,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         //todo: could also use a better popup that also shows the skipped (already existed) count and error count, maybe with a custom object (or 4-tuple?) instead of Pair
-        Toast.makeText(getBaseContext(), "Imported " + successfulImportCount + " out of " + totalCardsToImportCount + " cards.", Toast.LENGTH_SHORT).show();
+        ToastUtil.show(getBaseContext(), "Imported " + successfulImportCount + " out of " + totalCardsToImportCount + " cards.");
     }
 
     private Pair<Integer, Integer> createDocumentsFromCardGroup(String cardGroupKey, List<Map<String, Object>> docsMap){
@@ -450,13 +451,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         try {
             // todo: fix title to show up correctly or have another option to search for the file automatically
-            Toast.makeText(getBaseContext(), "Find backup file: " + BACKUP_NAME, Toast.LENGTH_SHORT).show();
+            ToastUtil.show(getBaseContext(), "Find backup file: " + BACKUP_NAME);
             startActivityForResult(
                     Intent.createChooser(intent, "Find backup file: " + BACKUP_NAME),
                     PICKFILE_RESULT_CODE);
         } catch (ActivityNotFoundException ex) {
-            Toast.makeText(this, "Please install a File Manager.",
-                    Toast.LENGTH_SHORT).show();
+            ToastUtil.show(this, "Please install a File Manager.");
         }
     }
 
@@ -476,7 +476,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             createCardGroupsFromJson(sb.toString());
 
         } catch (Exception e) {
-            Toast.makeText(getBaseContext(), "Failed to import data", Toast.LENGTH_SHORT).show();
+            ToastUtil.show(getBaseContext(), "Failed to import data");
             Log.e("ERROR", "Failed to import data, due to: " + e);
         }
     }

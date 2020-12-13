@@ -13,6 +13,7 @@ import com.boredofnothing.flashcard.model.cards.Article;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Noun;
+import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -207,7 +208,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if (!getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.swedish_auto_translation))){
             article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         }
-        MutableDocument mutableDocument = new MutableDocument(engTranslation + "_" + swedTranslation);
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(engTranslation, swedTranslation));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), engTranslation);

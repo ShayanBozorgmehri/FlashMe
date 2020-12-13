@@ -12,6 +12,7 @@ import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adjective;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
+import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -186,7 +187,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
         String eng = getEditText(dialogView, R.id.englishAdjective);
         String swed = getEditText(dialogView, R.id.swedishAdjective);
-        MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);

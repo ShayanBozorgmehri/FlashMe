@@ -12,6 +12,7 @@ import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adverb;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
+import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
@@ -189,7 +190,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
 
         String eng = getEditText(dialogView, R.id.englishAdverb);
         String swed = getEditText(dialogView, R.id.swedishAdverb);
-        MutableDocument mutableDocument = new MutableDocument(eng + "_" + swed);
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
         map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);

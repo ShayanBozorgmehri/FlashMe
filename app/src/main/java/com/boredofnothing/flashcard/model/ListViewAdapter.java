@@ -9,6 +9,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 
 import com.boredofnothing.flashcard.databinding.ListViewItemBinding;
+import com.boredofnothing.flashcard.util.DocumentUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +87,7 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
         listViewItemBinding.swedishTextView.setText((originalList.get(position).getText2()));
 
         // tag will be used to fetch the position of the document for on click
-        String tag = originalList.get(position).getText1() + "_" + originalList.get(position).getText2();
+        String tag = DocumentUtil.createDocId(originalList.get(position).getText1(), originalList.get(position).getText2());
         listViewItemBinding.englishTextView.setTag(tag);
         listViewItemBinding.swedishTextView.setTag(tag);
 
