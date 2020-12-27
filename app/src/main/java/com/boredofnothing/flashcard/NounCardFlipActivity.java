@@ -176,8 +176,9 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
-            if (engInput.trim().split(" ").length > 1) {
-                displayToast("Please only input one word");
+            int wordCount = engInput.trim().split(" ").length;
+            if (wordCount > 2) {
+                displayToast("Please only input one or two words, not including the article");
                 return SubmissionState.FILLED_IN_INCORRECTLY;
             }
             swedTranslation = getSwedishTextUsingAzureTranslator("a " + engInput + "! the " + engInput);//get both the article and noun
