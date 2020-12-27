@@ -3,6 +3,7 @@ package com.boredofnothing.flashcard.provider;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.boredofnothing.flashcard.model.bablaData.Conjugation;
 import com.boredofnothing.flashcard.model.cards.Verb;
 
 import org.jsoup.Jsoup;
@@ -44,19 +45,33 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
     @Override
     protected Verb doInBackground(String... data) {
         Verb verb = new Verb();
-        verb.setInfinitive(data[0]);
 
         try {
-            //Connect to the website
-            Document document = Jsoup.connect("https://en.bab.la/conjugation/swedish/" + verb.getInfinitive()).get();
-            Elements elements = document.select("div.conj-tense-block");
-            if(!elements.isEmpty()){ //presens, imperativ!, infinitiv, preteritum, perfekt (have ran)
-                for(Element element: elements){
+            // Connect to the website
+            Document document = Jsoup.connect("https://en.bab.la/conjugation/swedish/" + data[0]).get();
+
+            // find the infinitiv conjugation
+            Elements quickResultsElements = document.select("div.quick-result-entry");
+            for (Element quickResultsElement: quickResultsElements) {
+                Elements quickResultOptionElement = quickResultsElement.getElementsByClass("quick-result-option");
+                if (quickResultOptionElement.size() > 0) {
+                    String quickResultConjugationType = quickResultOptionElement.get(0).text();
+                    String value = quickResultsElement.getElementsByClass("sense-group-results").get(0).text();
+                    if (quickResultConjugationType.equals(Conjugation.INFINITIV.getValue())) {
+                        verb.setInfinitive(value);
+                    }
+                }
+            }
+
+            // find all other conjugations
+            Elements conjugationTenseBlockElements = document.select("div.conj-tense-block");
+            if (!conjugationTenseBlockElements.isEmpty()) {
+                for (Element element: conjugationTenseBlockElements){
                     String tense = element.getElementsByClass("conj-tense-block-header").get(0).text();
                     String value = element.getElementsByClass("conj-result").get(0).text();
-                    if("Presens".equals(tense)){
+                    if (tense.equals(Conjugation.PRESENS.getValue())) {
                         verb.setSwedishWord(value);
-                    } else if("Preteritum".equals(tense)){
+                    } else if(tense.equals(Conjugation.IMPERFEKT_PRETERITUM.getValue())) {
                         verb.setImperfect(value);
                     }
                 }
