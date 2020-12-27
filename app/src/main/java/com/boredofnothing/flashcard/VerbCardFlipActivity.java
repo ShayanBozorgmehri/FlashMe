@@ -38,13 +38,14 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         final String swedInput = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
+        String perfect = getEditText(dialogView, R.id.perfectForm);
 
         String engTranslation;
 
-        if(!validateInputFields(translationType, engInput, swedInput, imperative, imperfect)){
+        if (!validateInputFields(translationType, engInput, swedInput, imperative, imperfect, perfect)) {
             return SubmissionState.FILLED_IN_INCORRECTLY;
         }
-        if(translationType.equals(getResources().getString(R.string.english_auto_translation))){
+        if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
                 return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
@@ -81,6 +82,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
             setEditText(dialogView, R.id.infinitiveForm, verb.getInfinitive());
             setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
+            setEditText(dialogView, R.id.perfectForm, verb.getPerfect());
         }
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
@@ -186,6 +188,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         ((EditText)dialogView.findViewById(R.id.englishVerb)).setText(verb.getEnglishWord());
         ((EditText)dialogView.findViewById(R.id.swedishVerb)).setText(verb.getSwedishWord());
         ((EditText)dialogView.findViewById(R.id.imperfectForm)).setText(verb.getImperfect());
+        ((EditText)dialogView.findViewById(R.id.perfectForm)).setText(verb.getPerfect());
         ((EditText)dialogView.findViewById(R.id.infinitiveForm)).setText(verb.getInfinitive());
 
         dialog.show();
@@ -204,6 +207,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String swed = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
+        String perfect = getEditText(dialogView, R.id.perfectForm);
 
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
         Map<String, Object> map = new HashMap<>();
@@ -212,6 +216,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
         map.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
         map.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
+        map.put(CardKeyName.PERFECT_KEY.getValue(), perfect);
         map.put(CardKeyName.DATE.getValue(), getCurrentDate());
         mutableDocument.setData(map);
 
@@ -220,13 +225,13 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
-    protected boolean validateInputFields(String translationType, String engInput, String swedInput, String infinitive, String imperfect) {
+    protected boolean validateInputFields(String translationType, String engInput, String swedInput, String infinitive, String imperfect, String perfect) {
         if (translationType.equals(getResources().getString(R.string.manual_translation))
-                && (engInput.isEmpty() || swedInput.isEmpty() || infinitive.isEmpty() || imperfect.isEmpty())) {
+                && (engInput.isEmpty() || swedInput.isEmpty() || infinitive.isEmpty() || imperfect.isEmpty() || perfect.isEmpty())) {
             displayToast("Cannot leave manual input fields blank!");
             return false;
         } else if (translationType.equals(getResources().getString(R.string.english_auto_translation))
-                && (swedInput.isEmpty() || infinitive.isEmpty() || imperfect.isEmpty())) {
+                && (swedInput.isEmpty() || infinitive.isEmpty() || imperfect.isEmpty() || perfect.isEmpty())) {
             displayToast("Swedish input fields required to find English auto translation!");
             return false;
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation)) && engInput.isEmpty()) {
@@ -244,9 +249,10 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String swed = getEditText(dialogView, R.id.swedishVerb);
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
+        String perfect = getEditText(dialogView, R.id.perfectForm);
 
         String translationType = getResources().getString(R.string.manual_translation);
-        if (!validateInputFields(translationType, eng, swed, imperative, imperfect)){
+        if (!validateInputFields(translationType, eng, swed, imperative, imperfect, perfect)){
             return SubmissionState.FILLED_IN_INCORRECTLY;
         }
 
@@ -255,6 +261,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
         updatedData.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
         updatedData.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
+        updatedData.put(CardKeyName.PERFECT_KEY.getValue(), perfect);
         updatedData.put(CardKeyName.DATE.getValue(), getCurrentDate());
 
         displayToast("Editing verb...");

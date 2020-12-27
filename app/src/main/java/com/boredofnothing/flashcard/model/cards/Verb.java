@@ -18,6 +18,7 @@ import lombok.NonNull;
 public class Verb extends Word {
 
     @NonNull private String imperfect; // ie, past tense
+    @NonNull private String perfect; // ie, past tense (have done)
     @NonNull private String infinitive; // ie, stem form
 
     public static Verb createVerbFromDocument(Document document){

@@ -73,6 +73,8 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
                         verb.setSwedishWord(value);
                     } else if(tense.equals(Conjugation.IMPERFEKT_PRETERITUM.getValue())) {
                         verb.setImperfect(value);
+                    } else if(tense.equals(Conjugation.PERFEKT.getValue())) {
+                        verb.setPerfect(value);
                     }
                 }
             }

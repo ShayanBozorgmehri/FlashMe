@@ -13,6 +13,7 @@ public enum CardKeyName {
     ARTICLE_KEY("article", false),
     IMPERFECT_KEY("imperfect", false),
     INFINITIVE_KEY("infinitive", false),
+    PERFECT_KEY("perfect", false),
     DATE("date", false);
 
     private final String value;

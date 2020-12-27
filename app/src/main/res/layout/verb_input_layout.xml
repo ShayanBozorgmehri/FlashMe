@@ -84,6 +84,16 @@
         android:layout_marginBottom="4dp"
         android:hint="@string/imperfect_form" />
 
+    <EditText
+        android:id="@+id/perfectForm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="@string/perfect_form" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
