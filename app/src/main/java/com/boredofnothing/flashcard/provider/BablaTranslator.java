@@ -71,9 +71,9 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
                     String value = element.getElementsByClass("conj-result").get(0).text();
                     if (tense.equals(Conjugation.PRESENS.getValue())) {
                         verb.setSwedishWord(value);
-                    } else if(tense.equals(Conjugation.IMPERFEKT_PRETERITUM.getValue())) {
+                    } else if (tense.equals(Conjugation.IMPERFEKT_PRETERITUM.getValue())) {
                         verb.setImperfect(value);
-                    } else if(tense.equals(Conjugation.PERFEKT.getValue())) {
+                    } else if (tense.equals(Conjugation.PERFEKT.getValue())) {
                         verb.setPerfect(value);
                     }
                 }

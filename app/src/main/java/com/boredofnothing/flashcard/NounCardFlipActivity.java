@@ -188,10 +188,18 @@ public class NounCardFlipActivity extends CardFlipActivity {
             }
             String[] results = swedTranslation.replace("!", "").split(" ");
             article = results[0].equals("en") ? "en" : "ett";
-            swedTranslation = results[1];
-            if (!results[2].startsWith(swedTranslation)) {
-                displayToast("Found different translations for noun...picking first option");
+            if (results.length == 3) {
+                swedTranslation = results[1];
+                if (!results[2].startsWith(swedTranslation)) {
+                    displayToast("Found different translations for noun...picking first option");
+                }
+            } else {
+                swedTranslation = results[1] + " " + results[2];
+                if (!results[3].startsWith(swedTranslation)) {
+                    displayToast("Found different translations for noun...picking first option");
+                }
             }
+
             //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
         }

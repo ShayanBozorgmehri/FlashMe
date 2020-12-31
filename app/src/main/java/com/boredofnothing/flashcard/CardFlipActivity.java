@@ -270,7 +270,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     protected boolean validateInputFields(String translationType, String engInput, String swedInput){
-        if(translationType.equals(getResources().getString(R.string.manual_translation))
+        if (translationType.equals(getResources().getString(R.string.manual_translation))
                 && (engInput.isEmpty() || swedInput.isEmpty())){
             displayToast("Cannot leave manual input fields blank!");
             return false;
