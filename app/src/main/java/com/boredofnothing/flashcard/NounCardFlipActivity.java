@@ -13,10 +13,14 @@ import com.boredofnothing.flashcard.model.cards.Article;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Noun;
+import com.boredofnothing.flashcard.provider.PluralTranslator;
 import com.boredofnothing.flashcard.util.DocumentUtil;
+import com.boredofnothing.flashcard.util.WordCompareUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Query;
+
+import org.atteo.evo.inflector.English;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,6 +87,9 @@ public class NounCardFlipActivity extends CardFlipActivity {
             SubmissionState state = addCardToDocument(dialogView);
             switch (state){
                 case SUBMITTED_WITH_NO_RESULTS_FOUND:
+                    displayToast("Failed to find translation");
+                    dialog.dismiss();
+                    break;
                 case SUBMITTED_WITH_RESULTS_FOUND:
                     dialog.dismiss();
                     displayCard();
@@ -135,9 +142,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
         Noun noun = Noun.createNounFromDocument(document);
         ((EditText) dialogView.findViewById(R.id.englishNoun)).setText(noun.getEnglishWord());
         ((EditText) dialogView.findViewById(R.id.swedishNoun)).setText(noun.getSwedishWord());
-        if (Article.NO_ARTICLE.getValue().equals(noun.getArticle())) {
-            ((RadioButton) dialogView.findViewById(R.id.no_article)).setChecked(true);
-        } else if (Article.EN.getValue().equals(noun.getArticle())) {
+        ((EditText) dialogView.findViewById(R.id.swedishNounPlural)).setText(noun.getPlural());
+        if (Article.EN.getValue().equals(noun.getArticle())) {
             ((RadioButton) dialogView.findViewById(R.id.en_article)).setChecked(true);
         } else {
             ((RadioButton) dialogView.findViewById(R.id.ett_article)).setChecked(true);
@@ -152,12 +158,14 @@ public class NounCardFlipActivity extends CardFlipActivity {
         final String translationType = getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishNoun);
         final String swedInput = getEditText(dialogView, R.id.swedishNoun);
+        final String swedishNounPlural = getEditText(dialogView, R.id.swedishNounPlural);
 
         //TODO: possible improvement is to just to create a Noun obj, set the vars for it and then return the obj, instead of returning boolean
         String engTranslation;
         String swedTranslation;
+        String swedPluralTranslation;
 
-        if(!validateInputFields(translationType, engInput, swedInput)){
+        if (!validateInputFields(translationType, engInput, swedInput, swedishNounPlural)){
             return SubmissionState.FILLED_IN_INCORRECTLY;
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
@@ -181,29 +189,73 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 displayToast("Please only input one or two words, not including the article");
                 return SubmissionState.FILLED_IN_INCORRECTLY;
             }
-            swedTranslation = getSwedishTextUsingAzureTranslator("a " + engInput + "! the " + engInput);//get both the article and noun
+            String engPlural = English.plural(engInput);
+            swedTranslation = getSwedishTextUsingAzureTranslator("a " + engInput + "! " + engPlural);
             if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             String[] results = swedTranslation.replace("!", "").split(" ");
             article = results[0].equals("en") ? "en" : "ett";
-            if (results.length == 3) {
+            if (results.length == 3) { // 0 = article, 1 = noun, 2 = plural noun
                 swedTranslation = results[1];
-                if (!results[2].startsWith(swedTranslation)) {
-                    displayToast("Found different translations for noun...picking first option");
+                swedPluralTranslation = results[2];
+
+                double similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
+                if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) { // example: tjej vs flickan
+
+                    displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
+                            + ". Figuring out plural translation...");
+
+                    // TODO: maybe would be nice if the MS api could return a warning suggestion if the sentence has an error.
+                    // for example: input girl, and then it returns 'tjej'. and then input 'flera tjej' to see if it complains if it should be 'tjejer, tjejor, etc'd
+                    // https://docs.microsoft.com/en-us/answers/questions/218458/is-it-possible-to-get-the-34did-you-mean34-feedbac.html
+                    swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
+
+                    similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
+                    if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) {
+                        return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                    }
                 }
-            } else {
+            } else { // 0 = article, 1 = adjective, 2 = noun, 3 = plural adjective, 4 = plural noun
                 swedTranslation = results[1] + " " + results[2];
-                if (!results[3].startsWith(swedTranslation)) {
-                    displayToast("Found different translations for noun...picking first option");
+
+                double similarity = WordCompareUtil.similarity(results[2], results[4]);
+                swedPluralTranslation = results[3] + " " + results[4];
+                if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) {
+                    displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
+                            + ". Figuring out plural translation...");
+
+                    swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
+
+                    similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
+                    if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) {
+                        return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                    }
                 }
             }
 
             //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
+            setEditText(dialogView, R.id.swedishNounPlural, swedPluralTranslation);
         }
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+    }
+
+    protected boolean validateInputFields(String translationType, String engInput, String swedInput, String swedishNounPlural){
+        if (translationType.equals(getResources().getString(R.string.manual_translation))
+                && (engInput.isEmpty() || swedInput.isEmpty() || swedishNounPlural.isEmpty())) {
+            displayToast("Cannot leave manual input fields blank!");
+            return false;
+        } else if (translationType.equals(getResources().getString(R.string.english_auto_translation))
+                && (swedInput.trim().isEmpty() || swedishNounPlural.isEmpty())) {
+            displayToast("Swedish input field required to find English auto translation!");
+            return false;
+        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation)) && engInput.trim().isEmpty()) {
+            displayToast("English input field required to find Swedish auto translation!");
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -216,6 +268,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
         final String engTranslation = getEditText(dialogView, R.id.englishNoun);
         final String swedTranslation = getEditText(dialogView, R.id.swedishNoun);
+        final String swedishNounPlural = getEditText(dialogView, R.id.swedishNounPlural);
         if (!getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.swedish_auto_translation))){
             article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         }
@@ -225,6 +278,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         map.put(CardKeyName.ENGLISH_KEY.getValue(), engTranslation);
         map.put(CardKeyName.SWEDISH_KEY.getValue(), swedTranslation);
         map.put(CardKeyName.ARTICLE_KEY.getValue(), article);
+        map.put(CardKeyName.PLURAL_KEY.getValue(), swedishNounPlural);
         map.put(CardKeyName.DATE.getValue(), getCurrentDate());
         mutableDocument.setData(map);
 
@@ -239,9 +293,10 @@ public class NounCardFlipActivity extends CardFlipActivity {
     protected SubmissionState updateCurrentCard(final View dialogView){
         Map<String, Object> updatedData = new HashMap<>();
 
-        String engNoun = getEditText(dialogView, R.id.englishNoun);
-        String swedNoun = getEditText(dialogView, R.id.swedishNoun);
-        String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
+        final String engNoun = getEditText(dialogView, R.id.englishNoun);
+        final String swedNoun = getEditText(dialogView, R.id.swedishNoun);
+        final String article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
+        final String swedishNounPlural = getEditText(dialogView, R.id.swedishNounPlural);
 
         String translationType = getResources().getString(R.string.manual_translation);
         if (!validateInputFields(translationType, engNoun, swedNoun)){
@@ -252,6 +307,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engNoun);
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedNoun);
         updatedData.put(CardKeyName.ARTICLE_KEY.getValue(), article);
+        updatedData.put(CardKeyName.PLURAL_KEY.getValue(), swedishNounPlural);
         updatedData.put(CardKeyName.DATE.getValue(), getCurrentDate());
 
         displayToast("Editing noun..." );

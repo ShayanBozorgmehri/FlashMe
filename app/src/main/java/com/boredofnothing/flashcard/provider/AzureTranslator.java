@@ -158,7 +158,7 @@ public class AzureTranslator {
     @AllArgsConstructor
     private enum TranslatorType {
 
-        TRANSLATION(getBaseEndpoint() + "/translate?api-version=3.0"),
+        TRANSLATION(getBaseEndpoint() + "/translate/?api-version=3.0"),
         DICTIONARY(getBaseEndpoint() + "/dictionary/lookup?api-version=3.0");
 
         @Getter

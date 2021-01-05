@@ -11,6 +11,7 @@ public enum CardKeyName {
     SWEDISH_KEY("swedishWord", true),
     TYPE_KEY("wordType", true),
     ARTICLE_KEY("article", false),
+    PLURAL_KEY("plural", false),
     IMPERFECT_KEY("imperfect", false),
     INFINITIVE_KEY("infinitive", false),
     PERFECT_KEY("perfect", false),

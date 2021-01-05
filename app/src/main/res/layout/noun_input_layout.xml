@@ -64,6 +64,16 @@
         android:layout_marginBottom="4dp"
         android:hint="@string/swedish_noun" />
 
+    <EditText
+        android:id="@+id/swedishNounPlural"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="@string/swedish_noun_plural" />
+
     <TextView
         android:id="@+id/article_radio_group_header"
         android:layout_width="wrap_content"
@@ -81,12 +91,12 @@
         android:orientation="horizontal" >
 
         <RadioButton
-            android:id="@+id/no_article"
+            android:id="@+id/en_article"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="no article" />
+            android:text="en" />
 
         <RadioButton
             android:id="@+id/ett_article"
@@ -94,13 +104,6 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="ett" />
-
-        <RadioButton
-            android:id="@+id/en_article"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="en" />
     </RadioGroup>
 
     <LinearLayout

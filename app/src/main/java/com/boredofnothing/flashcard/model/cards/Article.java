@@ -1,18 +1,17 @@
 package com.boredofnothing.flashcard.model.cards;
 
+import lombok.Getter;
+
 public enum Article {
 
     EN("en"),
-    ETT("ett"),
-    NO_ARTICLE("no article");
+    ETT("ett");
 
+    @Getter
     private String value;
 
     Article(String value){
         this.value = value;
     }
 
-    public String getValue(){
-        return value;
-    }
 }

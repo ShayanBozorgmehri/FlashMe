@@ -45,6 +45,7 @@
     <string name="english_noun">Input the English noun</string>
     <string name="swedish_noun">Input the Swedish noun</string>
     <string name="article">Input the article for Swedish noun</string>
+    <string name="swedish_noun_plural">Input the plural Swedish noun</string>
 
     <string name="english_verb">Input the English infinitive form</string>
     <string name="swedish_verb">Input the Swedish present form</string>

@@ -61,6 +61,8 @@ import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Noun;
 import com.boredofnothing.flashcard.model.cards.Phrase;
 import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.model.cards.serializer.NounJsonSerializer;
+import com.boredofnothing.flashcard.model.cards.serializer.VerbJsonSerializer;
 import com.boredofnothing.flashcard.provider.AzureTranslator;
 import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.boredofnothing.flashcard.util.ToastUtil;
@@ -243,7 +245,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         String tag = (String) v.getTag();
         Document doc = documents.stream().filter(d -> d.getId().equals(tag)).findFirst().get();
         currentIndex = documents.indexOf(doc);
-        displayNewlyAddedCard();
+        displayCard();
 
         LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
         SearchView searchView = searchLayout.findViewById(R.id.searchView);
@@ -344,6 +346,10 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     protected final void displayToast(String message) {
         ToastUtil.show(getBaseContext(), message);
+    }
+
+    protected final void displayLongToast(String message) {
+        ToastUtil.showLong(getBaseContext(), message);
     }
 
     protected final String getCurrentDate(){
@@ -469,12 +475,14 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 json = gson.toJson(Adverb.createAdverbFromDocument(document));
                 break;
             case NOUN:
+                gson = new GsonBuilder().registerTypeAdapter(Noun.class, new NounJsonSerializer()).setPrettyPrinting().create();
                 json = gson.toJson(Noun.createNounFromDocument(document));
                 break;
             case PHR:
                 json = gson.toJson(Phrase.createPhraseFromDocument(document));
                 break;
             case VERB:
+                gson = new GsonBuilder().registerTypeAdapter(Verb.class, new VerbJsonSerializer()).setPrettyPrinting().create();
                 json = gson.toJson(Verb.createVerbFromDocument(document));
                 break;
         }

@@ -18,6 +18,7 @@ import lombok.NonNull;
 public class Noun extends Word {
 
     @NonNull private String article;
+    @NonNull private String plural;
 
     public static Noun createNounFromDocument(Document document){
         Map<String, Object> map = document.toMap();
