@@ -1,15 +1,13 @@
-package com.boredofnothing.flashcard;
+package com.boredofnothing.flashcard
 
-import com.boredofnothing.flashcard.util.WordCompareUtil;
+import com.boredofnothing.flashcard.util.WordCompareUtil
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
-
-public class WordCompareUtilTest {
+class WordCompareUtilTest {
 
     @Test
-    public void shouldCalculateThatWordsAreSimilarEnough(){
+    fun shouldCalculateThatWordsAreSimilarEnough() {
         assertTrue(WordCompareUtil.similarity("flicka", "flickor") >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
         assertTrue(WordCompareUtil.similarity("pojke", "pojkar") >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
         assertTrue(WordCompareUtil.similarity("bil", "bilar") >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
@@ -17,7 +15,7 @@ public class WordCompareUtilTest {
     }
 
     @Test
-    public void shouldCalculateThatWordsAreNotSimilarEnough(){
+    fun shouldCalculateThatWordsAreNotSimilarEnough() {
         assertTrue(WordCompareUtil.similarity("tjej", "flickor") < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
         assertTrue(WordCompareUtil.similarity("kille", "pojkar") < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
         assertTrue(WordCompareUtil.similarity("backwards", "sdrawkcab") < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
