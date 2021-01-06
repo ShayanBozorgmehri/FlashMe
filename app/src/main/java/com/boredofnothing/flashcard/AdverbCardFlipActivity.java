@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
@@ -94,7 +95,34 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
             dialog.dismiss();
         });
 
+        setRadioGroupOnClickListener(dialogView);
+
         dialog.show();
+    }
+
+    private void setRadioGroupOnClickListener(View view) {
+        // set default visibility
+        setDialogItemsVisibility(view, View.VISIBLE, View.GONE);
+
+        RadioGroup translationRadioGroup = view.findViewById(R.id.adverb_translate_radio_group);
+        translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.adverb_manual_translation:
+                    setDialogItemsVisibility(view, View.VISIBLE, View.VISIBLE);
+                    break;
+                case R.id.adverb_eng_auto_translation:
+                    setDialogItemsVisibility(view, View.GONE, View.VISIBLE);
+                    break;
+                case R.id.adverb_swe_auto_translation:
+                    setDialogItemsVisibility(view, View.VISIBLE, View.GONE);
+                    break;
+            }
+        });
+    }
+
+    private void setDialogItemsVisibility(View view, int engVis, int sweVis){
+        view.findViewById(R.id.englishAdverb).setVisibility(engVis);
+        view.findViewById(R.id.swedishAdverb).setVisibility(sweVis);
     }
 
     @Override

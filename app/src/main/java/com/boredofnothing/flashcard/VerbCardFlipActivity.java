@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
@@ -148,7 +149,37 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             dialog.dismiss();
         });
 
+        setRadioGroupOnClickListener(dialogView);
+
         dialog.show();
+    }
+
+    private void setRadioGroupOnClickListener(View view) {
+        // set default visibility
+        setDialogItemsVisibility(view, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE);
+
+        RadioGroup translationRadioGroup = view.findViewById(R.id.verb_translate_radio_group);
+        translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.verb_manual_translation:
+                    setDialogItemsVisibility(view, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
+                    break;
+                case R.id.verb_eng_auto_translation:
+                    setDialogItemsVisibility(view, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
+                    break;
+                case R.id.verb_swe_auto_translation:
+                    setDialogItemsVisibility(view, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE);
+                    break;
+            }
+        });
+    }
+
+    private void setDialogItemsVisibility(View view, int engVis, int sweVis, int infinitivVis, int imperfectVis, int perfectVis){
+        view.findViewById(R.id.englishVerb).setVisibility(engVis);
+        view.findViewById(R.id.swedishVerb).setVisibility(sweVis);
+        view.findViewById(R.id.infinitiveForm).setVisibility(infinitivVis);
+        view.findViewById(R.id.imperfectForm).setVisibility(imperfectVis);
+        view.findViewById(R.id.perfectForm).setVisibility(perfectVis);
     }
 
     @Override

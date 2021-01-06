@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.cards.Article;
@@ -103,7 +105,37 @@ public class NounCardFlipActivity extends CardFlipActivity {
             dialog.dismiss();
         });
 
+        setRadioGroupOnClickListener(dialogView);
+
         dialog.show();
+    }
+
+    private void setRadioGroupOnClickListener(View view) {
+        // set default visibility
+        setDialogItemsVisibility(view, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE);
+
+        RadioGroup translationRadioGroup = view.findViewById(R.id.noun_translate_radio_group);
+        translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.noun_manual_translation:
+                    setDialogItemsVisibility(view, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
+                    break;
+                case R.id.noun_eng_auto_translation:
+                    setDialogItemsVisibility(view, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
+                    break;
+                case R.id.noun_swe_auto_translation:
+                    setDialogItemsVisibility(view, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE);
+                    break;
+            }
+        });
+    }
+
+    private void setDialogItemsVisibility(View view, int engVis, int sweVis, int pluralVis, int articleHeaderVis, int articleRadioGroupVis){
+        view.findViewById(R.id.englishNoun).setVisibility(engVis);
+        view.findViewById(R.id.swedishNoun).setVisibility(sweVis);
+        view.findViewById(R.id.swedishNounPlural).setVisibility(pluralVis);
+        view.findViewById(R.id.article_radio_group_header).setVisibility(articleHeaderVis);
+        view.findViewById(R.id.article_radio_group).setVisibility(articleRadioGroupVis);
     }
 
     @Override

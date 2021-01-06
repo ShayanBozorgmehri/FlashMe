@@ -29,14 +29,14 @@
             android:text="@string/manual_translation" />
 
         <RadioButton
-            android:id="@+id/eng_auto_translation"
+            android:id="@+id/phrase_eng_auto_translation"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/english_auto_translation" />
 
         <RadioButton
-            android:id="@+id/swe_auto_translation"
+            android:id="@+id/phrase_swe_auto_translation"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
