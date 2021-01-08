@@ -209,12 +209,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (requestCode == PICKFILE_RESULT_CODE && resultCode == Activity.RESULT_OK) {
             Uri returnUri = data.getData();
-            String path = returnUri.getPath();
-            if (!path.endsWith(BACKUP_NAME)) {
-                ToastUtil.show(getBaseContext(), "Invalid file selected, select file: " + BACKUP_NAME);
+            String selectedFileName = returnUri.getLastPathSegment();
+            if (!selectedFileName.startsWith(BACKUP_NAME.substring(0, BACKUP_NAME.indexOf('.')))) {
+                ToastUtil.showLong(getBaseContext(), "Invalid file selected, select file: " + BACKUP_NAME);
                 return;
             }
-            importDataFromFile(path);
+            importDataFromFile(returnUri.getPath());
         }
     }
 
@@ -333,7 +333,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         //todo: could also use a better popup that also shows the skipped (already existed) count and error count, maybe with a custom object (or 4-tuple?) instead of Pair
-        ToastUtil.show(getBaseContext(), "Imported " + successfulImportCount + " out of " + totalCardsToImportCount + " cards.");
+        ToastUtil.showLong(getBaseContext(), "Imported " + successfulImportCount + " out of " + totalCardsToImportCount + " cards.");
     }
 
     private Pair<Integer, Integer> createDocumentsFromCardGroup(String cardGroupKey, List<Map<String, Object>> docsMap){
