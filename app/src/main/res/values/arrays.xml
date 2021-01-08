@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="pref_translation_suggestion_list_label">
+        <item>@string/manual_translation</item>
+        <item>@string/english_auto_translation</item>
+        <item>@string/swedish_auto_translation</item>
+    </array>
+
+    <array name="pref_translation_suggestion_list_values">
+        <item>manual_translation</item>
+        <item>english_auto_translation</item>
+        <item>swedish_auto_translation</item>
+    </array>
+
+</resources>

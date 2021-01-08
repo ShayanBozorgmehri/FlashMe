@@ -93,29 +93,36 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
             dialog.dismiss();
         });
 
+        setDefaultDialogItemsVisibility(dialogView);
         setRadioGroupOnClickListener(dialogView);
 
         dialog.show();
     }
 
     private void setRadioGroupOnClickListener(View view) {
-        // set default visibility
-        setDialogItemsVisibility(view, View.VISIBLE, View.GONE);
-
         RadioGroup translationRadioGroup = view.findViewById(R.id.adjective_translate_radio_group);
         translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            switch (checkedId) {
-                case R.id.adjective_manual_translation:
-                    setDialogItemsVisibility(view, View.VISIBLE, View.VISIBLE);
-                    break;
-                case R.id.adjective_eng_auto_translation:
-                    setDialogItemsVisibility(view, View.GONE, View.VISIBLE);
-                    break;
-                case R.id.adjective_swe_auto_translation:
-                    setDialogItemsVisibility(view, View.VISIBLE, View.GONE);
-                    break;
-            }
+            setDialogVisibility(view, checkedId);
         });
+    }
+
+    private void setDefaultDialogItemsVisibility(View view) {
+        selectPreferredTranslationMode(view, CardType.ADJ);
+        setDialogVisibility(view, getRadioButtonIdFromPreferredTranslationMode(CardType.ADJ));
+    }
+
+    private void setDialogVisibility(View view, int checkedId) {
+        switch (checkedId) {
+            case R.id.adjective_manual_translation:
+                setDialogItemsVisibility(view, View.VISIBLE, View.VISIBLE);
+                break;
+            case R.id.adjective_english_auto_translation:
+                setDialogItemsVisibility(view, View.GONE, View.VISIBLE);
+                break;
+            case R.id.adjective_swedish_auto_translation:
+                setDialogItemsVisibility(view, View.VISIBLE, View.GONE);
+                break;
+        }
     }
 
     private void setDialogItemsVisibility(View view, int engVis, int sweVis){

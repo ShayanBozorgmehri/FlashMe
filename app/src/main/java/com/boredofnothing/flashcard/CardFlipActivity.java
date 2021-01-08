@@ -26,6 +26,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -50,6 +51,8 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NavUtils;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceManager;
 
 import com.boredofnothing.flashcard.model.ListViewAdapter;
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -264,7 +267,33 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected void loadAllDocuments();
     abstract protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView);
 
-    protected boolean isNetworkAvailable() {
+    /**
+     * Returns the user's preferred translation mode, otherwise default to auto swedish.
+     * */
+    protected final String getPreferredTranslationMode() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        return preferences.getString("translationModePreference", getResources().getString(R.string.swedish_auto_translation));
+    }
+
+    protected final void selectPreferredTranslationMode(View view, CardType cardType) {
+        int radioGroupId = getTranslateRadioGroupId(cardType);
+        int radioButtonId = getRadioButtonIdFromPreferredTranslationMode(cardType);
+        ((RadioGroup)view.findViewById(radioGroupId)).check(radioButtonId);
+    }
+
+    protected final int getTranslateRadioGroupId(CardType cardType){
+        String card = cardType.getValue().toLowerCase();
+        String radioGroupName = card + "_translate_radio_group";
+        return getResources().getIdentifier(radioGroupName, "id", getPackageName());
+    }
+
+    protected final int getRadioButtonIdFromPreferredTranslationMode(CardType cardType){
+        String card = cardType.getValue().toLowerCase();
+        String preferredRadioButtonName = card + "_" + getPreferredTranslationMode();
+        return getResources().getIdentifier(preferredRadioButtonName, "id", getPackageName());
+    }
+
+    protected final boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
@@ -286,23 +315,23 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return true;
     }
 
-    protected String getSwedishTextUsingAzureTranslator(String englishText){
+    protected final String getSwedishTextUsingAzureTranslator(String englishText){
         return new AzureTranslator(getBaseContext()).getTranslation(englishText, AzureTranslator.LanguageDirection.ENG_TO_SWED);
     }
 
-    protected String getEnglishTextUsingAzureTranslator(String swedishText){
+    protected final String getEnglishTextUsingAzureTranslator(String swedishText){
         return new AzureTranslator(getBaseContext()).getTranslation(swedishText, AzureTranslator.LanguageDirection.SWED_TO_ENG);
     }
 
-    protected String getSwedishTextUsingAzureDictionaryLookup(String englishText, PartOfSpeechTag posTag){
+    protected final String getSwedishTextUsingAzureDictionaryLookup(String englishText, PartOfSpeechTag posTag){
         return new AzureTranslator(getBaseContext()).getDictionaryLookup(englishText, posTag, AzureTranslator.LanguageDirection.ENG_TO_SWED);
     }
 
-    protected String getEnglishTextUsingAzureDictionaryLookup(String swedishText, PartOfSpeechTag posTag){
+    protected final String getEnglishTextUsingAzureDictionaryLookup(String swedishText, PartOfSpeechTag posTag){
         return new AzureTranslator(getBaseContext()).getDictionaryLookup(swedishText, posTag, AzureTranslator.LanguageDirection.SWED_TO_ENG);
     }
 
-    public boolean isNullOrEmpty(String input){
+    public final boolean isNullOrEmpty(String input){
         return input == null || input.trim().isEmpty();
     }
 
@@ -357,7 +386,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return formatter.format(new Date());
     }
 
-    protected void storeDocumentToDB(MutableDocument mutableDocument) {
+    protected final void storeDocumentToDB(MutableDocument mutableDocument) {
         try {
             Log.d("DEBUG", "Saving document: " + mutableDocument.getId());
             MainActivity.database.save(mutableDocument);
@@ -369,7 +398,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    protected void updateDocumentInDB(MutableDocument mutableDocument) {
+    protected final void updateDocumentInDB(MutableDocument mutableDocument) {
         try {
             MainActivity.database.save(mutableDocument);
             documents.set(currentIndex, mutableDocument);
@@ -379,7 +408,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    protected void deleteDocument() {
+    protected final void deleteDocument() {
         try {
             Log.d("DEBUG", "before delete count is: " + documents.size());
             MainActivity.database.delete(documents.get(currentIndex));
@@ -391,7 +420,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    protected void editOrReplaceDocument(Map<String, Object> updatedData){
+    protected final void editOrReplaceDocument(Map<String, Object> updatedData){
         Document currentDocument = documents.get(currentIndex);
         String updatedEngWord = (String) updatedData.get(CardKeyName.ENGLISH_KEY.getValue());
         String updatedSwedWord = (String) updatedData.get(CardKeyName.SWEDISH_KEY.getValue());
@@ -411,7 +440,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    protected void removeTranslationRadioGroupFields(AlertDialog dialog, int radioGroup, int radioGroupHeader) {
+    protected final void removeTranslationRadioGroupFields(AlertDialog dialog, int radioGroup, int radioGroupHeader) {
         ((RadioGroup) dialog.findViewById(radioGroup)).removeAllViews();
         dialog.findViewById(radioGroupHeader).setVisibility(View.GONE);
     }
@@ -425,20 +454,20 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         invalidateOptionsMenu();
     }
 
-    protected String getEditText(final View dialogView, int id){
+    protected final String getEditText(final View dialogView, int id){
         return ((EditText)dialogView.findViewById(id)).getText().toString().trim();
     }
 
-    protected void setEditText(final View dialogView, int id, String text){
+    protected final void setEditText(final View dialogView, int id, String text){
         ((EditText)dialogView.findViewById(id)).setText(text);
     }
 
-    protected String getSelectedRadioOption(final View dialogView, int id){
+    protected final String getSelectedRadioOption(final View dialogView, int id){
         RadioGroup radioGroup = dialogView.findViewById(id);
         return ((RadioButton) dialogView.findViewById(radioGroup.getCheckedRadioButtonId())).getText().toString();
     }
 
-    protected static Query createQueryForCardTypeWithNonNullOrMissingValues(CardType cardType) {
+    protected final static Query createQueryForCardTypeWithNonNullOrMissingValues(CardType cardType) {
         return QueryBuilder
                 .select(SelectResult.all(), SelectResult.expression(Meta.id))
                 .from(DataSource.database(MainActivity.database))
@@ -463,7 +492,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
 
     @Nullable
-    protected static String getJsonFromDoc(Document document) {
+    protected final static String getJsonFromDoc(Document document) {
         String json = null;
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -489,7 +518,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return json;
     }
 
-    protected void displayCard() {
+    protected final void displayCard() {
 
         // only auto update the display if the front card is show
         if (!isShowingBack) {

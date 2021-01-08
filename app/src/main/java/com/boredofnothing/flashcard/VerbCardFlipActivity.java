@@ -149,29 +149,36 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             dialog.dismiss();
         });
 
+        setDefaultDialogItemsVisibility(dialogView);
         setRadioGroupOnClickListener(dialogView);
 
         dialog.show();
     }
 
     private void setRadioGroupOnClickListener(View view) {
-        // set default visibility
-        setDialogItemsVisibility(view, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE);
-
         RadioGroup translationRadioGroup = view.findViewById(R.id.verb_translate_radio_group);
         translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            switch (checkedId) {
-                case R.id.verb_manual_translation:
-                    setDialogItemsVisibility(view, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
-                    break;
-                case R.id.verb_eng_auto_translation:
-                    setDialogItemsVisibility(view, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
-                    break;
-                case R.id.verb_swe_auto_translation:
-                    setDialogItemsVisibility(view, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE);
-                    break;
-            }
+            setDialogVisibility(view, checkedId);
         });
+    }
+
+    private void setDefaultDialogItemsVisibility(View view) {
+        selectPreferredTranslationMode(view, CardType.VERB);
+        setDialogVisibility(view, getRadioButtonIdFromPreferredTranslationMode(CardType.VERB));
+    }
+    
+    private void setDialogVisibility(View view, int checkedId) {
+        switch (checkedId) {
+            case R.id.verb_manual_translation:
+                setDialogItemsVisibility(view, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
+                break;
+            case R.id.verb_english_auto_translation:
+                setDialogItemsVisibility(view, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
+                break;
+            case R.id.verb_swedish_auto_translation:
+                setDialogItemsVisibility(view, View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE);
+                break;
+        }
     }
 
     private void setDialogItemsVisibility(View view, int engVis, int sweVis, int infinitivVis, int imperfectVis, int perfectVis){

@@ -46,4 +46,13 @@
                 android:title="Import backup from device" />
         </menu>
     </item>
+
+    <item android:title="Settings">
+        <menu>
+            <item
+                android:id="@+id/preferences"
+                android:icon="@drawable/ic_baseline_settings_24"
+                android:title="Preferences"/>
+        </menu>
+    </item>
 </menu>

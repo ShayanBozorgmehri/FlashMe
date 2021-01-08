@@ -176,6 +176,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.importBackup) {
             Log.i("INFO", "importing back up from file");
             showBackupImporter();
+        } else if (id == R.id.preferences) {
+            Log.i("INFO", "preferences selected");
+            startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
         }
         else {
             //just doing this so anything else wont do shit, remove this once all the menu items actually have functionality

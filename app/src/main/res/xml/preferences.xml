@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        android:key="translationSuggestionPreference"
+        android:title="Display all translation suggestions"
+        android:summary="Will display the list of possible translations instead of automatically selecting the first result"
+        app:iconSpaceReserved="false"/>
+
+    <ListPreference
+        android:key="translationModePreference"
+        android:title="Set default translation mode"
+        android:summary="Will set the default manual or auto translation mode when adding a new flash card"
+        app:iconSpaceReserved="false"
+        android:defaultValue="swedish_auto_translation"
+        android:entries="@array/pref_translation_suggestion_list_label"
+        android:entryValues="@array/pref_translation_suggestion_list_values"/>
+
+</androidx.preference.PreferenceScreen>

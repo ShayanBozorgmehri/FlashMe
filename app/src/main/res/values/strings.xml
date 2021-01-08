@@ -55,4 +55,6 @@
 
     <string name="backup_to_email">Input your email address to backup your data to</string>
 
+    <string name="preferences_title">Preferences</string>
+
 </resources>
