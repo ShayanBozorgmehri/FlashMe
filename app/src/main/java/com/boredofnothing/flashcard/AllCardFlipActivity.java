@@ -186,7 +186,7 @@ public class AllCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setTitle("Delete flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
             displayToast("Deleting flashcard...");
-            deleteDocument();
+            deleteCurrentDocument();
             dialog.dismiss();
             displayCard();
         });

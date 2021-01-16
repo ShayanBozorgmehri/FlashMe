@@ -78,16 +78,8 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
 
         Button positiveButton = dialogView.findViewById(R.id.adverbSubmitButton);
         positiveButton.setText("Submit");
-        positiveButton.setOnClickListener(view -> {
-            SubmissionState state = addCardToDocument(dialogView);
-            switch (state){
-                case SUBMITTED_WITH_NO_RESULTS_FOUND:
-                case SUBMITTED_WITH_RESULTS_FOUND:
-                    dialog.dismiss();
-                    displayCard();
-                    break;
-            }
-        });
+        positiveButton.setOnClickListener(view -> addCardToDocument(dialogView, dialog));
+
         Button negativeButton = dialogView.findViewById(R.id.adverbCancelButton);
         negativeButton.setText("Cancel");
         negativeButton.setOnClickListener(view -> {
@@ -278,7 +270,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setTitle("Delete adverb flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
             displayToast("Deleting adverb...");
-            deleteDocument();
+            deleteCurrentDocument();
             dialog.dismiss();
             displayCard();
         });

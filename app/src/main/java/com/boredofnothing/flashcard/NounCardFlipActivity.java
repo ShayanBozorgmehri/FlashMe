@@ -85,19 +85,8 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
         Button positiveButton = dialogView.findViewById(R.id.nounSubmitButton);
         positiveButton.setText("Submit");
-        positiveButton.setOnClickListener(view -> {
-            SubmissionState state = addCardToDocument(dialogView);
-            switch (state){
-                case SUBMITTED_WITH_NO_RESULTS_FOUND:
-                    displayToast("Failed to find translation");
-                    dialog.dismiss();
-                    break;
-                case SUBMITTED_WITH_RESULTS_FOUND:
-                    dialog.dismiss();
-                    displayCard();
-                    break;
-            }
-        });
+        positiveButton.setOnClickListener(view -> addCardToDocument(dialogView, dialog));
+
         Button negativeButton = dialogView.findViewById(R.id.nounCancelButton);
         negativeButton.setText("Cancel");
         negativeButton.setOnClickListener(view -> {
@@ -369,7 +358,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setTitle("Delete noun flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
             displayToast("Deleting noun..." );
-            deleteDocument();
+            deleteCurrentDocument();
             dialog.dismiss();
             displayCard();
         });

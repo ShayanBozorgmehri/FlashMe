@@ -76,16 +76,8 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
         Button positiveButton = dialogView.findViewById(R.id.adjectiveSubmitButton);
         positiveButton.setText("Submit");
-        positiveButton.setOnClickListener(view -> {
-            SubmissionState state = addCardToDocument(dialogView);
-            switch (state){
-                case SUBMITTED_WITH_NO_RESULTS_FOUND:
-                case SUBMITTED_WITH_RESULTS_FOUND:
-                    dialog.dismiss();
-                    displayCard();
-                    break;
-            }
-        });
+        positiveButton.setOnClickListener(view -> addCardToDocument(dialogView, dialog));
+
         Button negativeButton = dialogView.findViewById(R.id.adjectiveCancelButton);
         negativeButton.setText("Cancel");
         negativeButton.setOnClickListener(view -> {
@@ -275,7 +267,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setTitle("Delete adjective flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
             displayToast("Deleting adjective..." );
-            deleteDocument();
+            deleteCurrentDocument();
             dialog.dismiss();
             displayCard();
         });

@@ -431,7 +431,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             mutableDocument.setData(updatedData);
             updateDocumentInDB(mutableDocument);
         } else {
-            deleteDocument();
+            deleteCurrentDocument();
             currentIndex--;
 
             MutableDocument replacementDocument = new MutableDocument(newId);
@@ -439,6 +439,20 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             storeDocumentToDB(replacementDocument);
         }
     }
+
+    protected final void addCardToDocument(final View dialogView, final AlertDialog alertDialog){
+        SubmissionState state = addCardToDocument(dialogView);
+        switch (state) {
+            case SUBMITTED_WITH_NO_RESULTS_FOUND:
+                displayToast("Failed to find translation");
+                alertDialog.dismiss();
+                break;
+            case SUBMITTED_WITH_RESULTS_FOUND:
+                alertDialog.dismiss();
+                displayCard();
+                break;
+        }
+        }
 
     protected final void removeTranslationRadioGroupFields(AlertDialog dialog, int radioGroup, int radioGroupHeader) {
         ((RadioGroup) dialog.findViewById(radioGroup)).removeAllViews();

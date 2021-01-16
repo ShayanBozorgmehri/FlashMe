@@ -132,16 +132,8 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
         Button positiveButton = dialogView.findViewById(R.id.verbSubmitButton);
         positiveButton.setText("Submit");
-        positiveButton.setOnClickListener(view -> {
-            SubmissionState state = addCardToDocument(dialogView);
-            switch (state){
-                case SUBMITTED_WITH_NO_RESULTS_FOUND:
-                case SUBMITTED_WITH_RESULTS_FOUND:
-                    dialog.dismiss();
-                    displayCard();
-                    break;
-            }
-        });
+        positiveButton.setOnClickListener(view -> addCardToDocument(dialogView, dialog));
+
         Button negativeButton = dialogView.findViewById(R.id.verbCancelButton);
         negativeButton.setText("Cancel");
         negativeButton.setOnClickListener(view -> {
@@ -260,6 +252,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
+
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
@@ -322,7 +315,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         dialogBuilder.setTitle("Delete verb flashcard?");
         dialogBuilder.setPositiveButton("Yes", (dialog, whichButton) -> {
             displayToast("Deleting verb...");
-            deleteDocument();
+            deleteCurrentDocument();
             dialog.dismiss();
             displayCard();
         });
