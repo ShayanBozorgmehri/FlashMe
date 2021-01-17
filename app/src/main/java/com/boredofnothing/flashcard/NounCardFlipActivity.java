@@ -292,7 +292,6 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
             return state;
         }
-        displayToast("Adding noun..." );
 
         final String engTranslation = getEditText(dialogView, R.id.englishNoun);
         final String swedTranslation = getEditText(dialogView, R.id.swedishNoun);
@@ -300,6 +299,18 @@ public class NounCardFlipActivity extends CardFlipActivity {
         if (!getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.swedish_auto_translation))){
             article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         }
+
+        switch (checkIfIdExists(DocumentUtil.createDocId(engTranslation, swedTranslation))){
+            case DO_NOT_REPLACE_EXISTING_CARD:
+                displayToast("Noun with english word '" + engTranslation + "' and swedish word '" + swedTranslation + "' already exists, not adding card.");
+                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+            case REPLACE_EXISTING_CARD:
+                displayToast("Noun with english word '" + engTranslation + "' and swedish word '" + swedTranslation + "' already exists, but will replace it...");
+                break;
+            case NONE:
+                displayToast("Adding noun...");
+        }
+
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(engTranslation, swedTranslation));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());

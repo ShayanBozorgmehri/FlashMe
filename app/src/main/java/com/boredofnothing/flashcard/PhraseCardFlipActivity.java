@@ -50,8 +50,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
             displayToast("no phrase card found for word: " + word);
         }
     }
-
-
+    
     @Override
     protected List<ListViewItem> getSearchSuggestionList() {
         List<ListViewItem> suggestionList = new ArrayList<>();
@@ -209,10 +208,21 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
         if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
             return state;
         }
-        displayToast("Adding phrase...");
-
+        
         String eng = getEditText(dialogView, R.id.englishPhrase);
         String swed = getEditText(dialogView, R.id.swedishPhrase);
+
+        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
+            case DO_NOT_REPLACE_EXISTING_CARD:
+                displayToast("Phrase with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
+                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+            case REPLACE_EXISTING_CARD:
+                displayToast("Phrase with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
+                break;
+            case NONE:
+                displayToast("Adding phrase...");
+        }
+        
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());

@@ -10,6 +10,12 @@
         android:summary="Will display the list of possible translations instead of automatically selecting the first result"
         app:iconSpaceReserved="false"/>
 
+    <SwitchPreferenceCompat
+        android:key="replaceExistingCardsPreference"
+        android:title="Replace duplicate cards"
+        android:summary="When trying to add a new card, if the same card already exists -- based on the English and Swedish words -- then the existing card will be replaced. If disabled, then the new card will not be added."
+        app:iconSpaceReserved="false"/>
+
     <ListPreference
         android:key="translationModePreference"
         android:title="Set default translation mode"

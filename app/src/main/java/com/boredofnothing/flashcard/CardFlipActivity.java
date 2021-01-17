@@ -117,7 +117,14 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         FILLED_IN_INCORRECTLY,
         SUBMITTED_WITH_NO_RESULTS_FOUND,
         SUBMITTED_WITH_RESULTS_FOUND,
-        SUBMITTED_WITH_MANUAL_RESULTS
+        SUBMITTED_WITH_MANUAL_RESULTS,
+        SUBMITTED_BUT_NOT_ADDED
+    }
+
+    protected enum UserInterventionState {
+        REPLACE_EXISTING_CARD,
+        DO_NOT_REPLACE_EXISTING_CARD,
+        NONE
     }
 
     @Override
@@ -275,6 +282,16 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return preferences.getString("translationModePreference", getResources().getString(R.string.swedish_auto_translation));
     }
 
+    /**
+    /**
+     * Returns the user's preferred translation suggestion, e.g. whether or not to display a list of possible translation,
+     * otherwise default to false.
+     * */
+    protected final boolean isReplaceExistingCards() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        return preferences.getBoolean("replaceExistingCardsPreference", false);
+    }
+
     protected final void selectPreferredTranslationMode(View view, CardType cardType) {
         int radioGroupId = getTranslateRadioGroupId(cardType);
         int radioButtonId = getRadioButtonIdFromPreferredTranslationMode(cardType);
@@ -408,15 +425,16 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    protected final void deleteDocument() {
+    protected final void deleteCurrentDocument() {
+      deleteDocument(documents.get(currentIndex));
+    }
+
+    protected final void deleteDocument(final Document document) {
         try {
-            Log.d("DEBUG", "before delete count is: " + documents.size());
-            MainActivity.database.delete(documents.get(currentIndex));
-            documents.remove(currentIndex);
-            Log.d("DEBUG", "after delete count is: " + documents.size());
+            MainActivity.database.delete(document);
+            documents.remove(document);
         } catch (CouchbaseLiteException e) {
-            Log.e("ERROR", "Failed to delete document " + documents.get(currentIndex)
-                    + " from DB due to: " + e);
+            Log.e("ERROR", "Failed to delete document " + document + " from DB due to: " + e);
         }
     }
 
@@ -431,13 +449,29 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             mutableDocument.setData(updatedData);
             updateDocumentInDB(mutableDocument);
         } else {
-            deleteCurrentDocument();
+            deleteDocument(currentDocument);
             currentIndex--;
 
             MutableDocument replacementDocument = new MutableDocument(newId);
             replacementDocument.setData(updatedData);
             storeDocumentToDB(replacementDocument);
         }
+    }
+
+    protected final UserInterventionState checkIfIdExists(final String docId) {
+
+        final Document document = MainActivity.database.getDocument(docId);
+
+        if (document != null) {
+            //TODO: maybe also have a pop up asking the user, as a third option instead of only two options, but then need to wait for user input before returning UserInterventionState
+            if (isReplaceExistingCards()) {
+                deleteDocument(document);
+                return UserInterventionState.REPLACE_EXISTING_CARD;
+            }
+            return  UserInterventionState.DO_NOT_REPLACE_EXISTING_CARD;
+        }
+
+        return UserInterventionState.NONE;
     }
 
     protected final void addCardToDocument(final View dialogView, final AlertDialog alertDialog){
@@ -451,8 +485,11 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 alertDialog.dismiss();
                 displayCard();
                 break;
+            case SUBMITTED_BUT_NOT_ADDED:
+                alertDialog.dismiss();
+                break;
         }
-        }
+    }
 
     protected final void removeTranslationRadioGroupFields(AlertDialog dialog, int radioGroup, int radioGroupHeader) {
         ((RadioGroup) dialog.findViewById(radioGroup)).removeAllViews();
