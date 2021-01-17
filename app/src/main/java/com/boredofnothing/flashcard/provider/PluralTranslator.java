@@ -88,14 +88,18 @@ public class PluralTranslator {
                 plural = singular;
             }
         } else {
-            if (wordEndsWith(singular,"um", "eri", "ium")
-                    || (containsStressedSyllables && !wordEndsWithSyllable) || endsWithLatinSuffix(singular)) {
-                // er ending
-                plural = singular + "er";
-            } else if (wordEndsWith(singular,"ande", "ende") || containsStressedSyllables || wordEndsWithSyllable) {
-                // n ending
-                plural = singular + "n";
-            } else { // ends with a consonant
+            if (!singular.endsWith("er")){
+                if (wordEndsWith(singular,"um", "eri", "ium")
+                        || (containsStressedSyllables && !wordEndsWithSyllable) || endsWithLatinSuffix(singular)) {
+                    // er ending
+                    plural = singular + "er";
+                } else if (wordEndsWith(singular,"ande", "ende") || containsStressedSyllables || wordEndsWithSyllable) {
+                    // n ending
+                    plural = singular + "n";
+                } else { // ends with a consonant
+                    plural = singular;
+                }
+            } else {
                 plural = singular;
             }
         }

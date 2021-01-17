@@ -63,5 +63,7 @@ class PluralTranslatorTest {
         assertEquals("lärare", PluralTranslator.figureOutPluralTenseOfNoun("en", "lärare"))
         assertEquals("barn", PluralTranslator.figureOutPluralTenseOfNoun("ett", "barn"))
         assertEquals("golv", PluralTranslator.figureOutPluralTenseOfNoun("ett", "golv"))
+        assertEquals("nummer", PluralTranslator.figureOutPluralTenseOfNoun("ett", "nummer"))
+        assertEquals("fönster", PluralTranslator.figureOutPluralTenseOfNoun("ett", "fönster"))
     }
 }
