@@ -230,7 +230,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 swedPluralTranslation = results[2];
 
                 double similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
-                if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) { // example: tjej vs flickan
+                if (!WordCompareUtil.isSimilarEnough(swedPluralTranslation, similarity)) { // example: tjej vs flickan
 
                     displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
                             + ". Figuring out plural translation...");
@@ -241,7 +241,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
                     swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
 
                     similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
-                    if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) {
+                    if (!WordCompareUtil.isSimilarEnough(swedPluralTranslation, similarity)) {
                         return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
                     }
                 }
@@ -250,14 +250,14 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
                 double similarity = WordCompareUtil.similarity(results[2], results[4]);
                 swedPluralTranslation = results[3] + " " + results[4];
-                if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) {
+                if (!WordCompareUtil.isSimilarEnough(swedPluralTranslation, similarity)) {
                     displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
                             + ". Figuring out plural translation...");
 
                     swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
 
                     similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
-                    if (similarity < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT) {
+                    if (!WordCompareUtil.isSimilarEnough(swedPluralTranslation, similarity)) {
                         return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
                     }
                 }

@@ -1,6 +1,7 @@
 package com.boredofnothing.flashcard
 
 import com.boredofnothing.flashcard.util.WordCompareUtil
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -8,16 +9,24 @@ class WordCompareUtilTest {
 
     @Test
     fun shouldCalculateThatWordsAreSimilarEnough() {
-        assertTrue(WordCompareUtil.similarity("flicka", "flickor") >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
-        assertTrue(WordCompareUtil.similarity("pojke", "pojkar") >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
-        assertTrue(WordCompareUtil.similarity("bil", "bilar") >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
-        assertTrue(WordCompareUtil.similarity("bil", "bil") >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
+        assertTrue(checkSimilarity("flicka", "flickor"));
+        assertTrue(checkSimilarity("flicka", "flickor"));
+        assertTrue(checkSimilarity("pojke", "pojkar"));
+        assertTrue(checkSimilarity("bil", "bilar"));
+        assertTrue(checkSimilarity("bil", "bil"));
+
+        assertTrue(checkSimilarity("mun", "munnar"));
     }
 
     @Test
     fun shouldCalculateThatWordsAreNotSimilarEnough() {
-        assertTrue(WordCompareUtil.similarity("tjej", "flickor") < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
-        assertTrue(WordCompareUtil.similarity("kille", "pojkar") < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
-        assertTrue(WordCompareUtil.similarity("backwards", "sdrawkcab") < WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT);
+        assertFalse(checkSimilarity("tjej", "flickor"));
+        assertFalse(checkSimilarity("kille", "pojkar"));
+        assertFalse(checkSimilarity("backwards", "sdrawkcab"));
+    }
+
+    private fun checkSimilarity(swedSingluar: String, swedPlural: String): Boolean {
+        var similarity = WordCompareUtil.similarity(swedSingluar, swedPlural);
+        return WordCompareUtil.isSimilarEnough(swedPlural, similarity);
     }
 }
