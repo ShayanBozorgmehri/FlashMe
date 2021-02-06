@@ -45,10 +45,11 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
     @Override
     protected Verb doInBackground(String... data) {
         Verb verb = new Verb();
+        final String infinitive = data[0];
 
         try {
             // Connect to the website
-            Document document = Jsoup.connect("https://en.bab.la/conjugation/swedish/" + data[0]).get();
+            Document document = Jsoup.connect("https://en.bab.la/conjugation/swedish/" + infinitive).get();
 
             // find the infinitiv conjugation
             Elements quickResultsElements = document.select("div.quick-result-entry");
@@ -58,6 +59,10 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
                     String quickResultConjugationType = quickResultOptionElement.get(0).text();
                     String value = quickResultsElement.getElementsByClass("sense-group-results").get(0).text();
                     if (quickResultConjugationType.equals(Conjugation.INFINITIV.getValue())) {
+                        if (!infinitive.equals(value)) {
+                            Log.i("INFO", "Infinitive form from Babla: " + value + " does not match original infinitive: " + infinitive);
+                            return verb;
+                        }
                         verb.setInfinitive(value);
                     }
                 }
