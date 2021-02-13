@@ -7,7 +7,7 @@
     <SwitchPreferenceCompat
         android:key="translationSuggestionPreference"
         android:title="Display all translation suggestions"
-        android:summary="Will display the list of possible translations instead of automatically selecting the first result"
+        android:summary="Will display the list of possible translations instead of automatically selecting the first result. Only for verbs, adjectives, and adverbs."
         app:iconSpaceReserved="false"/>
 
     <SwitchPreferenceCompat
