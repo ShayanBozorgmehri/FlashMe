@@ -4,8 +4,10 @@ import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RadioGroup;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -30,62 +32,6 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     protected void loadAllDocuments(){
         Query query = createQueryForCardTypeWithNonNullOrMissingValues(CardType.VERB);
         loadAllDocumentsViaQuery(query);
-    }
-
-    @Override
-    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
-        final String translationType = getSelectedRadioOption(dialogView, R.id.verb_translate_radio_group);
-        final String engInput = getEditText(dialogView, R.id.englishVerb);
-        final String swedInput = getEditText(dialogView, R.id.swedishVerb);
-        String imperative = getEditText(dialogView, R.id.infinitiveForm);
-        String imperfect = getEditText(dialogView, R.id.imperfectForm);
-        String perfect = getEditText(dialogView, R.id.perfectForm);
-
-        String engTranslation;
-
-        if (!validateInputFields(translationType, engInput, swedInput, imperative, imperfect, perfect)) {
-            return SubmissionState.FILLED_IN_INCORRECTLY;
-        }
-        if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
-            if (!isNetworkAvailable()) {
-                displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
-            }
-            engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.VERB);
-            if (isNullOrEmpty(engTranslation)) {
-                displayToast("Could not find English verb translation for: " + swedInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
-            }
-            setEditText(dialogView, R.id.englishVerb, engTranslation);
-
-        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
-            if (!isNetworkAvailable()) {
-                displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
-            }
-            // first, get a translation from azure
-            String azureInfinitiveForm = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
-            if (isNullOrEmpty(azureInfinitiveForm)) {
-                azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
-                if (isNullOrEmpty(engInput)) {
-                    displayToast("Could not find Swedish verb translation for: " + engInput);
-                    return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
-                } else {
-                    displayToast("Found secondary translation...");
-                }
-            }
-            BablaTranslator bablaTranslator = new BablaTranslator();
-            Verb verb = bablaTranslator.getConjugations(azureInfinitiveForm);
-            if (verb == null || verb.getSwedishWord() == null) {
-                displayToast("Could not find conjugations for verb: " + engInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
-            }
-            setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
-            setEditText(dialogView, R.id.infinitiveForm, verb.getInfinitive());
-            setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
-            setEditText(dialogView, R.id.perfectForm, verb.getPerfect());
-        }
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
@@ -237,18 +183,124 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String imperative = getEditText(dialogView, R.id.infinitiveForm);
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
         String perfect = getEditText(dialogView, R.id.perfectForm);
-        
-        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
+
+        if (!addCardToDocument(eng, swed, imperative, imperfect, perfect)) return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+    }
+
+    @Override
+    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
+        final String translationType = getSelectedRadioOption(dialogView, R.id.verb_translate_radio_group);
+        final String engInput = getEditText(dialogView, R.id.englishVerb);
+        final String swedInput = getEditText(dialogView, R.id.swedishVerb);
+        String imperative = getEditText(dialogView, R.id.infinitiveForm);
+        String imperfect = getEditText(dialogView, R.id.imperfectForm);
+        String perfect = getEditText(dialogView, R.id.perfectForm);
+
+        String engTranslation;
+
+        if (!validateInputFields(translationType, engInput, swedInput, imperative, imperfect, perfect)) {
+            return SubmissionState.FILLED_IN_INCORRECTLY;
+        }
+        if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
+            if (!isNetworkAvailable()) {
+                displayNoConnectionToast();
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+            }
+            engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.VERB);
+            if (isNullOrEmpty(engTranslation)) {
+                displayToast("Could not find English verb translation for: " + swedInput);
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+            }
+            setEditText(dialogView, R.id.englishVerb, engTranslation);
+
+        } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
+            if (!isNetworkAvailable()) {
+                displayNoConnectionToast();
+                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+            }
+            // first, get a translation from azure
+            String azureInfinitiveForm;
+            if (!isDisplayAllTranslationSuggestions()) {
+                azureInfinitiveForm = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
+            } else {
+                List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
+                // have user select one
+                createUserTranslationSelectionListDialog(engInput, lookups);
+
+                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+            }
+            if (isNullOrEmpty(azureInfinitiveForm)) {
+                azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
+                if (isNullOrEmpty(engInput)) {
+                    displayToast("Could not find Swedish verb translation for: " + engInput);
+                    return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                } else {
+                    displayToast("Found secondary translation...");
+                }
+            }
+            BablaTranslator bablaTranslator = new BablaTranslator();
+            Verb verb = bablaTranslator.getConjugations(azureInfinitiveForm);
+            if (verb == null || verb.getSwedishWord() == null) {
+                displayToast("Could not find conjugations for verb: " + engInput);
+                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+            }
+            setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
+            setEditText(dialogView, R.id.infinitiveForm, verb.getInfinitive());
+            setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
+            setEditText(dialogView, R.id.perfectForm, verb.getPerfect());
+        }
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+    }
+
+    protected void createUserTranslationSelectionListDialog(String engInput, final List<String> translations){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle("Select a translation");
+
+        View rowList = getLayoutInflater().inflate(R.layout.azure_list_view, null);
+        ListView listView = rowList.findViewById(R.id.azureListView);
+
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, translations);
+        listView.setAdapter(adapter);
+
+        adapter.notifyDataSetChanged();
+        alertDialog.setView(rowList);
+        AlertDialog dialog = alertDialog.create();
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            String userSelectedInfinitiveForm = (String) parent.getItemAtPosition(position);
+
+            BablaTranslator bablaTranslator = new BablaTranslator();
+            Verb verb = bablaTranslator.getConjugations(userSelectedInfinitiveForm);
+            if (verb == null || verb.getSwedishWord() == null) {
+                displayToast("Could not find conjugations for verb: " + engInput);
+            } else {
+                if (addCardToDocument(engInput, verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())){
+                    displayCard();
+                }
+            }
+            dialog.dismiss();
+
+        });
+
+        dialog.show();
+
+        customizeDialogDimensions(dialog);
+    }
+
+    private boolean addCardToDocument(String eng, String swed, String imperative, String imperfect, String perfect) {
+        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))) {
             case DO_NOT_REPLACE_EXISTING_CARD:
                 displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
-                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+                return false;
             case REPLACE_EXISTING_CARD:
                 displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
                 break;
             case NONE:
                 displayToast("Adding verb...");
         }
-        
+
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
         Map<String, Object> map = new HashMap<>();
         map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
@@ -262,8 +314,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
-
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return true;
     }
 
     protected boolean validateInputFields(String translationType, String engInput, String swedInput, String infinitive, String imperfect, String perfect) {

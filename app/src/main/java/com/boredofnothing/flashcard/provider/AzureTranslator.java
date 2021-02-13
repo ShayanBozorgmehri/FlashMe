@@ -53,22 +53,27 @@ public class AzureTranslator {
         return null;
     }
 
-    public String getDictionaryLookup(String word, PartOfSpeechTag posTag, LanguageDirection languageDirection) {
+    public List<String> getDictionaryLookups(String word, PartOfSpeechTag posTag, LanguageDirection languageDirection) {
         try {
             AzureDictionaryResponse dictionaryResponse = new DictionaryTask().execute(word, languageDirection.name()).get();
             List<DictionaryTranslation> translations = dictionaryResponse.getTranslations().stream()
                     .filter(t -> t.getPosTag() == posTag)
                     .sorted((f1, f2) -> Float.compare(f2.getConfidence(), f1.getConfidence()))
                     .collect(Collectors.toList());
-
-            if (!translations.isEmpty()) {
-                return translations.get(0).getNormalizedTarget();
-            }
+            return translations.stream().map(t -> t.getNormalizedTarget()).collect(Collectors.toList());
         } catch (AzureTranslateException e){
             ToastUtil.show(context, e.getMessage());
         } catch (Exception e){
             ToastUtil.show(context, "Unexpected error occurred for Azure Dictionary lookup");
             Log.e("ERROR", "Unexpected error occurred for Azure Dictionary lookup: " + e);
+        }
+        return null;
+    }
+
+    public String getDictionaryLookup(String word, PartOfSpeechTag posTag, LanguageDirection languageDirection) {
+        List<String> lookups = getDictionaryLookups(word, posTag, languageDirection);
+        if (lookups != null && !lookups.isEmpty()) {
+            return lookups.get(0);
         }
         return null;
     }

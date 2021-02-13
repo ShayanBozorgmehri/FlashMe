@@ -32,6 +32,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -40,6 +41,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -51,7 +53,6 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NavUtils;
-import androidx.preference.ListPreference;
 import androidx.preference.PreferenceManager;
 
 import com.boredofnothing.flashcard.model.ListViewAdapter;
@@ -118,7 +119,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         SUBMITTED_WITH_NO_RESULTS_FOUND,
         SUBMITTED_WITH_RESULTS_FOUND,
         SUBMITTED_WITH_MANUAL_RESULTS,
-        SUBMITTED_BUT_NOT_ADDED
+        SUBMITTED_BUT_NOT_ADDED,
+        USER_SELECTING_FROM_TRANSLATION_LIST
     }
 
     protected enum UserInterventionState {
@@ -283,6 +285,14 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     /**
+     * Returns the user's preferred translation suggestion, e.g. whether or not to display a list of possible translation,
+     * otherwise default to false.
+     * */
+    protected final boolean isDisplayAllTranslationSuggestions() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        return preferences.getBoolean("translationSuggestionPreference", false);
+    }
+
     /**
      * Returns the user's preferred translation suggestion, e.g. whether or not to display a list of possible translation,
      * otherwise default to false.
@@ -338,6 +348,10 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     protected final String getEnglishTextUsingAzureTranslator(String swedishText){
         return new AzureTranslator(getBaseContext()).getTranslation(swedishText, AzureTranslator.LanguageDirection.SWED_TO_ENG);
+    }
+
+    protected final List<String> getSwedishTextsUsingAzureDictionaryLookup(String englishText, PartOfSpeechTag posTag){
+        return new AzureTranslator(getBaseContext()).getDictionaryLookups(englishText, posTag, AzureTranslator.LanguageDirection.ENG_TO_SWED);
     }
 
     protected final String getSwedishTextUsingAzureDictionaryLookup(String englishText, PartOfSpeechTag posTag){
@@ -486,6 +500,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 displayCard();
                 break;
             case SUBMITTED_BUT_NOT_ADDED:
+            case USER_SELECTING_FROM_TRANSLATION_LIST:
                 alertDialog.dismiss();
                 break;
         }
@@ -587,6 +602,20 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
+    protected final void customizeDialogDimensions(AlertDialog dialog) {
+        // set the dimension of the pop up relative to the screen
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int displayWidth = displayMetrics.widthPixels;
+        int displayHeight = displayMetrics.heightPixels;
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        layoutParams.copyFrom(dialog.getWindow().getAttributes());
+        int dialogWindowWidth = (int) (displayWidth * 0.9f);
+        int dialogWindowHeight = (int) (displayHeight * 0.7f);
+        layoutParams.width = dialogWindowWidth;
+        layoutParams.height = dialogWindowHeight;
+        dialog.getWindow().setAttributes(layoutParams);
+    }
     /**
      * A fragment representing the front of the card.
      */
