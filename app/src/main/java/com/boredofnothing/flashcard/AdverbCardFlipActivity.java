@@ -166,6 +166,45 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
+    protected SubmissionState addCardToDocument(View dialogView) {
+        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
+        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            return state;
+        }
+
+        String eng = getEditText(dialogView, R.id.englishAdverb);
+        String swed = getEditText(dialogView, R.id.swedishAdverb);
+
+        return addCardToDocument(eng, swed);
+    }
+
+    private SubmissionState addCardToDocument(String eng, String swed) {
+        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
+            case DO_NOT_REPLACE_EXISTING_CARD:
+                displayToast("Adverb with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
+                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+            case REPLACE_EXISTING_CARD:
+                displayToast("Adverb with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
+                break;
+            case NONE:
+                displayToast("Adding adverb...");
+        }
+
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
+        Map<String, Object> map = new HashMap<>();
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
+        mutableDocument.setData(map);
+
+        Log.d("DEBUG", map.toString());
+        storeDocumentToDB(mutableDocument);
+
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+    }
+
+    @Override
     protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.adverb_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishAdverb).trim();
@@ -194,7 +233,17 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
-            swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
+            if (!isDisplayAllTranslationSuggestions()) {
+                swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
+            } else {
+                // have user select one
+                List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
+
+                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+
+                createUserTranslationSelectionListDialog(engInput, lookups);
+                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+            }
             if (isNullOrEmpty(swedTranslation)) {
                 swedTranslation = getSwedishTextUsingAzureTranslator(engInput);
                 if (isNullOrEmpty(swedTranslation)) {
@@ -210,38 +259,10 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState addCardToDocument(View dialogView) {
-        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
-            return state;
+    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedAdverb) {
+        if (addCardToDocument(engInput, userSelectedAdverb) == SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            displayCard();
         }
-
-        String eng = getEditText(dialogView, R.id.englishAdverb);
-        String swed = getEditText(dialogView, R.id.swedishAdverb);
-
-        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
-            case DO_NOT_REPLACE_EXISTING_CARD:
-                displayToast("Adverb with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
-                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
-            case REPLACE_EXISTING_CARD:
-                displayToast("Adverb with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
-                break;
-            case NONE:
-                displayToast("Adding adverb...");
-        }
-        
-        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
-        Map<String, Object> map = new HashMap<>();
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
-        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
-        mutableDocument.setData(map);
-
-        Log.d("DEBUG", map.toString());
-        storeDocumentToDB(mutableDocument);
-
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override

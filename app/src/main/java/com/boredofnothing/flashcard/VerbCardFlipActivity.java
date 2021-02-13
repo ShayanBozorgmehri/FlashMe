@@ -184,7 +184,34 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         String imperfect = getEditText(dialogView, R.id.imperfectForm);
         String perfect = getEditText(dialogView, R.id.perfectForm);
 
-        if (!addCardToDocument(eng, swed, imperative, imperfect, perfect)) return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+        return addCardToDocument(eng, swed, imperative, imperfect, perfect);
+    }
+
+    private SubmissionState addCardToDocument(String eng, String swed, String imperative, String imperfect, String perfect) {
+        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))) {
+            case DO_NOT_REPLACE_EXISTING_CARD:
+                displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
+                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+            case REPLACE_EXISTING_CARD:
+                displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
+                break;
+            case NONE:
+                displayToast("Adding verb...");
+        }
+
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
+        Map<String, Object> map = new HashMap<>();
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
+        map.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
+        map.put(CardKeyName.PERFECT_KEY.getValue(), perfect);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
+        mutableDocument.setData(map);
+
+        Log.d("DEBUG", map.toString());
+        storeDocumentToDB(mutableDocument);
 
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
@@ -225,10 +252,12 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             if (!isDisplayAllTranslationSuggestions()) {
                 azureInfinitiveForm = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
             } else {
-                List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
                 // have user select one
-                createUserTranslationSelectionListDialog(engInput, lookups);
+                List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
 
+                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+
+                createUserTranslationSelectionListDialog("Select an infinitive form translation", engInput, lookups);
                 return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
             }
             if (isNullOrEmpty(azureInfinitiveForm)) {
@@ -254,67 +283,18 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
-    protected void createUserTranslationSelectionListDialog(String engInput, final List<String> translations){
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        alertDialog.setTitle("Select a translation");
-
-        View rowList = getLayoutInflater().inflate(R.layout.azure_list_view, null);
-        ListView listView = rowList.findViewById(R.id.azureListView);
-
-        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, translations);
-        listView.setAdapter(adapter);
-
-        adapter.notifyDataSetChanged();
-        alertDialog.setView(rowList);
-        AlertDialog dialog = alertDialog.create();
-
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            String userSelectedInfinitiveForm = (String) parent.getItemAtPosition(position);
-
-            BablaTranslator bablaTranslator = new BablaTranslator();
-            Verb verb = bablaTranslator.getConjugations(userSelectedInfinitiveForm);
-            if (verb == null || verb.getSwedishWord() == null) {
-                displayToast("Could not find conjugations for verb: " + engInput);
-            } else {
-                if (addCardToDocument(engInput, verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())){
-                    displayCard();
-                }
+    @Override
+    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedInfinitiveForm) {
+        BablaTranslator bablaTranslator = new BablaTranslator();
+        Verb verb = bablaTranslator.getConjugations(userSelectedInfinitiveForm);
+        if (verb == null || verb.getSwedishWord() == null) {
+            displayToast("Could not find conjugations for verb: " + engInput);
+        } else {
+            if (addCardToDocument(engInput, verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())
+                    == SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+                displayCard();
             }
-            dialog.dismiss();
-
-        });
-
-        dialog.show();
-
-        customizeDialogDimensions(dialog);
-    }
-
-    private boolean addCardToDocument(String eng, String swed, String imperative, String imperfect, String perfect) {
-        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))) {
-            case DO_NOT_REPLACE_EXISTING_CARD:
-                displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
-                return false;
-            case REPLACE_EXISTING_CARD:
-                displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
-                break;
-            case NONE:
-                displayToast("Adding verb...");
         }
-
-        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
-        Map<String, Object> map = new HashMap<>();
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.VERB.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
-        map.put(CardKeyName.INFINITIVE_KEY.getValue(), imperative);
-        map.put(CardKeyName.IMPERFECT_KEY.getValue(), imperfect);
-        map.put(CardKeyName.PERFECT_KEY.getValue(), perfect);
-        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
-        mutableDocument.setData(map);
-
-        Log.d("DEBUG", map.toString());
-        storeDocumentToDB(mutableDocument);
-        return true;
     }
 
     protected boolean validateInputFields(String translationType, String engInput, String swedInput, String infinitive, String imperfect, String perfect) {

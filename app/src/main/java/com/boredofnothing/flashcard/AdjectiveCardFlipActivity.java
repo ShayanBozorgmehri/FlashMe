@@ -51,7 +51,6 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         }
     }
 
-
     @Override
     protected List<ListViewItem> getSearchSuggestionList() {
         List<ListViewItem> suggestionList = new ArrayList<>();
@@ -164,6 +163,45 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
+    protected SubmissionState addCardToDocument(View dialogView) {
+        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
+        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            return state;
+        }
+
+        String eng = getEditText(dialogView, R.id.englishAdjective);
+        String swed = getEditText(dialogView, R.id.swedishAdjective);
+
+        return addCardToDocument(eng, swed);
+    }
+
+    private SubmissionState addCardToDocument(String eng, String swed) {
+        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
+            case DO_NOT_REPLACE_EXISTING_CARD:
+                displayToast("Adjective with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
+                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+            case REPLACE_EXISTING_CARD:
+                displayToast("Adjective with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
+                break;
+            case NONE:
+                displayToast("Adding adjective...");
+        }
+
+        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
+        Map<String, Object> map = new HashMap<>();
+        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
+        mutableDocument.setData(map);
+
+        Log.d("DEBUG", map.toString());
+        storeDocumentToDB(mutableDocument);
+
+        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+    }
+
+    @Override
     protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.adjective_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishAdjective).trim();
@@ -191,7 +229,17 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
-            swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADJ);
+            if (!isDisplayAllTranslationSuggestions()) {
+                swedTranslation = getSwedishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
+            } else {
+                // have user select one
+                List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADJ);
+
+                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+
+                createUserTranslationSelectionListDialog(engInput, lookups);
+                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+            }
             if (isNullOrEmpty(swedTranslation)) {
                 swedTranslation = getSwedishTextUsingAzureTranslator(engInput);
                 if (isNullOrEmpty(swedTranslation)) {
@@ -207,38 +255,10 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState addCardToDocument(View dialogView) {
-        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
-            return state;
+    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedAdjective) {
+        if (addCardToDocument(engInput, userSelectedAdjective) == SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            displayCard();
         }
-
-        String eng = getEditText(dialogView, R.id.englishAdjective);
-        String swed = getEditText(dialogView, R.id.swedishAdjective);
-
-        switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
-            case DO_NOT_REPLACE_EXISTING_CARD:
-                displayToast("Adjective with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
-                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
-            case REPLACE_EXISTING_CARD:
-                displayToast("Adjective with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
-                break;
-            case NONE:
-                displayToast("Adding adjective...");
-        }
-        
-        MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
-        Map<String, Object> map = new HashMap<>();
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
-        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
-        mutableDocument.setData(map);
-
-        Log.d("DEBUG", map.toString());
-        storeDocumentToDB(mutableDocument);
-
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override

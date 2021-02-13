@@ -43,6 +43,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -275,6 +276,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected SubmissionState updateCurrentCard(final View dialogView);
     abstract protected void loadAllDocuments();
     abstract protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView);
+    abstract protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation);
 
     /**
      * Returns the user's preferred translation mode, otherwise default to auto swedish.
@@ -504,6 +506,37 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 alertDialog.dismiss();
                 break;
         }
+    }
+
+    protected final void createUserTranslationSelectionListDialog(String engInput, final List<String> translations) {
+        createUserTranslationSelectionListDialog("Select a translation", engInput, translations);
+    }
+
+    protected final void createUserTranslationSelectionListDialog(String dialogTitle, String engInput, final List<String> translations){
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        alertDialog.setTitle(dialogTitle);
+
+        View rowList = getLayoutInflater().inflate(R.layout.azure_list_view, null);
+        ListView listView = rowList.findViewById(R.id.azureListView);
+
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, translations);
+        listView.setAdapter(adapter);
+
+        adapter.notifyDataSetChanged();
+        alertDialog.setView(rowList);
+        AlertDialog dialog = alertDialog.create();
+
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            String userSelectedInfinitiveForm = (String) parent.getItemAtPosition(position);
+
+            tryToAddUserSelectedTranslation(engInput, userSelectedInfinitiveForm);
+            dialog.dismiss();
+
+        });
+
+        dialog.show();
+
+        customizeDialogDimensions(dialog);
     }
 
     protected final void removeTranslationRadioGroupFields(AlertDialog dialog, int radioGroup, int radioGroupHeader) {

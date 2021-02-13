@@ -106,6 +106,11 @@ public class AllCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
+    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation) {
+        // do nothing
+    }
+
+    @Override
     protected SubmissionState addCardToDocument(final View dialogView) {
         // do nothing
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;

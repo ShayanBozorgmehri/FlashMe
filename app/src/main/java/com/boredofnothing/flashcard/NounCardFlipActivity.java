@@ -270,6 +270,11 @@ public class NounCardFlipActivity extends CardFlipActivity {
         return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
 
+    @Override
+    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation) {
+        // do nothing
+    }
+
     protected boolean validateInputFields(String translationType, String engInput, String swedInput, String swedishNounPlural){
         if (translationType.equals(getResources().getString(R.string.manual_translation))
                 && (engInput.isEmpty() || swedInput.isEmpty() || swedishNounPlural.isEmpty())) {

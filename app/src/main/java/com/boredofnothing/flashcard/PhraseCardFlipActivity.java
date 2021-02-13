@@ -203,6 +203,11 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
+    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation) {
+        // do nothing
+    }
+
+    @Override
     protected SubmissionState addCardToDocument(View dialogView) {
         SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
         if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
