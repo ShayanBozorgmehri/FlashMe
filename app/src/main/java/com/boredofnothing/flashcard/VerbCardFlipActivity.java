@@ -194,7 +194,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))) {
             case DO_NOT_REPLACE_EXISTING_CARD:
                 displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
-                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+                return SUBMITTED_BUT_ALREADY_EXISTS;
             case REPLACE_EXISTING_CARD:
                 displayToast("Verb with english word '" + eng + "' and swedish word '" + swed + "' already exists, but will replace it...");
                 break;
