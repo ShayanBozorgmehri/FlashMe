@@ -41,8 +41,8 @@ public class AllCardFlipActivity extends CardFlipActivity {
         Document doc = null;
         for (int i = 0; i < documents.size(); i++) {
             Document document = documents.get(i);
-            String englishWord = document.getString(CardKeyName.ENGLISH_KEY.toString());
-            String swedishWord = document.getString(CardKeyName.SWEDISH_KEY.toString());
+            String englishWord = document.getString(CardKeyName.ENGLISH_KEY.getValue());
+            String swedishWord = document.getString(CardKeyName.SWEDISH_KEY.getValue());
             if (englishWord.contains(word) || swedishWord.contains(word)) {
                 doc = documents.get(i);
                 currentIndex = i;
