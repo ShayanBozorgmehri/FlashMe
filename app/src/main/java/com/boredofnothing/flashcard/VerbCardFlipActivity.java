@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.boredofnothing.flashcard.CardFlipActivity.SubmissionState.SUBMITTED_BUT_ALREADY_EXISTS;
+import static com.boredofnothing.flashcard.CardFlipActivity.SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+
 public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
@@ -174,7 +177,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     @Override
     protected SubmissionState addCardToDocument(final View dialogView) {
         SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+        if (state != SUBMITTED_WITH_RESULTS_FOUND) {
             return state;
         }
         
@@ -213,7 +216,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
@@ -280,7 +283,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
             setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
             setEditText(dialogView, R.id.perfectForm, verb.getPerfect());
         }
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
@@ -290,9 +293,10 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         if (verb == null || verb.getSwedishWord() == null) {
             displayToast("Could not find conjugations for verb: " + engInput);
         } else {
-            if (addCardToDocument(engInput, verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())
-                    == SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
-                displayCard();
+            switch (addCardToDocument(engInput, verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())) {
+                case SUBMITTED_WITH_RESULTS_FOUND:
+                case SUBMITTED_BUT_ALREADY_EXISTS:
+                    displayCard();
             }
         }
     }

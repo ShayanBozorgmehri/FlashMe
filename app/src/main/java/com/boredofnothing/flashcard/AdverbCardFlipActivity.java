@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.boredofnothing.flashcard.CardFlipActivity.SubmissionState.SUBMITTED_BUT_ALREADY_EXISTS;
+import static com.boredofnothing.flashcard.CardFlipActivity.SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+
 public class AdverbCardFlipActivity extends CardFlipActivity {
 
 
@@ -168,7 +171,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
     @Override
     protected SubmissionState addCardToDocument(View dialogView) {
         SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+        if (state != SUBMITTED_WITH_RESULTS_FOUND) {
             return state;
         }
 
@@ -201,7 +204,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         Log.d("DEBUG", map.toString());
         storeDocumentToDB(mutableDocument);
 
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
@@ -255,13 +258,15 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
             }
             setEditText(dialogView, R.id.swedishAdverb, swedTranslation);
         }
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return SUBMITTED_WITH_RESULTS_FOUND;
     }
 
     @Override
     protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedAdverb) {
-        if (addCardToDocument(engInput, userSelectedAdverb) == SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
-            displayCard();
+        switch (addCardToDocument(engInput, userSelectedAdverb)) {
+            case SUBMITTED_WITH_RESULTS_FOUND:
+            case SUBMITTED_BUT_ALREADY_EXISTS:
+                displayCard();
         }
     }
 

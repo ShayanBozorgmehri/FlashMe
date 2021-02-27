@@ -8,6 +8,44 @@ public class WordCompareUtil {
     public final double PLURAL_SIMILAR_ENOUGH_AMOUNT = 0.6;
     public final double PLURAL_SIMILAR_ENOUGH_AMOUNT_SIX_LETTER_WORD = 0.5;
 
+    public final double BEGINNING_SIMILAR_ENOUGH_AMOUNT = 0.66;
+    public final double BEGINNING_SIMILAR_ENOUGH_AMOUNT_FIVE_LETTER_WORD = 0.6;
+    public final double BEGINNING_SIMILAR_ENOUGH_AMOUNT_FOUR_LETTER_WORD = 0.5;
+
+
+    public double beginningSimilarity(String s1, String s2){
+        String longer = s1.toLowerCase(), shorter = s2.toLowerCase();
+        if (s1.length() < s2.length()) {
+            longer = s2; shorter = s1;
+        }
+
+        double count = 0;
+        for (int i = 0; i < shorter.length(); i++) {
+            if (shorter.charAt(i) == longer.charAt(i)) {
+                count++;
+            }
+        }
+
+        double similarity = ((count/shorter.length()) + (count/longer.length())) / 2;
+        return similarity;
+    }
+
+    public boolean isBeginningSimilarEnough(String s1, String s2, double similarity) {
+
+        String longer = s1;
+        if (s1.length() < s2.length()) {
+            longer = s2;
+        }
+
+        if (longer.length() == 4) {
+            return similarity >= BEGINNING_SIMILAR_ENOUGH_AMOUNT_FOUR_LETTER_WORD;
+        } else if (longer.length() == 5) {
+            return similarity >= BEGINNING_SIMILAR_ENOUGH_AMOUNT_FIVE_LETTER_WORD;
+        }
+        return similarity >= BEGINNING_SIMILAR_ENOUGH_AMOUNT;
+    }
+
+
     public boolean isSimilarEnough(String swedishPlural, double similarity) {
         if (swedishPlural.length() != 6) {
             return similarity >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT;

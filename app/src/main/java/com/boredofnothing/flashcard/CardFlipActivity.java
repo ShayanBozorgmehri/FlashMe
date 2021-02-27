@@ -121,6 +121,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         SUBMITTED_WITH_RESULTS_FOUND,
         SUBMITTED_WITH_MANUAL_RESULTS,
         SUBMITTED_BUT_NOT_ADDED,
+        SUBMITTED_BUT_ALREADY_EXISTS,
         USER_SELECTING_FROM_TRANSLATION_LIST
     }
 
@@ -484,7 +485,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 deleteDocument(document);
                 return UserInterventionState.REPLACE_EXISTING_CARD;
             }
-            return  UserInterventionState.DO_NOT_REPLACE_EXISTING_CARD;
+            currentIndex = documents.indexOf(document);
+            return UserInterventionState.DO_NOT_REPLACE_EXISTING_CARD;
         }
 
         return UserInterventionState.NONE;
@@ -498,6 +500,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                 alertDialog.dismiss();
                 break;
             case SUBMITTED_WITH_RESULTS_FOUND:
+            case SUBMITTED_BUT_ALREADY_EXISTS:
                 alertDialog.dismiss();
                 displayCard();
                 break;

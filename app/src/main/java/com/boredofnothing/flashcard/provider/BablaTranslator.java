@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.boredofnothing.flashcard.model.bablaData.Conjugation;
 import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.util.WordCompareUtil;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -60,8 +61,11 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
                     String value = quickResultsElement.getElementsByClass("sense-group-results").get(0).text();
                     if (quickResultConjugationType.equals(Conjugation.INFINITIV.getValue())) {
                         if (!infinitive.equals(value)) {
-                            Log.i("INFO", "Infinitive form from Babla: " + value + " does not match original infinitive: " + infinitive);
-                            return verb;
+                            double similarity = WordCompareUtil.beginningSimilarity(infinitive, value);
+                            if (!WordCompareUtil.isBeginningSimilarEnough(infinitive, value, similarity)) {
+                                Log.i("INFO", "Infinitive form from Babla: " + value + " does not match original infinitive: " + infinitive);
+                                return verb;
+                            }
                         }
                         verb.setInfinitive(value);
                     }
