@@ -3,7 +3,6 @@ package com.boredofnothing.flashcard.provider;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.boredofnothing.flashcard.model.bablaData.Conjugation;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.util.WordCompareUtil;
 
@@ -15,6 +14,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import lombok.Getter;
+
 public class BablaTranslator extends AsyncTask<String, String, Verb> {
 
     //private final Context context;
@@ -22,6 +23,21 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
 
     public BablaTranslator(){
         //this.context = context;
+    }
+    
+    public enum Conjugation {
+
+        INFINITIV("Infinitiv"),
+        PRESENS("Presens"),
+        IMPERFEKT_PRETERITUM("Preteritum"),
+        PERFEKT("Perfekt");
+
+        @Getter
+        private final String value;
+
+        Conjugation(String value) {
+            this.value = value;
+        }
     }
 
     @Override
