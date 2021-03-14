@@ -25,7 +25,7 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
         //this.context = context;
     }
     
-    public enum Conjugation {
+    private enum Conjugation {
 
         INFINITIV("Infinitiv"),
         PRESENS("Presens"),
@@ -38,13 +38,6 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
         Conjugation(String value) {
             this.value = value;
         }
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        //progressDialog = new ProgressDialog(context);
-        //progressDialog.show();
     }
 
     public Verb getConjugations(String presentTense){
@@ -111,7 +104,7 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
             Log.e("ERROR", "MIGHT have failed to find translation: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("------------------" + verb);
+
         return verb;
     }
 
