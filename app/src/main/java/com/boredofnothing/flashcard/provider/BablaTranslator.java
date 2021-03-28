@@ -1,6 +1,5 @@
 package com.boredofnothing.flashcard.provider;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.boredofnothing.flashcard.model.cards.Verb;
@@ -12,11 +11,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 import lombok.Getter;
 
-public class BablaTranslator extends AsyncTask<String, String, Verb> {
+public class BablaTranslator extends ConjugationTranslator {
 
     //private final Context context;
     //private ProgressDialog progressDialog;
@@ -40,22 +38,9 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
         }
     }
 
-    public Verb getConjugations(String presentTense){
-
-        try {
-            return execute(presentTense).get();//execute and wait until the call is done
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     @Override
-    protected Verb doInBackground(String... data) {
+    protected Verb findConjugations(String infinitive) {
         Verb verb = new Verb();
-        final String infinitive = data[0];
 
         try {
             // Connect to the website
@@ -98,18 +83,11 @@ public class BablaTranslator extends AsyncTask<String, String, Verb> {
             }
         }
         catch (IOException e) {
-            Log.e("ERROR", e.getMessage());
-            e.printStackTrace();
+            Log.e("ERROR", "Failed to find conjugations due to: " + e);
         } catch (Exception e) {
-            Log.e("ERROR", "MIGHT have failed to find translation: " + e.getMessage());
-            e.printStackTrace();
+            Log.e("ERROR", "MIGHT have failed to find conjugations: " + e);
         }
 
         return verb;
-    }
-
-    @Override
-    protected void onPostExecute(Verb verb) {
-        super.onPostExecute(verb);
     }
 }

@@ -16,6 +16,8 @@ import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.provider.BablaTranslator;
+import com.boredofnothing.flashcard.provider.ConjugationTranslator;
+import com.boredofnothing.flashcard.provider.VerbixTranslator;
 import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
@@ -272,10 +274,8 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                     displayToast("Found secondary translation...");
                 }
             }
-            BablaTranslator bablaTranslator = new BablaTranslator();
-            Verb verb = bablaTranslator.getConjugations(azureInfinitiveForm);
-            if (verb == null || verb.getSwedishWord() == null) {
-                displayToast("Could not find conjugations for verb: " + engInput);
+            Verb verb = findVerbConjugations(azureInfinitiveForm, engInput);
+            if (verb == null) {
                 return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
             setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
@@ -288,17 +288,28 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedInfinitiveForm) {
-        BablaTranslator bablaTranslator = new BablaTranslator();
-        Verb verb = bablaTranslator.getConjugations(userSelectedInfinitiveForm);
-        if (verb == null || verb.getSwedishWord() == null) {
-            displayToast("Could not find conjugations for verb: " + engInput);
-        } else {
+        Verb verb = findVerbConjugations(userSelectedInfinitiveForm, engInput);
+        if (verb != null) {
             switch (addCardToDocument(engInput, verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())) {
                 case SUBMITTED_WITH_RESULTS_FOUND:
                 case SUBMITTED_BUT_ALREADY_EXISTS:
                     displayCard();
             }
         }
+    }
+
+    private Verb findVerbConjugations(String infinitiveForm, String engInput) {
+        ConjugationTranslator conjugationTranslator = new BablaTranslator();
+        Verb verb = conjugationTranslator.getConjugations(infinitiveForm);
+        if (verb == null || verb.getSwedishWord() == null) {
+            conjugationTranslator = new VerbixTranslator();
+            verb = conjugationTranslator.getConjugations(infinitiveForm);
+            if (verb == null || verb.getSwedishWord() == null) {
+                displayToast("Could not find conjugations for verb: " + engInput);
+                return null;
+            }
+        }
+        return verb;
     }
 
     protected boolean validateInputFields(String translationType, String engInput, String swedInput, String infinitive, String imperfect, String perfect) {

@@ -1,6 +1,5 @@
 package com.boredofnothing.flashcard.provider;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.boredofnothing.flashcard.model.cards.Verb;
@@ -12,11 +11,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
-import java.util.concurrent.ExecutionException;
-
 import lombok.Getter;
 
-public class VerbixTranslator extends AsyncTask<String, String, Verb> {
+public class VerbixTranslator extends ConjugationTranslator {
 
     // private static final String BASE_URL = "https://www.verbix.com/webverbix/Swedish/";
     private static final String BASE_API_URL = "https://api.verbix.com/conjugator/iv1/ab8e7bb5-9ac6-11e7-ab6a-00089be4dcbc/1/21/121/";
@@ -36,23 +33,9 @@ public class VerbixTranslator extends AsyncTask<String, String, Verb> {
         }
     }
 
-    public Verb getConjugations(String presentTense){
-
-        try {
-            return execute(presentTense).get();//execute and wait until the call is done
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     @Override
-    protected Verb doInBackground(String... data) {
-
+    protected Verb findConjugations(String infinitive) {
         Verb verb = new Verb();
-        final String infinitive = data[0];
 
         try {
             // Connect to the website
@@ -91,17 +74,12 @@ public class VerbixTranslator extends AsyncTask<String, String, Verb> {
                 }
             }
         } catch (Exception e) {
-            Log.e("ERROR", "MIGHT have failed to find translation: " + e.getMessage());
-            e.printStackTrace();
+            Log.e("ERROR", "MIGHT have failed to find translation: " + e);
         }
 
         return verb;
     }
 
-    @Override
-    protected void onPostExecute(Verb verb) {
-        super.onPostExecute(verb);
-    }
 
     private String removeHtmlTags(Node node) {
         return node.toString().replaceAll("<[^>]*>", "");
