@@ -308,7 +308,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
         switch (checkIfIdExists(DocumentUtil.createDocId(engTranslation, swedTranslation))){
             case DO_NOT_REPLACE_EXISTING_CARD:
                 displayToast("Noun with english word '" + engTranslation + "' and swedish word '" + swedTranslation + "' already exists, not adding card.");
-                return SubmissionState.SUBMITTED_BUT_NOT_ADDED;
+                return SubmissionState.SUBMITTED_BUT_ALREADY_EXISTS;
             case REPLACE_EXISTING_CARD:
                 displayToast("Noun with english word '" + engTranslation + "' and swedish word '" + swedTranslation + "' already exists, but will replace it...");
                 break;
