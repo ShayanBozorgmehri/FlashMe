@@ -51,6 +51,7 @@ class PluralTranslatorTest {
         assertEquals("meddelanden", PluralTranslator.figureOutPluralTenseOfNoun("ett", "meddelande"))
         assertEquals("påståenden", PluralTranslator.figureOutPluralTenseOfNoun("ett", "påstående"))
         assertEquals("suddgummin", PluralTranslator.figureOutPluralTenseOfNoun("ett", "suddgummi"))
+        assertEquals("samhällen", PluralTranslator.figureOutPluralTenseOfNoun("ett", "samhälle"))
     }
 
     @Test
