@@ -218,12 +218,12 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 return SubmissionState.FILLED_IN_INCORRECTLY;
             }
             String engPlural = English.plural(engInput);
-            swedTranslation = getSwedishTextUsingAzureTranslator("a " + engInput + "! " + engPlural);
+            swedTranslation = getSwedishTextUsingAzureTranslator("a " + engInput + "! many " + engPlural);
             if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
-            String[] results = swedTranslation.replace("!", "").split(" ");
+            String[] results = swedTranslation.replace("!", "").replace(" många", "").split(" ");
             article = results[0].equals("en") ? "en" : "ett";
             if (results.length == 3) { // 0 = article, 1 = noun, 2 = plural noun
                 swedTranslation = results[1];
