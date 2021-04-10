@@ -4,10 +4,8 @@ import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.RadioGroup;
 
 import com.boredofnothing.flashcard.model.ListViewItem;
@@ -18,6 +16,7 @@ import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.provider.BablaTranslator;
 import com.boredofnothing.flashcard.provider.ConjugationTranslator;
 import com.boredofnothing.flashcard.provider.VerbixTranslator;
+import com.boredofnothing.flashcard.provider.WikiTranslator;
 import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
@@ -299,14 +298,18 @@ public class VerbCardFlipActivity extends CardFlipActivity {
     }
 
     private Verb findVerbConjugations(String infinitiveForm, String engInput) {
-        ConjugationTranslator conjugationTranslator = new BablaTranslator();
-        Verb verb = conjugationTranslator.getConjugations(infinitiveForm);
+        Verb verb = BablaTranslator.getInstance().getConjugations(infinitiveForm);
         if (verb == null || verb.getSwedishWord() == null) {
-            conjugationTranslator = new VerbixTranslator();
-            verb = conjugationTranslator.getConjugations(infinitiveForm);
+            Log.i("INFO", "Failed to find conjugation from first provider...");
+            verb = VerbixTranslator.getInstance().getConjugations(infinitiveForm);
             if (verb == null || verb.getSwedishWord() == null) {
-                displayToast("Could not find conjugations for verb: " + engInput);
-                return null;
+                Log.i("INFO", "Failed to find conjugation from second provider...");
+                verb = WikiTranslator.getInstance().getConjugations(infinitiveForm);
+                if (verb == null || verb.getSwedishWord() == null) {
+                    Log.i("INFO", "Failed to find conjugation from third provider...");
+                    displayToast("Could not find conjugations for verb: " + engInput);
+                    return null;
+                }
             }
         }
         return verb;

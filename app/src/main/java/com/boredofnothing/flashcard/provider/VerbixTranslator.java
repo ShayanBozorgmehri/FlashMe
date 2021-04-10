@@ -8,7 +8,6 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import lombok.Getter;
@@ -17,6 +16,15 @@ public class VerbixTranslator extends ConjugationTranslator {
 
     // private static final String BASE_URL = "https://www.verbix.com/webverbix/Swedish/";
     private static final String BASE_API_URL = "https://api.verbix.com/conjugator/iv1/ab8e7bb5-9ac6-11e7-ab6a-00089be4dcbc/1/21/121/";
+
+    private static final VerbixTranslator INSTANCE = new VerbixTranslator();
+
+    private VerbixTranslator() {
+    }
+
+    public static VerbixTranslator getInstance() {
+        return INSTANCE;
+    }
 
     private enum Conjugation {
 
@@ -57,9 +65,9 @@ public class VerbixTranslator extends ConjugationTranslator {
                         Elements tenseBlockElements = tenseBlock.getElementsByClass("normal"); // a normal conjugation
                         String value;
                         if (!tenseBlockElements.isEmpty()) {
-                            value = tenseBlockElements.get(0).text();
+                            value = getInnerHtml(tenseBlockElements.get(0));
                         } else { // irregular conjugation, like for äter -> åt
-                            value = tenseBlock.getElementsByClass("irregular").get(0).text();
+                            value = getInnerHtml(tenseBlock.getElementsByClass("irregular").get(0));
                         }
                         if (Conjugation.PRESENT.getValue().equals(tense)) {
                             verb.setSwedishWord(value);
@@ -79,10 +87,4 @@ public class VerbixTranslator extends ConjugationTranslator {
 
         return verb;
     }
-
-
-    private String removeHtmlTags(Node node) {
-        return node.toString().replaceAll("<[^>]*>", "");
-    }
-
 }

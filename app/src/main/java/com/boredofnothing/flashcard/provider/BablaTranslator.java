@@ -12,6 +12,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public class BablaTranslator extends ConjugationTranslator {
@@ -19,10 +20,17 @@ public class BablaTranslator extends ConjugationTranslator {
     //private final Context context;
     //private ProgressDialog progressDialog;
 
-    public BablaTranslator(){
+    private static final BablaTranslator INSTANCE = new BablaTranslator();
+
+    private BablaTranslator(){
         //this.context = context;
     }
-    
+
+    public static BablaTranslator getInstance() {
+        return INSTANCE;
+    }
+
+    @AllArgsConstructor
     private enum Conjugation {
 
         INFINITIV("Infinitiv"),
@@ -32,10 +40,6 @@ public class BablaTranslator extends ConjugationTranslator {
 
         @Getter
         private final String value;
-
-        Conjugation(String value) {
-            this.value = value;
-        }
     }
 
     @Override
@@ -51,8 +55,8 @@ public class BablaTranslator extends ConjugationTranslator {
             for (Element quickResultsElement: quickResultsElements) {
                 Elements quickResultOptionElement = quickResultsElement.getElementsByClass("quick-result-option");
                 if (quickResultOptionElement.size() > 0) {
-                    String quickResultConjugationType = quickResultOptionElement.get(0).text();
-                    String value = quickResultsElement.getElementsByClass("sense-group-results").get(0).text();
+                    String quickResultConjugationType = getInnerHtml(quickResultOptionElement.get(0));
+                    String value = getInnerHtml(quickResultsElement.getElementsByClass("sense-group-results").get(0));
                     if (quickResultConjugationType.equals(Conjugation.INFINITIV.getValue())) {
                         if (!infinitive.equals(value)) {
                             double similarity = WordCompareUtil.beginningSimilarity(infinitive, value);
@@ -70,8 +74,8 @@ public class BablaTranslator extends ConjugationTranslator {
             Elements conjugationTenseBlockElements = document.select("div.conj-tense-block");
             if (!conjugationTenseBlockElements.isEmpty()) {
                 for (Element element: conjugationTenseBlockElements){
-                    String tense = element.getElementsByClass("conj-tense-block-header").get(0).text();
-                    String value = element.getElementsByClass("conj-result").get(0).text();
+                    String tense = getInnerHtml(element.getElementsByClass("conj-tense-block-header").get(0));
+                    String value = getInnerHtml(element.getElementsByClass("conj-result").get(0));
                     if (tense.equals(Conjugation.PRESENS.getValue())) {
                         verb.setSwedishWord(value);
                     } else if (tense.equals(Conjugation.IMPERFEKT_PRETERITUM.getValue())) {

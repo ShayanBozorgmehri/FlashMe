@@ -12,38 +12,50 @@ class WordCompareUtilTest {
         assertTrue(checkBeginningSimilarity("missa", "missar"));
 
         assertTrue(checkBeginningSimilarity("boka", "bokar"));
-
-
+        
         assertTrue(checkBeginningSimilarity("äta", "äter"));
         assertTrue(checkBeginningSimilarity("köra", "kör"));
     }
 
     @Test
-    fun shouldCalculateThatWordsAreNotSimilarEnoughAtBeginning() {
+    fun shouldCalculateThatWordsAreNotSimilarEnoughAtBeginning() { 
 
+    @Test
+    fun shouldCalculateThatPluralWordsAreSimilarEnough() {
+        assertTrue(checkPluralSimilarity("flicka", "flickor"));
+        assertTrue(checkPluralSimilarity("flicka", "flickor"));
+        assertTrue(checkPluralSimilarity("pojke", "pojkar"));
+        assertTrue(checkPluralSimilarity("bil", "bilar"));
+        assertTrue(checkPluralSimilarity("bil", "bil"));
+
+        assertTrue(checkPluralSimilarity("mun", "munnar"));
+    }
+
+    @Test
+    fun shouldCalculateThatPluralWordsAreNotSimilarEnough() {
+        assertFalse(checkPluralSimilarity("tjej", "flickor"));
+        assertFalse(checkPluralSimilarity("kille", "pojkar"));
+        assertFalse(checkPluralSimilarity("backwards", "sdrawkcab"));
     }
 
     @Test
     fun shouldCalculateThatWordsAreSimilarEnough() {
-        assertTrue(checkSimilarity("flicka", "flickor"));
-        assertTrue(checkSimilarity("flicka", "flickor"));
-        assertTrue(checkSimilarity("pojke", "pojkar"));
-        assertTrue(checkSimilarity("bil", "bilar"));
-        assertTrue(checkSimilarity("bil", "bil"));
-
-        assertTrue(checkSimilarity("mun", "munnar"));
+        assertTrue(checkSimilarity("trivs", "trivas"));
     }
 
     @Test
     fun shouldCalculateThatWordsAreNotSimilarEnough() {
-        assertFalse(checkSimilarity("tjej", "flickor"));
-        assertFalse(checkSimilarity("kille", "pojkar"));
-        assertFalse(checkSimilarity("backwards", "sdrawkcab"));
+        assertFalse(checkSimilarity("shit", "tihs"));
     }
 
-    private fun checkSimilarity(swedSingluar: String, swedPlural: String): Boolean {
+    private fun checkSimilarity(s1: String, s2: String): Boolean {
+        var similarity = WordCompareUtil.similarity(s1, s2);
+        return WordCompareUtil.isSimilarEnough(s2, similarity);
+    }
+
+    private fun checkPluralSimilarity(swedSingluar: String, swedPlural: String): Boolean {
         var similarity = WordCompareUtil.similarity(swedSingluar, swedPlural);
-        return WordCompareUtil.isSimilarEnough(swedPlural, similarity);
+        return WordCompareUtil.isPluralSimilarEnough(swedPlural, similarity);
     }
 
     private fun checkBeginningSimilarity(s1: String, s2: String) : Boolean {

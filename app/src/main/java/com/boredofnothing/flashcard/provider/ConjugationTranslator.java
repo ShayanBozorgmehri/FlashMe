@@ -5,7 +5,8 @@ import android.util.Log;
 
 import com.boredofnothing.flashcard.model.cards.Verb;
 
-import java.util.concurrent.ExecutionException;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 
 public abstract class ConjugationTranslator extends AsyncTask<String, String, Verb> {
 
@@ -13,7 +14,7 @@ public abstract class ConjugationTranslator extends AsyncTask<String, String, Ve
 
         try {
             return execute(presentTense).get();//execute and wait until the call is done
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (Exception e) {
             Log.e("ERROR", "Something went wrong when finding conjugations, due to: " + e);
         }
         return null;
@@ -23,6 +24,18 @@ public abstract class ConjugationTranslator extends AsyncTask<String, String, Ve
     protected Verb doInBackground(String... data) {
         final String infinitive = data[0];
         return findConjugations(infinitive);
+    }
+
+    protected final String removeHtmlTags(Node node) {
+        return node.toString().replaceAll("<[^>]*>", "").trim();
+    }
+
+    public String getElementDataByKey(Element element, String key) {
+        return element.attributes().getIgnoreCase(key).trim();
+    }
+
+    public String getInnerHtml(Element element) {
+        return element != null ? element.text() : null;
     }
 
     abstract protected Verb findConjugations(String infinitive);

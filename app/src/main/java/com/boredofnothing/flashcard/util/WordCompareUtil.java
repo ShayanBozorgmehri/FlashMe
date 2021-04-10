@@ -5,6 +5,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class WordCompareUtil {
 
+    public final double SIMILAR_ENOUGH_AMOUNT = 0.6;
+    public final double SIMILAR_ENOUGH_AMOUNT_FOUR_LETTER_WORD = 0.75;
+
     public final double PLURAL_SIMILAR_ENOUGH_AMOUNT = 0.6;
     public final double PLURAL_SIMILAR_ENOUGH_AMOUNT_SIX_LETTER_WORD = 0.5;
 
@@ -46,11 +49,18 @@ public class WordCompareUtil {
     }
 
 
-    public boolean isSimilarEnough(String swedishPlural, double similarity) {
+    public boolean isPluralSimilarEnough(String swedishPlural, double similarity) {
         if (swedishPlural.length() != 6) {
             return similarity >= WordCompareUtil.PLURAL_SIMILAR_ENOUGH_AMOUNT;
         }
         return similarity >= PLURAL_SIMILAR_ENOUGH_AMOUNT_SIX_LETTER_WORD;
+    }
+
+    public boolean isSimilarEnough(String word, double similarity) {
+        if (word.length() == 4) {
+            return similarity >= WordCompareUtil.SIMILAR_ENOUGH_AMOUNT_FOUR_LETTER_WORD;
+        }
+        return similarity >= SIMILAR_ENOUGH_AMOUNT;
     }
 
     public double similarity(String s1, String s2) {
