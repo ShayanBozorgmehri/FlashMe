@@ -11,6 +11,7 @@ class VerbixTranslatorTest : ConjugationTranslatorTestBase() {
         assertVerb("har fattats", "fattades", "fattas", "fattas")
         assertVerb("har stoppat", "stoppade", "stoppar", "stoppa")
         assertVerb("har lyckats", "lyckades", "lyckas", "lyckas")
+        assertVerb("har skyndat", "skyndade", "skyndar", "skynda")
     }
 
     @Test

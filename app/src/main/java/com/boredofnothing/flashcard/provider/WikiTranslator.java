@@ -11,6 +11,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -80,15 +84,23 @@ public class WikiTranslator extends ConjugationTranslator {
             } else {
                 // check if there is a link to the translation under a similar enough name, like for trivs -> trivas
                 Elements urlElements = document.select("a");
-                for (Element urlElement: urlElements) {
-                    String url = getElementDataByKey(urlElement, "href");
-                    if (url.matches("/wiki/.+#Verb")) {
-                        String otherValue = url.substring(6, url.indexOf("#Verb"));
-                        double similarity = WordCompareUtil.similarity(infinitive, otherValue);
-                        if (WordCompareUtil.isSimilarEnough(otherValue, similarity)) {
-                            Log.i("INFO", "Found similar enough url for infinitive " + infinitive + ": " + url);
-                            return findConjugations(otherValue);
-                        }
+                List<String> redirectValues = urlElements.stream()
+                        .filter(urlElement -> {
+                            String url = getElementDataByKey(urlElement, "href");
+                            return url.matches("/wiki/.+#Verb");
+                        })
+                        .map(this::getInnerHtml)
+                        .collect(Collectors.toList());
+
+                // incase there are multiple link, like for känns -> (känna, kännas), sort by best matched
+                Collections.sort(redirectValues, (s1, s2) ->
+                        (int) (1000 * (WordCompareUtil.similarity(infinitive, s2) - WordCompareUtil.similarity(infinitive, s1))));
+                if (!redirectValues.isEmpty()) {
+                    String bestRedirectValue = redirectValues.get(0);
+                    double similarity = WordCompareUtil.similarity(infinitive, bestRedirectValue);
+                    if (WordCompareUtil.isSimilarEnough(bestRedirectValue, similarity)) {
+                        Log.i("INFO", "Found similar enough url for infinitive " + infinitive + ": " + bestRedirectValue);
+                        return findConjugations(bestRedirectValue);
                     }
                 }
             }

@@ -41,6 +41,8 @@ class WordCompareUtilTest {
     @Test
     fun shouldCalculateThatWordsAreSimilarEnough() {
         assertTrue(checkSimilarity("trivs", "trivas"));
+        assertTrue(checkSimilarity("känns", "känns"));
+        assertTrue(checkSimilarity("känns", "kännas"));
     }
 
     @Test

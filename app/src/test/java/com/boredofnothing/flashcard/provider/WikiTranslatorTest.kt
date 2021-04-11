@@ -15,6 +15,10 @@ class WikiTranslatorTest : ConjugationTranslatorTestBase() {
     fun testDataWithRedirects() {
         assertVerb("vill", "vill", "vilja", "ville", "har velat");
         assertVerb("trivs", "trivs", "trivas", "trivdes", "har trivts/trivits");
+        assertVerb("minns", "minns/minnes", "minnas", "mindes", "har mints");
+
+        // multi redirects
+        assertVerb("känns", "känns/kännes", "kännas", "kändes", "har känts");
     }
 
     private fun assertVerb(urlInfinitv: String, presentTense: String, infintiv: String, imperfect: String, perfect: String) {
