@@ -69,7 +69,7 @@ public class WikiTranslator extends ConjugationTranslator {
                                     } else if (Conjugation.PRETERITUM.getValue().equals(tense)) {
                                         verb.setImperfect(value);
                                     } else if (Conjugation.SUPINUM.getValue().equals(tense)) {
-                                        verb.setPerfect(value);
+                                        verb.setPerfect("har " + value);
                                         break; // break out early to avoid overwriting (assuming order never changes on wiki...)
                                     }
                                 }
