@@ -60,7 +60,7 @@ public class BablaTranslator extends ConjugationTranslator {
                     if (quickResultConjugationType.equals(Conjugation.INFINITIV.getValue())) {
                         if (!infinitive.equals(value)) {
                             double similarity = WordCompareUtil.beginningSimilarity(infinitive, value);
-                            if (!WordCompareUtil.isBeginningSimilarEnough(infinitive, value, similarity)) {
+                            if (infinitive.endsWith("r") || !WordCompareUtil.isBeginningSimilarEnough(infinitive, value, similarity)) {
                                 Log.i("INFO", "Infinitive form from Babla: " + value + " does not match original infinitive: " + infinitive);
                                 return verb;
                             }

@@ -37,6 +37,13 @@ open class ConjugationTranslatorTestBase {
         Assert.assertEquals(presentTense, actualVerb.swedishWord);
     }
 
+    fun assertVerbNotConjugated(verb: Verb) {
+        Assert.assertNull(verb.infinitive)
+        Assert.assertNull(verb.perfect)
+        Assert.assertNull(verb.infinitive)
+        Assert.assertNull(verb.swedishWord)
+    }
+
     @Test
     fun nothing(){
     }
