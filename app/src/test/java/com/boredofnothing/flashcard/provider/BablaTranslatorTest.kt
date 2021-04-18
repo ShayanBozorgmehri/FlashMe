@@ -16,6 +16,11 @@ class BablaTranslatorTest : ConjugationTranslatorTestBase() {
         assertVerbNotConjugated("ser");
     }
 
+    @Test
+    fun testSimilarVerbFoundButDNE() {
+        assertVerbNotConjugated("vill");
+    }
+
     private fun assertVerb(intialInfinitiv: String, presentTense: String, infintiv: String, imperfect: String, perfect: String) {
         val actualVerb = BablaTranslator.getInstance().findConjugations(intialInfinitiv);
         assertVerb(actualVerb, presentTense, infintiv, imperfect, perfect);

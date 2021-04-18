@@ -73,7 +73,7 @@ public class BablaTranslator extends ConjugationTranslator {
             // find all other conjugations
             Elements conjugationTenseBlockElements = document.select("div.conj-tense-block");
             if (!conjugationTenseBlockElements.isEmpty()) {
-                for (Element element: conjugationTenseBlockElements){
+                for (Element element: conjugationTenseBlockElements) {
                     String tense = getInnerHtml(element.getElementsByClass("conj-tense-block-header").get(0));
                     String value = getInnerHtml(element.getElementsByClass("conj-result").get(0));
                     if (tense.equals(Conjugation.PRESENS.getValue())) {
@@ -91,6 +91,10 @@ public class BablaTranslator extends ConjugationTranslator {
         } catch (Exception e) {
             Log.e("ERROR", "MIGHT have failed to find conjugations: " + e);
         }
+
+        // sanity check for cases like inputted vill -> villa that are close enough but different words
+        if (!infinitive.equals(verb.getInfinitive()) && !infinitive.equals(verb.getSwedishWord()))
+            return null;
 
         return verb;
     }
