@@ -48,7 +48,7 @@ public class BablaTranslator extends ConjugationTranslator {
 
         try {
             // Connect to the website
-            Document document = Jsoup.connect("https://en.bab.la/conjugation/swedish/" + infinitive).get();
+            Document document = Jsoup.connect("https://en.bab.la/conjugation/swedish/" + infinitive.replace(" ", "-")).get();
 
             // find the infinitiv conjugation
             Elements quickResultsElements = document.select("div.quick-result-entry");

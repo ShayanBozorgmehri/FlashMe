@@ -1,5 +1,6 @@
 package com.boredofnothing.flashcard.provider
 
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class BablaTranslatorTest : ConjugationTranslatorTestBase() {
@@ -12,13 +13,18 @@ class BablaTranslatorTest : ConjugationTranslatorTestBase() {
     }
 
     @Test
+    fun testExistsMultiWord() {
+        assertVerb("komma överens", "kommer överens", "komma överens", "kom överens", "har kommit överens");
+    }
+
+    @Test
     fun testDNE() {
         assertVerbNotConjugated("ser");
     }
 
     @Test
     fun testSimilarVerbFoundButDNE() {
-        assertVerbNotConjugated("vill");
+        assertVerbNull("vill");
     }
 
     private fun assertVerb(intialInfinitiv: String, presentTense: String, infintiv: String, imperfect: String, perfect: String) {
@@ -29,5 +35,10 @@ class BablaTranslatorTest : ConjugationTranslatorTestBase() {
     private fun assertVerbNotConjugated(intialInfinitiv: String) {
         val actualVerb = BablaTranslator.getInstance().findConjugations(intialInfinitiv);
         assertVerbNotConjugated(actualVerb);
+    }
+
+    private fun assertVerbNull(intialInfinitiv: String) {
+        val actualVerb = BablaTranslator.getInstance().findConjugations(intialInfinitiv);
+        assertNull(actualVerb)
     }
 }
