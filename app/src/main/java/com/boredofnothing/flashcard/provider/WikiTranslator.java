@@ -12,7 +12,6 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +44,10 @@ public class WikiTranslator extends ConjugationTranslator {
 
     @Override
     protected Verb findConjugations(String infinitive) {
+      return findConjugations(infinitive, true);
+    }
+
+    private Verb findConjugations(String infinitive, boolean allowRedirectSearching) {
         final Verb verb = new Verb();
 
         try {
@@ -78,31 +81,15 @@ public class WikiTranslator extends ConjugationTranslator {
                                     }
                                 }
                             }
+                        } else if (verb.getPerfect() == null && allowRedirectSearching) {
+                            // in the case that other tables, but the conjugation table was not found,
+                            // check if there is a redirect url, like for the case of 'ser'
+                            return checkForRedirects(document, infinitive);
                         }
                     }
                 }
-            } else {
-                // check if there is a link to the translation under a similar enough name, like for trivs -> trivas
-                Elements urlElements = document.select("a");
-                List<String> redirectValues = urlElements.stream()
-                        .filter(urlElement -> {
-                            String url = getElementDataByKey(urlElement, "href");
-                            return url.matches("/wiki/.+#Verb");
-                        })
-                        .map(this::getInnerHtml)
-                        .collect(Collectors.toList());
-
-                // incase there are multiple link, like for känns -> (känna, kännas), sort by best matched
-                Collections.sort(redirectValues, (s1, s2) ->
-                        (int) (1000 * (WordCompareUtil.similarity(infinitive, s2) - WordCompareUtil.similarity(infinitive, s1))));
-                if (!redirectValues.isEmpty()) {
-                    String bestRedirectValue = redirectValues.get(0);
-                    double similarity = WordCompareUtil.similarity(infinitive, bestRedirectValue);
-                    if (WordCompareUtil.isSimilarEnough(bestRedirectValue, similarity)) {
-                        Log.i("INFO", "Found similar enough url for infinitive " + infinitive + ": " + bestRedirectValue);
-                        return findConjugations(bestRedirectValue);
-                    }
-                }
+            } else if (allowRedirectSearching) {
+                return checkForRedirects(document, infinitive);
             }
         }
         catch (IOException e) {
@@ -112,6 +99,31 @@ public class WikiTranslator extends ConjugationTranslator {
         }
 
         return verb;
+    }
+
+    private Verb checkForRedirects(final Document document, final String infinitive) {
+        // check if there is a link to the translation under a similar enough name, like for trivs -> trivas
+        Elements urlElements = document.select("a");
+        List<String> redirectValues = urlElements.stream()
+                .filter(urlElement -> {
+                    String url = getElementDataByKey(urlElement, "href");
+                    return url.matches("/wiki/.+#Verb");
+                })
+                .map(this::getInnerHtml)
+                .collect(Collectors.toList());
+
+        // incase there are multiple link, like for känns -> (känna, kännas), sort by best matched
+        Collections.sort(redirectValues, (s1, s2) ->
+                (int) (1000 * (WordCompareUtil.similarity(infinitive, s2) - WordCompareUtil.similarity(infinitive, s1))));
+        if (!redirectValues.isEmpty()) {
+            String bestRedirectValue = redirectValues.get(0);
+            double similarity = WordCompareUtil.similarity(infinitive, bestRedirectValue);
+            if (WordCompareUtil.isSimilarEnough(bestRedirectValue, similarity)) {
+                Log.i("INFO", "Found similar enough url for infinitive " + infinitive + ": " + bestRedirectValue);
+                return findConjugations(bestRedirectValue, false);
+            }
+        }
+        return null;
     }
 }
 
