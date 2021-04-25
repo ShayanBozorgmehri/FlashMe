@@ -34,6 +34,20 @@ public abstract class ConjugationTranslator extends AsyncTask<String, String, Ve
         return element.attributes().getIgnoreCase(key).trim();
     }
 
+    /**
+     * Searches current node and all nested child nodes for the key
+     * */
+    public String getNodeDataByKey(Node node, String key) {
+        for (Node childNode: node.childNodes()) {
+            if (childNode.hasAttr(key)){
+                return childNode.attr(key);
+            }  else if (childNode.childNodeSize() != 0) {
+                return getNodeDataByKey(childNode, key);
+            }
+        }
+        return null;
+    }
+
     public String getInnerHtml(Element element) {
         return element != null ? element.text() : null;
     }
