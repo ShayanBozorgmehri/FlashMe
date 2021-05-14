@@ -18,7 +18,7 @@ class VerbixTranslatorTest : ConjugationTranslatorTestBase() {
     fun shouldTranslateIrregularVerbs() {
         assertVerb("har ätit", "åt", "äter", "äta")
         assertVerb("har sprungit", "sprang", "springer", "springa")
-        assertVerb("har sett", "såg", "ser", "se");
+        assertVerb("har sett", "såg", "ser", "se")
     }
 
     private fun assertVerb(perfect: String, imperfect: String, presentTense: String, infintiv: String) {

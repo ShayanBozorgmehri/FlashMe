@@ -20,6 +20,7 @@ import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,9 +30,9 @@ import lombok.SneakyThrows;
 
 public class AzureTranslator {
 
-    private static Pair<String, String> SUBSCRIPTION_KEY_PAIR = Pair.create("Ocp-Apim-Subscription-Key", "eb7ecc03dd80409c8e462e6b4e3ec0dd");
-    private static Pair<String, String> SUBSCRIPTION_REGION_PAIR = Pair.create("Ocp-Apim-Subscription-Region", "northeurope");
-    private static Pair<String, String> CONTENT_TYPE_PAIR = Pair.create("Content-type", "application/json");
+    private static final Pair<String, String> SUBSCRIPTION_KEY_PAIR = Pair.create("Ocp-Apim-Subscription-Key", "eb7ecc03dd80409c8e462e6b4e3ec0dd");
+    private static final Pair<String, String> SUBSCRIPTION_REGION_PAIR = Pair.create("Ocp-Apim-Subscription-Region", "northeurope");
+    private static final Pair<String, String> CONTENT_TYPE_PAIR = Pair.create("Content-type", "application/json");
     private final Context context;
 
     public AzureTranslator(Context context) {
@@ -60,7 +61,7 @@ public class AzureTranslator {
                     .filter(t -> t.getPosTag() == posTag)
                     .sorted((f1, f2) -> Float.compare(f2.getConfidence(), f1.getConfidence()))
                     .collect(Collectors.toList());
-            return translations.stream().map(t -> t.getNormalizedTarget()).collect(Collectors.toList());
+            return translations.stream().map(DictionaryTranslation::getNormalizedTarget).collect(Collectors.toList());
         } catch (AzureTranslateException e){
             ToastUtil.show(context, e.getMessage());
         } catch (Exception e){
@@ -84,7 +85,7 @@ public class AzureTranslator {
 
         TranslationTask() {
             okHttpClient = new OkHttpClient();
-            okHttpClient.setProtocols(Arrays.asList(Protocol.HTTP_1_1));
+            okHttpClient.setProtocols(Collections.singletonList(Protocol.HTTP_1_1));
         }
 
         @SneakyThrows

@@ -1,8 +1,6 @@
 package com.boredofnothing.flashcard.model.azureData.dictionary;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 public class DictionaryBackTranslation {

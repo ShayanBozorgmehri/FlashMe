@@ -21,20 +21,20 @@ open class ConjugationTranslatorTestBase {
         @BeforeClass @JvmStatic fun setup() {
             // mock out all of the logging because it will complain for stupid ass reason, smfh...
             PowerMockito.mockStatic(Log::class.java)
-            given(Log.i(anyString(), anyString())).willReturn(1);
+            given(Log.i(anyString(), anyString())).willReturn(1)
             PowerMockito.mockStatic(Log::class.java)
-            given(Log.e(anyString(), anyString())).willReturn(1);
+            given(Log.e(anyString(), anyString())).willReturn(1)
             PowerMockito.mockStatic(Log::class.java)
-            given(Log.d(anyString(), anyString())).willReturn(1);
+            given(Log.d(anyString(), anyString())).willReturn(1)
         }
     }
 
     fun assertVerb(actualVerb: Verb, presentTense: String, infintiv: String, imperfect: String, perfect: String) {
-        Assert.assertNotNull(actualVerb);
-        Assert.assertEquals(imperfect, actualVerb.imperfect);
-        Assert.assertEquals(perfect, actualVerb.perfect);
-        Assert.assertEquals(infintiv, actualVerb.infinitive);
-        Assert.assertEquals(presentTense, actualVerb.swedishWord);
+        Assert.assertNotNull(actualVerb)
+        Assert.assertEquals(imperfect, actualVerb.imperfect)
+        Assert.assertEquals(perfect, actualVerb.perfect)
+        Assert.assertEquals(infintiv, actualVerb.infinitive)
+        Assert.assertEquals(presentTense, actualVerb.swedishWord)
     }
 
     fun assertVerbNotConjugated(verb: Verb) {

@@ -8,7 +8,7 @@ public enum Article {
     ETT("ett");
 
     @Getter
-    private String value;
+    private final String value;
 
     Article(String value){
         this.value = value;

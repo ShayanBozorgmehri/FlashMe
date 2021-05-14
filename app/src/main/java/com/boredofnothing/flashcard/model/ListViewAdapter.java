@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ListViewAdapter extends BaseAdapter implements Filterable {
     private List<ListViewItem> originalList;
-    private List<ListViewItem> filteredList;
+    private final List<ListViewItem> filteredList;
     private LayoutInflater inflater;
 
     public ListViewAdapter(List<ListViewItem> originalList) {
@@ -44,7 +44,7 @@ public class ListViewAdapter extends BaseAdapter implements Filterable {
         return filter;
     }
 
-    private Filter filter = new Filter() {
+    private final Filter filter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
             List<ListViewItem> filteredList = new ArrayList<>();

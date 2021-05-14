@@ -14,7 +14,6 @@ import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.provider.BablaTranslator;
-import com.boredofnothing.flashcard.provider.ConjugationTranslator;
 import com.boredofnothing.flashcard.provider.VerbixTranslator;
 import com.boredofnothing.flashcard.provider.WikiTranslator;
 import com.boredofnothing.flashcard.util.DocumentUtil;
@@ -99,9 +98,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
     private void setRadioGroupOnClickListener(View view) {
         RadioGroup translationRadioGroup = view.findViewById(R.id.verb_translate_radio_group);
-        translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            setDialogVisibility(view, checkedId);
-        });
+        translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> setDialogVisibility(view, checkedId));
     }
 
     private void setDefaultDialogItemsVisibility(View view) {

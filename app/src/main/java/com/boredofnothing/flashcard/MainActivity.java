@@ -62,7 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +70,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import lombok.NonNull;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -79,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Pattern.compile("^[A-ZÀ-ÿ0-9._%+-]+@[A-ZÀ-ÿ0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
     private static final String BACKUP_NAME = "flashMeBackupData.json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final int PICKFILE_RESULT_CODE = 100;
+    private static final int PICK_FILE_RESULT_CODE = 100;
     private static final int READ_EXTERNAL_FILE_PERMISSION_CODE = 69;
 
     @Override
@@ -221,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == READ_EXTERNAL_FILE_PERMISSION_CODE) {
             if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 ToastUtil.showLong(getBaseContext(), "Permission required to read required data from your device");
@@ -237,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();
             TextView tv = findViewById(tvId);
-            tv.setText(String.format(countPrefix + results.size()));
+            tv.setText(countPrefix + results.size());
         } catch (CouchbaseLiteException e) {
             Log.e("ERROR", "Failed to get count due to: " + e);
             e.printStackTrace();
@@ -252,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ResultSet resultSet = query.execute();
             List<Result> results = resultSet.allResults();
             TextView tv = findViewById(tvId);
-            tv.setText(String.format(countPrefix + results.size()));
+            tv.setText(countPrefix + results.size());
         } catch (CouchbaseLiteException e) {
             Log.e("ERROR", "Failed to get count due to: " + e);
             e.printStackTrace();
@@ -394,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         try (FileOutputStream fos = new FileOutputStream(filePath);
-             OutputStreamWriter osw = new OutputStreamWriter(fos, Charset.forName("UTF-8").newEncoder())) {
+             OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8.newEncoder())) {
             osw.write(json);
         }
     }
@@ -403,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         File file = new File(filePath);
         file.setReadOnly();
 
-        String to[] = { emailAddress };
+        String[] to = { emailAddress };
 
         ArrayList<Uri> uris = new ArrayList<>();
         uris.add(FileProvider.getUriForFile(this, "com.boredofnothing.flashcard.fileprovider", file));
@@ -484,7 +486,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ToastUtil.show(getBaseContext(), "Find backup file: " + BACKUP_NAME);
             startActivityForResult(
                     Intent.createChooser(intent, "Find backup file: " + BACKUP_NAME),
-                    PICKFILE_RESULT_CODE);
+                    PICK_FILE_RESULT_CODE);
         } catch (ActivityNotFoundException ex) {
             ToastUtil.show(this, "Please install a File Manager.");
         }
@@ -492,7 +494,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void importDataFromFile(Uri uri) {
         try (InputStream is = getContentResolver().openInputStream(uri);
-             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+             BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 sb.append(line);

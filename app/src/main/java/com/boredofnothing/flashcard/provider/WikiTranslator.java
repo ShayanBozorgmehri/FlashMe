@@ -34,7 +34,7 @@ public class WikiTranslator extends ConjugationTranslator {
         PRETERITUM("Preteritum"),
         SUPINUM("Supinum");
 
-        private String value;
+        private final String value;
     }
 
     private WikiTranslator(){

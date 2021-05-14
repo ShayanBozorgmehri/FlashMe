@@ -93,9 +93,7 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
 
     private void setRadioGroupOnClickListener(View view) {
         RadioGroup translationRadioGroup = view.findViewById(R.id.phrase_translate_radio_group);
-        translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            setDialogVisibility(view, checkedId);
-        });
+        translationRadioGroup.setOnCheckedChangeListener((group, checkedId) -> setDialogVisibility(view, checkedId));
     }
 
     private void setDefaultDialogItemsVisibility(View view) {

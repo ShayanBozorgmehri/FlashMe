@@ -4,22 +4,6 @@ package com.boredofnothing.flashcard;
  * Created by shayan on 2018-01-23.
  */
 
-/*
- * Copyright 2012 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -104,7 +88,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     /**
      * A handler object, used for deferring UI operations.
      */
-    private Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
 
     /**
      * Whether or not we're showing the back of the card (otherwise showing the front).
@@ -205,9 +189,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             listView.setVisibility(View.GONE);
             return false;
         });
-        searchView.setOnSearchClickListener(v -> {
-            listView.setVisibility(View.VISIBLE);
-        });
+        searchView.setOnSearchClickListener(v -> listView.setVisibility(View.VISIBLE));
 
         MenuItem trashCardItem = menu.add(Menu.NONE, R.id.delete_card, 2, R.string.delete_card);
         trashCardItem.setIcon(R.drawable.trash);

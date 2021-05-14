@@ -1,6 +1,5 @@
 package com.boredofnothing.flashcard.model.cards.serializer;
 
-import com.boredofnothing.flashcard.model.cards.Noun;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
