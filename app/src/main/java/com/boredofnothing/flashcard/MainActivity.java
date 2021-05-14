@@ -21,17 +21,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
+import com.boredofnothing.flashcard.util.FilesUtil;
 import com.boredofnothing.flashcard.util.ToastUtil;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -56,9 +57,9 @@ import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String BACKUP_NAME = "flashMeBackupData.json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int PICKFILE_RESULT_CODE = 100;
-    private static final int PERMISSION_CODE = 69;
+    private static final int READ_EXTERNAL_FILE_PERMISSION_CODE = 69;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             showBackupDialogInput();
         } else if (id == R.id.importBackup) {
             Log.i("INFO", "importing back up from file");
-            showBackupImporter();
+            backupImporter();
         } else if (id == R.id.preferences) {
             Log.i("INFO", "preferences selected");
             startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
@@ -209,23 +210,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (requestCode == PICKFILE_RESULT_CODE && resultCode == Activity.RESULT_OK) {
             Uri returnUri = data.getData();
-            String selectedFileName = returnUri.getLastPathSegment();
+            String filePath = FilesUtil.getPath(getApplicationContext(), returnUri);
+            String selectedFileName = filePath.substring(filePath.lastIndexOf("/") + 1);
             if (!selectedFileName.startsWith(BACKUP_NAME.substring(0, BACKUP_NAME.indexOf('.')))) {
                 ToastUtil.showLong(getBaseContext(), "Invalid file selected, select file: " + BACKUP_NAME);
                 return;
             }
-            importDataFromFile(returnUri.getPath());
+            importDataFromFile(returnUri);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_CODE: {
-                if (!(grantResults.length > 1
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
-                    ToastUtil.show(getBaseContext(), "Permission required to read required data from your device");
-                }
+        if (requestCode == READ_EXTERNAL_FILE_PERMISSION_CODE) {
+            if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                ToastUtil.showLong(getBaseContext(), "Permission required to read required data from your device");
+            } else {
+                showBackupImporter();
             }
         }
     }
@@ -426,13 +427,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startActivity(chooser);
     }
 
-    // TODO: revisit permission stuff to make sure shit work break if they fuck the the permissions after install
-    protected void showBackupImporter(){
+    protected void backupImporter(){
         if (Build.VERSION.SDK_INT > 22) {
-            requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, PERMISSION_CODE);
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    showExplanation("Permission required",
+                            "Need permission to read from external storage to find backup file",
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            READ_EXTERNAL_FILE_PERMISSION_CODE);
+                }
+                requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXTERNAL_FILE_PERMISSION_CODE);
+                return;
+            }
         }
+        showBackupImporter();
+    }
+
+    private void showExplanation(String title, String message, final String permission, final int permissionRequestCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok,
+                        (dialog, id) -> requestPermission(permission, permissionRequestCode))
+                .setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
+    }
+
+    private void requestPermission(String permissionName, int permissionRequestCode) {
+        ActivityCompat.requestPermissions(this, new String[]{ permissionName }, permissionRequestCode);
+    }
+
+    private void showBackupImporter() {
         Intent intent;
-        if (android.os.Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
+        if (Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
             intent = new Intent("com.sec.android.app.myfiles.PICK_DATA");
             intent.putExtra("CONTENT_TYPE", "*/*");
             intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -463,21 +490,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private void importDataFromFile(String path) {
-
-        try (FileInputStream fis = new FileInputStream(path);
-             InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8").newDecoder());
-             BufferedReader br = new BufferedReader(isr)) {
-
+    private void importDataFromFile(Uri uri) {
+        try (InputStream is = getContentResolver().openInputStream(uri);
+             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
             StringBuilder sb = new StringBuilder();
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append("\n");
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                sb.append(line);
+                sb.append('\n');
             }
-
             createCardGroupsFromJson(sb.toString());
-
         } catch (Exception e) {
             ToastUtil.show(getBaseContext(), "Failed to import data");
             Log.e("ERROR", "Failed to import data, due to: " + e);
