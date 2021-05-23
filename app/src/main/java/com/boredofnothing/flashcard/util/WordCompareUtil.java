@@ -9,7 +9,7 @@ public class WordCompareUtil {
     public final double SIMILAR_ENOUGH_AMOUNT_FOUR_LETTER_WORD = 0.75;
 
     public final double PLURAL_WITH_UMLAUT_SIMILAR_ENOUGH_AMOUNT = 0.5;
-    public final double PLURAL_SIMILAR_ENOUGH_AMOUNT = 0.6;
+    public final double PLURAL_SIMILAR_ENOUGH_AMOUNT = 0.57;
     public final double PLURAL_SIMILAR_ENOUGH_AMOUNT_THREE_LETTER_WORD = 0.3;
     public final double PLURAL_SIMILAR_ENOUGH_AMOUNT_FOUR_LETTER_WORD = 0.5;
     public final double PLURAL_SIMILAR_ENOUGH_AMOUNT_SIX_LETTER_WORD = 0.5;

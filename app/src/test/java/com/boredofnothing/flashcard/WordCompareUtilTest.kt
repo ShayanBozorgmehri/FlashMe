@@ -30,6 +30,7 @@ class WordCompareUtilTest {
         assertTrue(checkPluralSimilarity("bil", "bil"))
 
         assertTrue(checkPluralSimilarity("mun", "munnar"))
+        assertTrue(checkPluralSimilarity("dröm", "drömmar"))
     }
 
     @Test
