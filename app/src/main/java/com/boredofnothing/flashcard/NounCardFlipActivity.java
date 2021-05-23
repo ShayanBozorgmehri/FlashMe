@@ -215,19 +215,22 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 return SubmissionState.FILLED_IN_INCORRECTLY;
             }
             String engPlural = English.plural(engInput);
-            swedTranslation = getSwedishTextUsingAzureTranslator("a " + engInput + "! many " + engPlural);
+            swedTranslation = getSwedishTextUsingAzureTranslator("I have a " + engInput + "! I have many " + engPlural);
             if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
                 return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
             }
-            String[] results = swedTranslation.replace("!", "").replace(" många", "").split(" ");
+            String[] results = swedTranslation.replaceAll("[!.]", "")
+                    .replaceAll("jag har ", "")
+                    .replaceAll("(många|mycket) ", "")
+                    .split(" ");
             article = results[0].equals("en") ? "en" : "ett";
             if (results.length == 3) { // 0 = article, 1 = noun, 2 = plural noun
                 swedTranslation = results[1];
                 swedPluralTranslation = results[2];
 
                 double similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
-                if (!WordCompareUtil.isPluralSimilarEnough(swedPluralTranslation, similarity)) { // example: tjej vs flickan
+                if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
 
                     displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
                             + ". Figuring out plural translation...");
@@ -238,7 +241,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
                     swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
 
                     similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
-                    if (!WordCompareUtil.isPluralSimilarEnough(swedPluralTranslation, similarity)) {
+                    if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
                         return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
                     }
                 }
@@ -247,14 +250,14 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
                 double similarity = WordCompareUtil.similarity(results[2], results[4]);
                 swedPluralTranslation = results[3] + " " + results[4];
-                if (!WordCompareUtil.isPluralSimilarEnough(swedPluralTranslation, similarity)) {
+                if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
                     displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
                             + ". Figuring out plural translation...");
 
                     swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
 
                     similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
-                    if (!WordCompareUtil.isPluralSimilarEnough(swedPluralTranslation, similarity)) {
+                    if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
                         return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
                     }
                 }

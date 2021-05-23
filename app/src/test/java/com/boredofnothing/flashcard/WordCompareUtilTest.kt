@@ -39,6 +39,35 @@ class WordCompareUtilTest {
         assertFalse(checkPluralSimilarity("backwards", "sdrawkcab"))
     }
 
+    // https://www.lysator.liu.se/language/Languages/Swedish/Grammar.html section 'Umlaut plurals'
+    @Test
+    fun shouldCalculateThatPluralWordsAreSimilarEnoughWhenOneHasSpecialCharactersAndOtherDoesNot() {
+        // plural has ä but singular has a
+        assertTrue(checkPluralSimilarity("man", "män"))
+        assertTrue(checkPluralSimilarity("hand", "händer"))
+        assertTrue(checkPluralSimilarity("tand", "tänder"))
+        assertTrue(checkPluralSimilarity("rand", "ränder"))
+        assertTrue(checkPluralSimilarity("land", "länder"))
+        assertTrue(checkPluralSimilarity("strand", "stränder"))
+        assertTrue(checkPluralSimilarity("brand", "bränder"))
+        assertTrue(checkPluralSimilarity("fader", "fäder"))
+        assertTrue(checkPluralSimilarity("and", "änder"))
+
+        // plural has ö but singular has o
+        assertTrue(checkPluralSimilarity("broder", "bröder"))
+        assertTrue(checkPluralSimilarity("moder", "mödrar"))
+        assertTrue(checkPluralSimilarity("son", "söner"))
+        assertTrue(checkPluralSimilarity("dotter", "döttrar"))
+        assertTrue(checkPluralSimilarity("bok", "böcker"))
+        assertTrue(checkPluralSimilarity("rot", "rötter"))
+
+        // plural has å but singular has ä
+        assertTrue(checkPluralSimilarity("gås", "gäss"))
+
+        // plural has ö but singular has u
+        assertTrue(checkPluralSimilarity("mus", "möss"))
+    }
+
     @Test
     fun shouldCalculateThatWordsAreSimilarEnough() {
         assertTrue(checkSimilarity("trivs", "trivas"))
@@ -56,9 +85,9 @@ class WordCompareUtilTest {
         return WordCompareUtil.isSimilarEnough(s2, similarity)
     }
 
-    private fun checkPluralSimilarity(swedSingluar: String, swedPlural: String): Boolean {
-        var similarity = WordCompareUtil.similarity(swedSingluar, swedPlural)
-        return WordCompareUtil.isPluralSimilarEnough(swedPlural, similarity)
+    private fun checkPluralSimilarity(swedSingular: String, swedPlural: String): Boolean {
+        var similarity = WordCompareUtil.similarity(swedSingular, swedPlural)
+        return WordCompareUtil.isPluralSimilarEnough(swedSingular, swedPlural, similarity)
     }
 
     private fun checkBeginningSimilarity(s1: String, s2: String) : Boolean {
