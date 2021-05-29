@@ -75,7 +75,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 /**
@@ -141,7 +140,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
             getFragmentManager()
                     .beginTransaction()
-                    .setCustomAnimations(R.animator.anim_slide_in_left, R.animator.anim_slide_out_right) //left off here, maybe move these files to animation folder instead, but then you might need to create a new fragmnt with the updated card values on swipe. idk
+                    .setCustomAnimations(R.animator.slide_in_left, R.animator.slide_out_right)
                     .add(R.id.fragment_container, frontCardFragment)
                     .commit();
         } else {
@@ -636,8 +635,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             frontCardFragment.setArguments(args);
             getFragmentManager()
                     .beginTransaction()
-                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
-                            R.animator.enter_from_right, R.animator.exit_to_right)
+                    .setCustomAnimations(R.animator.slide_in_right,
+                            R.animator.slide_out_left, 0, 0)
                     .replace(R.id.fragment_container, frontCardFragment)
                     .commit();
         }
@@ -657,10 +656,48 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         layoutParams.height = dialogWindowHeight;
         dialog.getWindow().setAttributes(layoutParams);
     }
+
+    public static class SwipeCardFragment extends Fragment {
+        protected final int SWIPE_MIN_DISTANCE = 120;
+        protected final int SWIPE_MAX_OFF_PATH = 250;
+        protected final int SWIPE_THRESHOLD_VELOCITY = 200;
+
+        protected final boolean isFlingedEnoughOrFlingable(MotionEvent e1, MotionEvent e2) {
+            return Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH || documents.isEmpty();
+        }
+
+        protected final boolean isSwipeRightToLeft(MotionEvent e1, MotionEvent e2, float velocityX) {
+            return e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY;
+        }
+
+        protected final boolean isSwipeLeftToRight(MotionEvent e1, MotionEvent e2, float velocityX) {
+            return e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY;
+        }
+
+        protected final void showNextCard(SwipeCardFragment swipeCardFragment) {
+            incrementCurrentIndex();
+
+            getFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.animator.slide_in_left, R.animator.slide_out_right, 0, 0)
+                    .replace(R.id.fragment_container, swipeCardFragment)
+                    .commit();
+        }
+
+        protected final void showPreviousCard(SwipeCardFragment swipeCardFragment) {
+            decrementCurrentIndex();
+
+            getFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(R.animator.slide_in_right, R.animator.slide_out_left, 0, 0)
+                    .replace(R.id.fragment_container, swipeCardFragment)
+                    .commit();
+        }
+    }
     /**
      * A fragment representing the front of the card.
      */
-    public static class FrontCardFragment extends Fragment {
+    public static class FrontCardFragment extends SwipeCardFragment {
 
         static int colorCounter = 0;
 
@@ -676,10 +713,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-            Log.d("DEBUG", "****creating view with object: " + this);
-            System.out.println("isShowingBack: " + ((CardFlipActivity) getActivity()).isShowingBack);
-
             View view = inflater.inflate(R.layout.front_card_fragment, container, false);
             view.setClickable(true);
             view.setFocusable(true);
@@ -693,55 +726,25 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             final GestureDetector gesture = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
                 @Override
-                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                                       float velocityY) {
-                    Log.i("INFO", "onFling has been called!");
-                    final int SWIPE_MIN_DISTANCE = 120;
-                    final int SWIPE_MAX_OFF_PATH = 250;
-                    final int SWIPE_THRESHOLD_VELOCITY = 200;
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                     try {
-                        if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH || documents.isEmpty()){
+                        if (isFlingedEnoughOrFlingable(e1, e2)){
                             return false;
                         }
-                        if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
-                                && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                            Log.i("INFO", "*************Right to Left");
-                            incrementCurrentIndex();
-//                            left off here, there is animation kinda, but not really.
-//                            i THINK the main frame/layout needs to be changed or something.
-//                            pay attention to how the animation is changed when you FIRST choose NOUN/Verb
-//                                    notice how the top thing changes and how there actually is animation!!! THAT IS KEY
-//
-//                                    OR look at the answer: https://stackoverflow.com/questions/17760299/android-fragmenttransaction-custom-animation-unknown-animator-name-translate
-//                            see how they commit twice on two diff R.ids...
-                            getFragmentManager()
-                                    .beginTransaction()
-                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
-                                            R.animator.enter_from_right, R.animator.exit_to_right)
-                                    .replace(R.id.fragment_container, FrontCardFragment.clone(FrontCardFragment.this))
-                                    //.addToBackStack(null)
-                                    .commit();
-                        } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
-                                && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                            Log.i("INFO", "************Left to Right");
-                            decrementCurrentIndex();
-                            getFragmentManager()
-                                    .beginTransaction()
-                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
-                                            R.animator.enter_from_right, R.animator.exit_to_right)
-                                    .replace(R.id.fragment_container, FrontCardFragment.clone(FrontCardFragment.this))
-                                    //.addToBackStack(null)
-                                    .commit();
+                        if (isSwipeRightToLeft(e1, e2, velocityX)) {
+                            showNextCard(FrontCardFragment.clone(FrontCardFragment.this));
+                        } else if (isSwipeLeftToRight(e1, e2, velocityX)) {
+                            showPreviousCard(FrontCardFragment.clone(FrontCardFragment.this));
                         }
                     } catch (Exception e) {
-                        Log.e("ERROR", "Shit went wrong in onFling " + e.getMessage());
+                        Log.e("ERROR", "Shit went wrong in onFling for front card" + e.getMessage());
                     }
                     colorCounter++;
                     return super.onFling(e1, e2, velocityX, velocityY);
                 }
 
                 @Override
-                public boolean onSingleTapUp(MotionEvent event) { //TODO: after swiping, unable to to flip card. maybe cuz of frag stack?
+                public boolean onSingleTapUp(MotionEvent event) {
 
                     Log.d("DEBUG", "the front tap event was: " + event.getAction()
                             + ". isShowingBack: " + ((CardFlipActivity) getActivity()).isShowingBack);
@@ -762,8 +765,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         getFragmentManager()
                                 .beginTransaction()
                                 .setCustomAnimations(
-                                        R.animator. card_flip_right_in, R.animator.card_flip_right_out,
-                                        R.animator.card_flip_left_in, R.animator.card_flip_left_out)
+                                        R.animator.flip_right_in, R.animator.flip_right_out,
+                                        R.animator.flip_left_in, R.animator.flip_left_out)
                                 .replace(R.id.fragment_container, backCardFragment)
                                 .addToBackStack(null)
                                 .commit();
@@ -803,7 +806,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     /**
      * A fragment representing the back of the card.
      */
-    public static class BackCardFragment extends Fragment {
+    public static class BackCardFragment extends SwipeCardFragment {
 
         private static BackCardFragment clone(BackCardFragment backCardFragment){
             BackCardFragment clone = new BackCardFragment();
@@ -815,7 +818,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
             View view = inflater.inflate(R.layout.back_card_fragment, container, false);
             view.setClickable(true);
             view.setFocusable(true);
@@ -828,43 +830,18 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             final GestureDetector gesture = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
                 @Override
-                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                                       float velocityY) {
-                    Log.i("INFO", "onFling has been called!");
-                    final int SWIPE_MIN_DISTANCE = 120;
-                    final int SWIPE_MAX_OFF_PATH = 250;
-                    final int SWIPE_THRESHOLD_VELOCITY = 200;
+                public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                     try {
-                        if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH || documents.isEmpty()){
+                        if (isFlingedEnoughOrFlingable(e1, e2)){
                             return false;
                         }
-                        if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
-                                && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                            Log.i("INFO", "*************Right to Left");
-                            incrementCurrentIndex();
-//                            getActivity().overridePendingTransition(R.animator.anim_slide_in_right,
-//                                    R.animator.anim_slide_out_right);
-                            getFragmentManager()
-                                    .beginTransaction()
-                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
-                                            R.animator.enter_from_right, R.animator.exit_to_right)
-                                    .replace(R.id.fragment_container, BackCardFragment.clone(BackCardFragment.this))
-                                    .commit();
-                        } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
-                                && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                            Log.i("INFO", "************Left to Right");
-                            decrementCurrentIndex();
-//                            getActivity().overridePendingTransition(R.animator.anim_slide_out_right,
-//                                    R.animator.anim_slide_in_right);
-                            getFragmentManager()
-                                    .beginTransaction()
-                                    .setCustomAnimations(R.animator.enter_from_right, R.animator.exit_to_right,
-                                            R.animator.enter_from_right, R.animator.exit_to_right)
-                                    .replace(R.id.fragment_container, BackCardFragment.clone(BackCardFragment.this))
-                                    .commit();
+                        if (isSwipeRightToLeft(e1, e2, velocityX)) {
+                            showNextCard(BackCardFragment.clone(BackCardFragment.this));
+                        } else if (isSwipeLeftToRight(e1, e2, velocityX)) {
+                            showPreviousCard(BackCardFragment.clone(BackCardFragment.this));
                         }
                     } catch (Exception e) {
-                        Log.e("ERROR", "Shit went wrong in onFling " + e.getMessage());
+                        Log.e("ERROR", "Shit went wrong in onFling for back card" + e.getMessage());
                     }
                     return super.onFling(e1, e2, velocityX, velocityY);
                 }
@@ -906,7 +883,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 }
-
 
 // use logic if you wanna add a search thing at the MAIN menu, instead of choosing a word type first and then searching
 //     Query query = QueryBuilder
