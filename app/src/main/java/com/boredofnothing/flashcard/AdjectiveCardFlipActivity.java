@@ -219,7 +219,17 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
-            engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
+            if (!isDisplayAllTranslationSuggestions()) {
+                engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
+            } else {
+                // have user select one
+                List<String> lookups = getEnglishTextsUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
+
+                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+
+                createEnglishTranslationSelectionListDialog("Select a translation", swedInput, lookups);
+                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+            }
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English adjective translation for: " + swedInput);
                 return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
@@ -238,7 +248,7 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
 
                 if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
 
-                createUserTranslationSelectionListDialog(engInput, lookups);
+                createSwedishTranslationSelectionListDialog("Select a translation", engInput, lookups);
                 return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
             }
             if (isNullOrEmpty(swedTranslation)) {

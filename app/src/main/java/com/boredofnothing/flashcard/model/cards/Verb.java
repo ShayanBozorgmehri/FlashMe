@@ -21,6 +21,13 @@ public class Verb extends Word {
     @NonNull private String perfect; // ie, past tense (have done)
     @NonNull private String infinitive; // ie, stem form
 
+    public Verb(String eng, String swed, String infinitive, String imperfect, String perfect){
+        super(eng, swed);
+        this.infinitive = infinitive;
+        this.imperfect = imperfect;
+        this.perfect = perfect;
+    }
+
     public static Verb createVerbFromDocument(Document document){
         Map<String, Object> map = document.toMap();
         map.remove(CardKeyName.TYPE_KEY.getValue());

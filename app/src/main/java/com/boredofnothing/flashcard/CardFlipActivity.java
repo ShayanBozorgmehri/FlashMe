@@ -75,6 +75,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 /**
  * Demonstrates a "card-flip" animation using custom fragment transactions ({@link
@@ -347,6 +349,10 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return new AzureTranslator(getBaseContext()).getDictionaryLookup(swedishText, posTag, AzureTranslator.LanguageDirection.SWED_TO_ENG);
     }
 
+    protected final List<String> getEnglishTextsUsingAzureDictionaryLookup(String swedishText, PartOfSpeechTag posTag){
+        return new AzureTranslator(getBaseContext()).getDictionaryLookups(swedishText, posTag, AzureTranslator.LanguageDirection.SWED_TO_ENG);
+    }
+
     public final boolean isNullOrEmpty(String input){
         return input == null || input.trim().isEmpty();
     }
@@ -493,11 +499,33 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    protected final void createUserTranslationSelectionListDialog(String engInput, final List<String> translations) {
-        createUserTranslationSelectionListDialog("Select a translation", engInput, translations);
+    protected final void createSwedishTranslationSelectionListDialog(String dialogTitle, String englishInput, final List<String> translations) {
+        BiFunction<String, AlertDialog, AdapterView.OnItemClickListener> biFunction = (swedishInput, dialog) ->
+                (AdapterView.OnItemClickListener) (parent, view, position, id) -> {
+                    String userSelectedSwedishWord = (String) parent.getItemAtPosition(position);
+                    tryToAddUserSelectedTranslation(englishInput, userSelectedSwedishWord);
+                    dialog.dismiss();
+                };
+
+        createUserTranslationSelectionListDialog(dialogTitle, englishInput, translations, biFunction);
     }
 
-    protected final void createUserTranslationSelectionListDialog(String dialogTitle, String engInput, final List<String> translations){
+    protected final void createEnglishTranslationSelectionListDialog(String dialogTitle, String swedishInput, final List<String> translations) {
+        BiFunction<String, AlertDialog, AdapterView.OnItemClickListener> biFunction = (englishInput, dialog) ->
+                (AdapterView.OnItemClickListener) (parent, view, position, id) -> {
+                    String userSelectedEnglishWord = (String) parent.getItemAtPosition(position);
+                    tryToAddUserSelectedTranslation(userSelectedEnglishWord, swedishInput);
+                    dialog.dismiss();
+                };
+
+        createUserTranslationSelectionListDialog(dialogTitle, swedishInput, translations, biFunction);
+    }
+
+    protected final void createUserTranslationSelectionListDialog(
+            String dialogTitle,
+            String input,
+            final List<String> translations,
+            BiFunction<String, AlertDialog, AdapterView.OnItemClickListener> biFunction){
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle(dialogTitle);
 
@@ -511,13 +539,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         alertDialog.setView(rowList);
         AlertDialog dialog = alertDialog.create();
 
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            String userSelectedInfinitiveForm = (String) parent.getItemAtPosition(position);
-
-            tryToAddUserSelectedTranslation(engInput, userSelectedInfinitiveForm);
-            dialog.dismiss();
-
-        });
+        listView.setOnItemClickListener(biFunction.apply(input, dialog));
 
         dialog.show();
 

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import static com.boredofnothing.flashcard.CardFlipActivity.SubmissionState.SUBMITTED_BUT_ALREADY_EXISTS;
 import static com.boredofnothing.flashcard.CardFlipActivity.SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
@@ -236,7 +238,23 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
             }
-            engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.VERB);
+            if (!isDisplayAllTranslationSuggestions()) {
+                engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.VERB);
+            } else {
+                // have user select one
+                List<String> lookups = getEnglishTextsUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.VERB);
+
+                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+
+                createEnglishTranslationSelectionListDialog(
+                        "Select a translation",
+                        swedInput,
+                        imperative,
+                        imperfect,
+                        perfect,
+                        lookups);
+                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+            }
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English verb translation for: " + swedInput);
                 return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
@@ -258,7 +276,7 @@ public class VerbCardFlipActivity extends CardFlipActivity {
 
                 if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
 
-                createUserTranslationSelectionListDialog("Select an infinitive form translation", engInput, lookups);
+                createSwedishTranslationSelectionListDialog("Select an infinitive form translation", engInput, lookups);
                 return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
             }
             if (isNullOrEmpty(azureInfinitiveForm)) {
@@ -282,11 +300,34 @@ public class VerbCardFlipActivity extends CardFlipActivity {
         return SUBMITTED_WITH_RESULTS_FOUND;
     }
 
+    private void createEnglishTranslationSelectionListDialog(
+            String dialogTitle,
+            String swedishInput,
+            String imperative,
+            String imperfect,
+            String perfect,
+            final List<String> translations) {
+
+        BiFunction<String, AlertDialog, AdapterView.OnItemClickListener> biFunction = (englishInput, dialog) ->
+                (AdapterView.OnItemClickListener) (parent, view, position, id) -> {
+                    String userSelectedEnglishWord = (String) parent.getItemAtPosition(position);
+                    tryToAddTranslation(new Verb(userSelectedEnglishWord, swedishInput, imperative, imperfect, perfect));
+                    dialog.dismiss();
+                };
+
+        createUserTranslationSelectionListDialog(dialogTitle, swedishInput, translations, biFunction);
+    }
+
     @Override
     protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedInfinitiveForm) {
         Verb verb = findVerbConjugations(userSelectedInfinitiveForm, engInput);
+        verb.setEnglishWord(engInput);
+        tryToAddTranslation(verb);
+    }
+
+    private void tryToAddTranslation(Verb verb) {
         if (verb != null) {
-            switch (addCardToDocument(engInput, verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())) {
+            switch (addCardToDocument(verb.getEnglishWord(), verb.getSwedishWord(), verb.getInfinitive(), verb.getImperfect(), verb.getPerfect())) {
                 case SUBMITTED_WITH_RESULTS_FOUND:
                 case SUBMITTED_BUT_ALREADY_EXISTS:
                     displayCard();
