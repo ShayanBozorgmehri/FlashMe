@@ -97,6 +97,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
      */
     private boolean isShowingBack = false;
 
+    private SearchView searchView;
+
     protected static int currentIndex;
     protected static ArrayList<Document> documents;
 
@@ -145,7 +147,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         } else {
             isShowingBack = (getFragmentManager().getBackStackEntryCount() > 0);
             System.out.println("setting isShowingBack to : " + isShowingBack);
-
         }
     }
 
@@ -158,7 +159,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         searchItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
         LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
-        SearchView searchView = searchLayout.findViewById(R.id.searchView);
+        searchView = searchLayout.findViewById(R.id.searchView);
         searchItem.setActionView(searchView);
 
         ViewGroup rootLayout = findViewById(android.R.id.content);
@@ -248,8 +249,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
         SearchView searchView = searchLayout.findViewById(R.id.searchView);
         searchView.setQuery("", false);
-        searchView.setIconified(true);
-        searchView.onActionViewCollapsed();
+        searchView.setIconified(true); //first call to clear search bar
+        searchView.setIconified(true); //second call to close search bar
     }
 
     abstract protected void searchCardsForWord(String word);
