@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -245,11 +246,15 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         currentIndex = documents.indexOf(doc);
         displayCard();
 
-        LinearLayout searchLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.search_view, null);
-        SearchView searchView = searchLayout.findViewById(R.id.searchView);
-        searchView.setQuery("", false);
+        // hide the list view
+        ((View) v.getParent().getParent()).setVisibility(View.GONE);
+
         searchView.setIconified(true); //first call to clear search bar
         searchView.setIconified(true); //second call to close search bar
+        
+        // hide the keyboard
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
     abstract protected void searchCardsForWord(String word);
