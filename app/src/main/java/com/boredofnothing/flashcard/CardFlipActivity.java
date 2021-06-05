@@ -78,25 +78,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-/**
- * Demonstrates a "card-flip" animation using custom fragment transactions ({@link
- * android.app.FragmentTransaction#setCustomAnimations(int, int)}).
- *
- * <p>This sample shows an "info" action bar button that shows the back of a "card", rotating the
- * front of the card out and the back of the card in. The reverse animation is played when the user
- * presses the system Back button or the "photo" action bar button.</p>
- */
 public abstract class CardFlipActivity extends Activity implements FragmentManager.OnBackStackChangedListener {
-    /**
-     * A handler object, used for deferring UI operations.
-     */
-    private final Handler mHandler = new Handler();
 
-    /**
-     * Whether or not we're showing the back of the card (otherwise showing the front).
-     */
+    private final Handler handler = new Handler();
+
     private boolean isShowingBack = false;
-
     private SearchView searchView;
 
     protected static int currentIndex;
@@ -779,7 +765,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         // Defer an invalidation of the options menu (on modern devices, the action bar). This
                         // can't be done immediately because the transaction may not yet be committed. Commits
                         // are asynchronous in that they are posted to the main thread's message loop.
-                        ((CardFlipActivity) getActivity()).mHandler.post(() -> getActivity().invalidateOptionsMenu());
+                        ((CardFlipActivity) getActivity()).handler.post(() -> getActivity().invalidateOptionsMenu());
                     }
 
                     return super.onSingleTapUp(event);
