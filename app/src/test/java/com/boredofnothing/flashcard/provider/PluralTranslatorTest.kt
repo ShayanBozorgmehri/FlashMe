@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard
+package com.boredofnothing.flashcard.provider
 
 import com.boredofnothing.flashcard.provider.PluralTranslator
 import org.junit.Assert.assertEquals

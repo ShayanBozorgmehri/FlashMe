@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard
+package com.boredofnothing.flashcard.util
 
 import com.boredofnothing.flashcard.util.WordCompareUtil
 import org.junit.Assert.assertFalse
@@ -19,6 +19,7 @@ class WordCompareUtilTest {
 
     @Test
     fun shouldCalculateThatWordsAreNotSimilarEnoughAtBeginning() { 
+//todo
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard
+package com.boredofnothing.flashcard.provider
 
 import org.atteo.evo.inflector.English
 import org.junit.Assert.assertEquals
