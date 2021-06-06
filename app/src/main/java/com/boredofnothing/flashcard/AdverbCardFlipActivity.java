@@ -8,7 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
+import com.boredofnothing.flashcard.model.AutoTranslationProvider;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.TranslationMode;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adverb;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
@@ -167,19 +169,20 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState addCardToDocument(View dialogView) {
-        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SUBMITTED_WITH_RESULTS_FOUND) {
-            return state;
+    protected SubmissionState addCardToDocument(final View dialogView) {
+        TranslationResult translationResult = getTranslationBasedOnTranslationType(dialogView);
+        if (translationResult.getSubmissionState() != SUBMITTED_WITH_RESULTS_FOUND) {
+            return translationResult.getSubmissionState();
         }
 
         String eng = getEditText(dialogView, R.id.englishAdverb);
         String swed = getEditText(dialogView, R.id.swedishAdverb);
+        TranslationMode translationMode = getSelectedTranslationMode(dialogView, CardType.ADV);
 
-        return addCardToDocument(eng, swed);
+        return addCardToDocument(eng, swed, translationMode, translationResult.getAutoTranslationProvider());
     }
 
-    private SubmissionState addCardToDocument(String eng, String swed) {
+    private SubmissionState addCardToDocument(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider) {
         switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
             case DO_NOT_REPLACE_EXISTING_CARD:
                 displayToast("Adverb with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
@@ -192,11 +195,8 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
         }
 
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
-        Map<String, Object> map = new HashMap<>();
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
-        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
+        Map<String, Object> map = createBaseDocumentMap(eng, swed, CardType.ADV, translationMode, autoTranslationProvider);
+
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
@@ -206,22 +206,22 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
+    protected TranslationResult getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.adverb_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishAdverb).trim();
         final String swedInput = getEditText(dialogView, R.id.swedishAdverb).trim();
 
-        //TODO: possible improvement is to just to create an Adv obj, set the vars for it and then return the obj, instead of returning boolean
         String engTranslation;
         String swedTranslation;
+        AutoTranslationProvider autoTranslationProvider = null;
 
         if (!validateInputFields(translationType, engInput, swedInput)) {
-            return SubmissionState.FILLED_IN_INCORRECTLY;
+            return new TranslationResult(SubmissionState.FILLED_IN_INCORRECTLY);
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
             if (!isDisplayAllTranslationSuggestions()) {
                 engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADV);
@@ -229,49 +229,51 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
                 // have user select one
                 List<String> lookups = getEnglishTextsUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADV);
 
-                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                if (lookups.isEmpty()) return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
 
-                createEnglishTranslationSelectionListDialog("Select a translation", swedInput, lookups);
-                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+                autoTranslationProvider = AutoTranslationProvider.AZURE_ENGLISH;
+                createEnglishTranslationSelectionListDialog("Select a translation", swedInput, lookups, autoTranslationProvider);
+                return new TranslationResult(SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST);
             }
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English adverb translation for: " + swedInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
             }
             setEditText(dialogView, R.id.englishAdverb, engTranslation);
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
+            autoTranslationProvider = AutoTranslationProvider.AZURE_SWEDISH;
             if (!isDisplayAllTranslationSuggestions()) {
                 swedTranslation = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
             } else {
                 // have user select one
                 List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADV);
 
-                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                if (lookups.isEmpty()) return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
 
-                createSwedishTranslationSelectionListDialog("Select a translation", engInput, lookups);
-                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+                createSwedishTranslationSelectionListDialog("Select a translation", engInput, lookups, autoTranslationProvider);
+                return new TranslationResult(SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST);
             }
             if (isNullOrEmpty(swedTranslation)) {
                 swedTranslation = getSwedishTextUsingAzureTranslator(engInput);
                 if (isNullOrEmpty(swedTranslation)) {
                     displayToast("Could not find Swedish adverb translation for: " + engInput);
-                    return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                    return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
                 } else {
                     displayToast("Found secondary translation...");
                 }
             }
             setEditText(dialogView, R.id.swedishAdverb, swedTranslation);
         }
-        return SUBMITTED_WITH_RESULTS_FOUND;
+        return new TranslationResult(SUBMITTED_WITH_RESULTS_FOUND, autoTranslationProvider);
     }
 
     @Override
-    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedAdverb) {
-        switch (addCardToDocument(engInput, userSelectedAdverb)) {
+    protected void tryToAddUserSelectedTranslation(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider ) {
+        switch (addCardToDocument(eng, swed, translationMode, autoTranslationProvider)) {
             case SUBMITTED_WITH_RESULTS_FOUND:
             case SUBMITTED_BUT_ALREADY_EXISTS:
                 displayCard();
@@ -280,7 +282,6 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected SubmissionState updateCurrentCard(final View dialogView) {
-        Map<String, Object> updatedData = new HashMap<>();
 
         String engAdverb = getEditText(dialogView, R.id.englishAdverb);
         String swedAdverb = getEditText(dialogView, R.id.swedishAdverb);
@@ -290,6 +291,7 @@ public class AdverbCardFlipActivity extends CardFlipActivity {
             return SubmissionState.FILLED_IN_INCORRECTLY;
         }
 
+        Map<String, Object> updatedData = new HashMap<>();
         updatedData.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADV.name());
         updatedData.put(CardKeyName.ENGLISH_KEY.getValue(), engAdverb);
         updatedData.put(CardKeyName.SWEDISH_KEY.getValue(), swedAdverb);

@@ -8,7 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
+import com.boredofnothing.flashcard.model.AutoTranslationProvider;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.TranslationMode;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Phrase;
@@ -21,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.boredofnothing.flashcard.CardFlipActivity.SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
 
 public class PhraseCardFlipActivity extends CardFlipActivity {
 
@@ -162,58 +166,61 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
+    protected TranslationResult getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.phrase_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishPhrase).trim();
         final String swedInput = getEditText(dialogView, R.id.swedishPhrase).trim();
 
-        //TODO: possible improvement is to just to create an Adv obj, set the vars for it and then return the obj, instead of returning boolean
         String engTranslation;
         String swedTranslation;
+        AutoTranslationProvider autoTranslationProvider = null;
 
         if (!validateInputFields(translationType, engInput, swedInput)) {
-            return SubmissionState.FILLED_IN_INCORRECTLY;
+            return new TranslationResult(SubmissionState.FILLED_IN_INCORRECTLY);
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
             engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English translation for: " + swedInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
             }
             setEditText(dialogView, R.id.englishPhrase, engTranslation);
+            autoTranslationProvider = AutoTranslationProvider.AZURE_ENGLISH;
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
             swedTranslation = getSwedishTextUsingAzureTranslator(engInput);//could fiddle with this here by making it a sentence too to get the context
             if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
             }
             setEditText(dialogView, R.id.swedishPhrase, swedTranslation);
+            autoTranslationProvider = AutoTranslationProvider.AZURE_SWEDISH;
         }
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return new TranslationResult(SubmissionState.SUBMITTED_WITH_RESULTS_FOUND, autoTranslationProvider);
     }
 
     @Override
-    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation) {
+    protected void tryToAddUserSelectedTranslation(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider ) {
         // do nothing
     }
 
     @Override
-    protected SubmissionState addCardToDocument(View dialogView) {
-        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
-            return state;
+    protected SubmissionState addCardToDocument(final View dialogView) {
+        TranslationResult translationResult = getTranslationBasedOnTranslationType(dialogView);
+        if (translationResult.getSubmissionState() != SUBMITTED_WITH_RESULTS_FOUND) {
+            return translationResult.getSubmissionState();
         }
         
         String eng = getEditText(dialogView, R.id.englishPhrase);
         String swed = getEditText(dialogView, R.id.swedishPhrase);
+        TranslationMode translationMode = getSelectedTranslationMode(dialogView, CardType.PHR);
 
         switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
             case DO_NOT_REPLACE_EXISTING_CARD:
@@ -225,13 +232,10 @@ public class PhraseCardFlipActivity extends CardFlipActivity {
             case NONE:
                 displayToast("Adding phrase...");
         }
-        
+
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
-        Map<String, Object> map = new HashMap<>();
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.PHR.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
-        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
+        Map<String, Object> map = createBaseDocumentMap(eng, swed, CardType.PHR, translationMode, translationResult.getAutoTranslationProvider());
+
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());

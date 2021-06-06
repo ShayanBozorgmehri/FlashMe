@@ -8,11 +8,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
+import com.boredofnothing.flashcard.model.AutoTranslationProvider;
 import com.boredofnothing.flashcard.model.ListViewItem;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adjective;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
+import com.boredofnothing.flashcard.model.TranslationMode;
 import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
@@ -164,19 +166,20 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState addCardToDocument(View dialogView) {
-        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SUBMITTED_WITH_RESULTS_FOUND) {
-            return state;
+    protected SubmissionState addCardToDocument(final View dialogView) {
+        TranslationResult translationResult = getTranslationBasedOnTranslationType(dialogView);
+        if (translationResult.getSubmissionState() != SUBMITTED_WITH_RESULTS_FOUND) {
+            return translationResult.getSubmissionState();
         }
 
         String eng = getEditText(dialogView, R.id.englishAdjective);
         String swed = getEditText(dialogView, R.id.swedishAdjective);
+        TranslationMode translationMode = getSelectedTranslationMode(dialogView, CardType.ADJ);
 
-        return addCardToDocument(eng, swed);
+        return addCardToDocument(eng, swed, translationMode, translationResult.getAutoTranslationProvider());
     }
 
-    private SubmissionState addCardToDocument(String eng, String swed) {
+    private SubmissionState addCardToDocument(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider) {
         switch (checkIfIdExists(DocumentUtil.createDocId(eng, swed))){
             case DO_NOT_REPLACE_EXISTING_CARD:
                 displayToast("Adjective with english word '" + eng + "' and swedish word '" + swed + "' already exists, not adding card.");
@@ -189,11 +192,8 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
         }
 
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(eng, swed));
-        Map<String, Object> map = new HashMap<>();
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.ADJ.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
-        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
+        Map<String, Object> map = createBaseDocumentMap(eng, swed, CardType.ADJ, translationMode, autoTranslationProvider);
+
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
@@ -203,71 +203,76 @@ public class AdjectiveCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState getTranslationBasedOnTranslationType(View dialogView) {
+    protected TranslationResult getTranslationBasedOnTranslationType(View dialogView) {
         final String translationType = getSelectedRadioOption(dialogView, R.id.adjective_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishAdjective).trim();
         final String swedInput = getEditText(dialogView, R.id.swedishAdjective).trim();
 
         String engTranslation;
         String swedTranslation;
+        AutoTranslationProvider autoTranslationProvider = null;
 
         if (!validateInputFields(translationType, engInput, swedInput)) {
-            return SubmissionState.FILLED_IN_INCORRECTLY;
+            return new TranslationResult(SubmissionState.FILLED_IN_INCORRECTLY);
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
+            autoTranslationProvider = AutoTranslationProvider.AZURE_ENGLISH;
             if (!isDisplayAllTranslationSuggestions()) {
                 engTranslation = getEnglishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
             } else {
                 // have user select one
                 List<String> lookups = getEnglishTextsUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
 
-                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                if (lookups.isEmpty()) return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
 
-                createEnglishTranslationSelectionListDialog("Select a translation", swedInput, lookups);
-                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+                createEnglishTranslationSelectionListDialog("Select a translation", swedInput, lookups, autoTranslationProvider);
+                return new TranslationResult(SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST);
             }
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English adjective translation for: " + swedInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
             }
             setEditText(dialogView, R.id.englishAdjective, engTranslation);
+            autoTranslationProvider = AutoTranslationProvider.AZURE_ENGLISH;
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
+            autoTranslationProvider = AutoTranslationProvider.AZURE_SWEDISH;
             if (!isDisplayAllTranslationSuggestions()) {
                 swedTranslation = getSwedishTextUsingAzureDictionaryLookup(swedInput, PartOfSpeechTag.ADJ);
             } else {
                 // have user select one
                 List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.ADJ);
 
-                if (lookups.isEmpty()) return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                if (lookups.isEmpty()) return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
 
-                createSwedishTranslationSelectionListDialog("Select a translation", engInput, lookups);
-                return SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST;
+                createSwedishTranslationSelectionListDialog("Select a translation", engInput, lookups, autoTranslationProvider);
+                return new TranslationResult(SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST);
             }
             if (isNullOrEmpty(swedTranslation)) {
                 swedTranslation = getSwedishTextUsingAzureTranslator(engInput);
                 if (isNullOrEmpty(swedTranslation)) {
                     displayToast("Could not find Swedish adjective translation for: " + engInput);
-                    return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                    return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
                 } else {
                     displayToast("Found secondary translation...");
                 }
             }
             setEditText(dialogView, R.id.swedishAdjective, swedTranslation);
+            autoTranslationProvider = AutoTranslationProvider.AZURE_SWEDISH;
         }
-        return SUBMITTED_WITH_RESULTS_FOUND;
+        return new TranslationResult(SUBMITTED_WITH_RESULTS_FOUND, autoTranslationProvider);
     }
 
     @Override
-    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedAdjective) {
-        switch (addCardToDocument(engInput, userSelectedAdjective)) {
+    protected void tryToAddUserSelectedTranslation(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider ) {
+        switch (addCardToDocument(eng, swed, translationMode, autoTranslationProvider)) {
             case SUBMITTED_WITH_RESULTS_FOUND:
             case SUBMITTED_BUT_ALREADY_EXISTS:
                 displayCard();

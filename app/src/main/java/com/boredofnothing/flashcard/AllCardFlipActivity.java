@@ -5,7 +5,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 
+import com.boredofnothing.flashcard.model.AutoTranslationProvider;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.TranslationMode;
 import com.boredofnothing.flashcard.model.cards.Adjective;
 import com.boredofnothing.flashcard.model.cards.Adverb;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
@@ -100,13 +102,13 @@ public class AllCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView) {
+    protected TranslationResult getTranslationBasedOnTranslationType(final View dialogView) {
         // do nothing
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return new TranslationResult(SubmissionState.SUBMITTED_WITH_RESULTS_FOUND);
     }
 
     @Override
-    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation) {
+    protected void tryToAddUserSelectedTranslation(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider) {
         // do nothing
     }
 

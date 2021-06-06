@@ -8,9 +8,7 @@ import java.util.Map;
 public class Phrase extends Word {
 
     public static Phrase createPhraseFromDocument(Document document){
-        Map<String, Object> map = document.toMap();
-        map.remove(CardKeyName.TYPE_KEY.getValue());
-        map.remove(CardKeyName.DATE.getValue());
+        Map<String, Object> map = removeNonWordRelatedKeysFromMap(document);
         return new ObjectMapper().convertValue(map, Phrase.class);
     }
 }

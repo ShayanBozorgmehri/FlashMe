@@ -9,7 +9,9 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import com.boredofnothing.flashcard.model.AutoTranslationProvider;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.TranslationMode;
 import com.boredofnothing.flashcard.model.cards.Article;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
@@ -179,46 +181,47 @@ public class NounCardFlipActivity extends CardFlipActivity {
     }
 
     @Override
-    protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView){
+    protected TranslationResult getTranslationBasedOnTranslationType(final View dialogView){
         final String translationType = getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group);
         final String engInput = getEditText(dialogView, R.id.englishNoun);
         final String swedInput = getEditText(dialogView, R.id.swedishNoun);
         final String swedishNounPlural = getEditText(dialogView, R.id.swedishNounPlural);
 
-        //TODO: possible improvement is to just to create a Noun obj, set the vars for it and then return the obj, instead of returning boolean
         String engTranslation;
         String swedTranslation;
         String swedPluralTranslation;
+        AutoTranslationProvider autoTranslationProvider = null;
 
         if (!validateInputFields(translationType, engInput, swedInput, swedishNounPlural)){
-            return SubmissionState.FILLED_IN_INCORRECTLY;
+            return new TranslationResult(SubmissionState.FILLED_IN_INCORRECTLY, null);
         }
         if (translationType.equals(getResources().getString(R.string.english_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
             engTranslation = getEnglishTextUsingAzureTranslator(swedInput);
             if (isNullOrEmpty(engTranslation)) {
                 displayToast("Could not find English translation for: " + swedInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
             }
             setEditText(dialogView, R.id.englishNoun, engTranslation);
+            autoTranslationProvider = AutoTranslationProvider.AZURE_ENGLISH;
         } else if (translationType.equals(getResources().getString(R.string.swedish_auto_translation))) {
             if (!isNetworkAvailable()) {
                 displayNoConnectionToast();
-                return SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION;
+                return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
             int wordCount = engInput.trim().split(" ").length;
             if (wordCount > 2) {
                 displayToast("Please only input one or two words, not including the article");
-                return SubmissionState.FILLED_IN_INCORRECTLY;
+                return new TranslationResult(SubmissionState.FILLED_IN_INCORRECTLY);
             }
             String engPlural = English.plural(engInput);
             swedTranslation = getSwedishTextUsingAzureTranslator("I have a " + engInput + "! I have many " + engPlural);
             if (isNullOrEmpty(swedTranslation)) {
                 displayToast("Could not find Swedish translation for: " + engInput);
-                return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
             }
             String[] results = swedTranslation.replaceAll("[!.]", "")
                     .replaceAll("jag har ", "")
@@ -230,6 +233,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
                 swedPluralTranslation = results[2];
 
                 double similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
+                autoTranslationProvider = AutoTranslationProvider.AZURE_SWEDISH;
                 if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
 
                     displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
@@ -239,10 +243,10 @@ public class NounCardFlipActivity extends CardFlipActivity {
                     // for example: input girl, and then it returns 'tjej'. and then input 'flera tjej' to see if it complains if it should be 'tjejer, tjejor, etc'd
                     // https://docs.microsoft.com/en-us/answers/questions/218458/is-it-possible-to-get-the-34did-you-mean34-feedbac.html
                     swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
-
+                    autoTranslationProvider = AutoTranslationProvider.PLURAL_SWEDISH;
                     similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
                     if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
-                        return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                        return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
                     }
                 }
             } else { // 0 = article, 1 = adjective, 2 = noun, 3 = plural adjective, 4 = plural noun
@@ -250,28 +254,28 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
                 double similarity = WordCompareUtil.similarity(results[2], results[4]);
                 swedPluralTranslation = results[3] + " " + results[4];
+                autoTranslationProvider = AutoTranslationProvider.AZURE_SWEDISH;
                 if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
                     displayLongToast("The found plural translation '" + swedPluralTranslation + "' is not similar enough to singular '" + swedTranslation
                             + ". Figuring out plural translation...");
 
                     swedPluralTranslation = PluralTranslator.figureOutPluralTenseOfNoun(article, swedTranslation);
+                    autoTranslationProvider = AutoTranslationProvider.PLURAL_SWEDISH;
 
                     similarity = WordCompareUtil.similarity(swedTranslation, swedPluralTranslation);
                     if (!WordCompareUtil.isPluralSimilarEnough(swedTranslation, swedPluralTranslation, similarity)) {
-                        return SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND;
+                        return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
                     }
                 }
             }
-
-            //set the dialog pop up values based on the input, also use a dialogBuilder to update the dismiss on OK button if shit is not met above
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
             setEditText(dialogView, R.id.swedishNounPlural, swedPluralTranslation);
         }
-        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
+        return new TranslationResult(SubmissionState.SUBMITTED_WITH_RESULTS_FOUND, autoTranslationProvider);
     }
 
     @Override
-    protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation) {
+    protected void tryToAddUserSelectedTranslation(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider) {
         // do nothing
     }
 
@@ -293,14 +297,16 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
     @Override
     protected SubmissionState addCardToDocument(final View dialogView) {
-        SubmissionState state = getTranslationBasedOnTranslationType(dialogView);
-        if (state != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
-            return state;
+        TranslationResult translationResult = getTranslationBasedOnTranslationType(dialogView);
+        if (translationResult.getSubmissionState() != SubmissionState.SUBMITTED_WITH_RESULTS_FOUND) {
+            return translationResult.getSubmissionState();
         }
 
         final String engTranslation = getEditText(dialogView, R.id.englishNoun);
         final String swedTranslation = getEditText(dialogView, R.id.swedishNoun);
         final String swedishNounPlural = getEditText(dialogView, R.id.swedishNounPlural);
+        final TranslationMode translationMode = getSelectedTranslationMode(dialogView, CardType.NOUN);
+
         if (!getSelectedRadioOption(dialogView, R.id.noun_translate_radio_group).equals(getResources().getString(R.string.swedish_auto_translation))){
             article = getSelectedRadioOption(dialogView, R.id.article_radio_group);
         }
@@ -317,13 +323,9 @@ public class NounCardFlipActivity extends CardFlipActivity {
         }
 
         MutableDocument mutableDocument = new MutableDocument(DocumentUtil.createDocId(engTranslation, swedTranslation));
-        Map<String, Object> map = new HashMap<>();
-        map.put(CardKeyName.TYPE_KEY.getValue(), CardType.NOUN.name());
-        map.put(CardKeyName.ENGLISH_KEY.getValue(), engTranslation);
-        map.put(CardKeyName.SWEDISH_KEY.getValue(), swedTranslation);
+        Map<String, Object> map = createBaseDocumentMap(engTranslation, swedTranslation, CardType.NOUN, translationMode, translationResult.getAutoTranslationProvider());
         map.put(CardKeyName.ARTICLE_KEY.getValue(), article);
         map.put(CardKeyName.PLURAL_KEY.getValue(), swedishNounPlural);
-        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
         mutableDocument.setData(map);
 
         Log.d("DEBUG", map.toString());
@@ -331,7 +333,6 @@ public class NounCardFlipActivity extends CardFlipActivity {
 
        return SubmissionState.SUBMITTED_WITH_RESULTS_FOUND;
     }
-
 
     @Override
     protected SubmissionState updateCurrentCard(final View dialogView){

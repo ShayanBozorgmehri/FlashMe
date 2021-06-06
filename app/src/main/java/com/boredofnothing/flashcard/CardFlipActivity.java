@@ -41,8 +41,10 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NavUtils;
 import androidx.preference.PreferenceManager;
 
+import com.boredofnothing.flashcard.model.AutoTranslationProvider;
 import com.boredofnothing.flashcard.model.ListViewAdapter;
 import com.boredofnothing.flashcard.model.ListViewItem;
+import com.boredofnothing.flashcard.model.TranslationMode;
 import com.boredofnothing.flashcard.model.azureData.dictionary.PartOfSpeechTag;
 import com.boredofnothing.flashcard.model.cards.Adjective;
 import com.boredofnothing.flashcard.model.cards.Adverb;
@@ -74,9 +76,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 public abstract class CardFlipActivity extends Activity implements FragmentManager.OnBackStackChangedListener {
 
@@ -251,8 +257,20 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     abstract protected SubmissionState addCardToDocument(final View dialogView);
     abstract protected SubmissionState updateCurrentCard(final View dialogView);
     abstract protected void loadAllDocuments();
-    abstract protected SubmissionState getTranslationBasedOnTranslationType(final View dialogView);
-    abstract protected void tryToAddUserSelectedTranslation(String engInput, String userSelectedTranslation);
+    abstract protected TranslationResult getTranslationBasedOnTranslationType(final View dialogView);
+    abstract protected void tryToAddUserSelectedTranslation(String eng, String swed, TranslationMode translationMode, AutoTranslationProvider autoTranslationProvider);
+
+    @AllArgsConstructor
+    @Data
+    protected final class TranslationResult {
+        private final SubmissionState submissionState;
+        private final AutoTranslationProvider autoTranslationProvider;
+
+        public TranslationResult(SubmissionState submissionState) {
+            this.submissionState = submissionState;
+            this.autoTranslationProvider = null;
+        }
+    }
 
     /**
      * Returns the user's preferred translation mode, otherwise default to auto swedish.
@@ -296,6 +314,20 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         String card = cardType.getValue().toLowerCase();
         String preferredRadioButtonName = card + "_" + getPreferredTranslationMode();
         return getResources().getIdentifier(preferredRadioButtonName, "id", getPackageName());
+    }
+
+    protected final TranslationMode getSelectedTranslationMode(final View view, final CardType cardType) {
+        int radioGroupId = getTranslateRadioGroupId(cardType);
+        int checkedRadioButtonId = ((RadioGroup)view.findViewById(radioGroupId)).getCheckedRadioButtonId();
+        RadioButton radioButton = view.findViewById(checkedRadioButtonId);
+        String translationButtonText = radioButton.getText().toString();
+
+        if (TranslationMode.AUTO_ENGLISH.getValue().equals(translationButtonText)) {
+           return TranslationMode.AUTO_ENGLISH;
+        } else if (TranslationMode.AUTO_SWEDISH.getValue().equals(translationButtonText)) {
+            return TranslationMode.AUTO_SWEDISH;
+        }
+        return TranslationMode.MANUAL_INPUT;
     }
 
     protected final boolean isNetworkAvailable() {
@@ -399,7 +431,28 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return formatter.format(new Date());
     }
 
-    protected final void storeDocumentToDB(MutableDocument mutableDocument) {
+    protected final Map<String, Object> createBaseDocumentMap(
+            final String eng,
+            final String swed,
+            final CardType cardType,
+            final TranslationMode translationMode,
+            final AutoTranslationProvider autoTranslationProvider) {
+
+        final Map<String, Object> map = new HashMap<>();
+        map.put(CardKeyName.TYPE_KEY.getValue(), cardType.name());
+        map.put(CardKeyName.ENGLISH_KEY.getValue(), eng);
+        map.put(CardKeyName.SWEDISH_KEY.getValue(), swed);
+        map.put(CardKeyName.DATE.getValue(), getCurrentDate());
+        map.put(CardKeyName.TRANSLATION_MODE.getValue(), translationMode.getValue());
+
+        if (translationMode != TranslationMode.MANUAL_INPUT) {
+            map.put(CardKeyName.AUTO_TRANSLATION_PROVIDER.getValue(), autoTranslationProvider.getAmbiguousValue());
+        }
+
+        return map;
+    }
+
+    protected final void storeDocumentToDB(final MutableDocument mutableDocument) {
         try {
             Log.d("DEBUG", "Saving document: " + mutableDocument.getId());
             MainActivity.database.save(mutableDocument);
@@ -490,22 +543,22 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    protected final void createSwedishTranslationSelectionListDialog(String dialogTitle, String englishInput, final List<String> translations) {
+    protected final void createSwedishTranslationSelectionListDialog(String dialogTitle, String englishInput, final List<String> translations, AutoTranslationProvider autoTranslationProvider) {
         BiFunction<String, AlertDialog, AdapterView.OnItemClickListener> biFunction = (swedishInput, dialog) ->
                 (AdapterView.OnItemClickListener) (parent, view, position, id) -> {
                     String userSelectedSwedishWord = (String) parent.getItemAtPosition(position);
-                    tryToAddUserSelectedTranslation(englishInput, userSelectedSwedishWord);
+                    tryToAddUserSelectedTranslation(englishInput, userSelectedSwedishWord, TranslationMode.AUTO_SWEDISH, autoTranslationProvider);
                     dialog.dismiss();
                 };
 
         createUserTranslationSelectionListDialog(dialogTitle, englishInput, translations, biFunction);
     }
 
-    protected final void createEnglishTranslationSelectionListDialog(String dialogTitle, String swedishInput, final List<String> translations) {
+    protected final void createEnglishTranslationSelectionListDialog(String dialogTitle, String swedishInput, final List<String> translations, AutoTranslationProvider autoTranslationProvider) {
         BiFunction<String, AlertDialog, AdapterView.OnItemClickListener> biFunction = (englishInput, dialog) ->
                 (AdapterView.OnItemClickListener) (parent, view, position, id) -> {
                     String userSelectedEnglishWord = (String) parent.getItemAtPosition(position);
-                    tryToAddUserSelectedTranslation(userSelectedEnglishWord, swedishInput);
+                    tryToAddUserSelectedTranslation(userSelectedEnglishWord, swedishInput, TranslationMode.AUTO_ENGLISH, autoTranslationProvider);
                     dialog.dismiss();
                 };
 
@@ -586,7 +639,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             currentIndex = documents.size() - 1;
         }
     }
-
 
     @Nullable
     protected final static String getJsonFromDoc(Document document) {
