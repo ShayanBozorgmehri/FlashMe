@@ -29,6 +29,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -249,6 +250,51 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
+    public void onInfoIconClick(View view){
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.info_layout, null);
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.setTitle("Additional Info");
+
+        AlertDialog dialog = dialogBuilder.create();
+
+        Document currentDocument = documents.get(currentIndex);
+        Map<String, Object> map = currentDocument.toMap();
+
+        TextView translationModeTv = dialogView.findViewById(R.id.translationMode);
+        translationModeTv.setText("Translation mode: " + map.get(CardKeyName.TRANSLATION_MODE.getValue()));
+
+        TextView autoTranslationProviderTv = dialogView.findViewById(R.id.autoTranslationProvider);
+        String autoTranslationProvider = (String) map.get(CardKeyName.AUTO_TRANSLATION_PROVIDER.getValue());
+        if (autoTranslationProvider != null) {
+            autoTranslationProviderTv.setText("Provider: " + autoTranslationProvider);
+        } else {
+            autoTranslationProviderTv.setVisibility(View.GONE);
+        }
+
+        EditText userNotesEt = dialogView.findViewById(R.id.userNotes);
+        String userNotes = (String) map.get(CardKeyName.USER_NOTES.getValue());
+        if (userNotes != null) {
+            userNotesEt.setText(userNotes);
+        }
+
+        Button positiveButton = dialogView.findViewById(R.id.infoSubmitButton);
+        positiveButton.setOnClickListener(v -> {
+            String updatedUserNotes = userNotesEt.getText().toString();
+            if (!updatedUserNotes.isEmpty() && !updatedUserNotes.equals(userNotes)) {
+                map.put(CardKeyName.USER_NOTES.getValue(), updatedUserNotes);
+                updateDocumentInDB(currentDocument, map);
+            }
+            dialog.dismiss();
+        });
+
+        Button negativeButton = dialogView.findViewById(R.id.infoCancelButton);
+        negativeButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
     abstract protected void searchCardsForWord(String word);
     abstract protected List<ListViewItem> getSearchSuggestionList();
     abstract protected void showInputDialog();
@@ -462,6 +508,12 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             Log.e("ERROR:", "Failed to add properties to document: " + e.getMessage() + "-" + e.getCause());
             e.printStackTrace();
         }
+    }
+
+    protected final void updateDocumentInDB(Document document, Map<String, Object> data) {
+        MutableDocument mutableDocument = new MutableDocument(document.getId());
+        mutableDocument.setData(data);
+        updateDocumentInDB(mutableDocument);
     }
 
     protected final void updateDocumentInDB(MutableDocument mutableDocument) {

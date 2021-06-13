@@ -53,6 +53,9 @@
     <string name="imperfect_form">Input the Swedish imperfect form</string>
     <string name="perfect_form">Input the Swedish perfect form</string>
 
+    <string name="user_notes_header">Notes</string>
+    <string name="user_notes">Input a note for yourself about this word</string>
+
     <string name="backup_to_email">Input your email address to backup your data to</string>
 
     <string name="preferences_title">Preferences</string>
