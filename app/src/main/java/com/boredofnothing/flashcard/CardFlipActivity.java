@@ -545,6 +545,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         String updatedSwedWord = (String) updatedData.get(CardKeyName.SWEDISH_KEY.getValue());
         String newId = DocumentUtil.createDocId(updatedEngWord, updatedSwedWord);
 
+        addCurrentDataToReplacedData(currentDocument, updatedData);
+
         if (currentDocument.getId().equals(newId)){
             MutableDocument mutableDocument = new MutableDocument(currentDocument.getId());
             mutableDocument.setData(updatedData);
@@ -557,6 +559,14 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             replacementDocument.setData(updatedData);
             storeDocumentToDB(replacementDocument);
         }
+    }
+
+    private final void addCurrentDataToReplacedData(Document currentDocument, Map<String, Object> updatedData) {
+        Map<String, Object> currentData = currentDocument.toMap();
+        updatedData.put(CardKeyName.TRANSLATION_MODE.getValue(), currentData.get(CardKeyName.TRANSLATION_MODE.getValue()));
+        updatedData.put(CardKeyName.AUTO_TRANSLATION_PROVIDER.getValue(), currentData.get(CardKeyName.AUTO_TRANSLATION_PROVIDER.getValue()));
+        updatedData.put(CardKeyName.USER_NOTES.getValue(), currentData.get(CardKeyName.USER_NOTES.getValue()));
+        updatedData.put(CardKeyName.STARRED.getValue(), currentData.get(CardKeyName.STARRED.getValue()));
     }
 
     protected final UserInterventionState checkIfIdExists(final String docId) {

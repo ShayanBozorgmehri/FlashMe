@@ -26,6 +26,7 @@ public class Word {
         map.remove(CardKeyName.AUTO_TRANSLATION_PROVIDER.getValue());
         map.remove(CardKeyName.TRANSLATION_MODE.getValue());
         map.remove(CardKeyName.USER_NOTES.getValue());
+        map.remove(CardKeyName.STARRED.getValue());
         return map;
     }
 

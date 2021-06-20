@@ -107,13 +107,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         try {
             Log.d("DEBUG", "searching for/creating DB...");
             database = new Database("flash_me_db", config);
-            if (database.getIndexes().size() == 0){
-                database.createIndex(CardKeyName.ENGLISH_KEY.getValue(),
-                        IndexBuilder.valueIndex(ValueIndexItem.property(CardKeyName.ENGLISH_KEY.getValue())));
-                database.createIndex(CardKeyName.SWEDISH_KEY.getValue(),
-                        IndexBuilder.valueIndex(ValueIndexItem.property(CardKeyName.SWEDISH_KEY.getValue())));
-                database.createIndex(CardKeyName.TYPE_KEY.getValue(),
-                        IndexBuilder.valueIndex(ValueIndexItem.property(CardKeyName.TYPE_KEY.getValue())));
+            if (database.getIndexes().size() == 0) {
+                for (CardKeyName cardKeyName: CardKeyName.values()) {
+                    if (cardKeyName.isIndexedKey()) {
+                        database.createIndex(cardKeyName.getValue(),
+                                IndexBuilder.valueIndex(ValueIndexItem.property(cardKeyName.getValue())));
+                    }
+                }
             }
             Log.d("DEBUG", "created DB in path: " + database.getPath());
 

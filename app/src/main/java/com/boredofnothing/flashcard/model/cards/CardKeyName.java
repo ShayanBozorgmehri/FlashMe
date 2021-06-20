@@ -17,7 +17,9 @@ public enum CardKeyName {
     PERFECT_KEY("perfect", false),
     DATE("date", false),
     TRANSLATION_MODE("translationMode", false),
-    AUTO_TRANSLATION_PROVIDER("autoTranslationProvider", false);
+    AUTO_TRANSLATION_PROVIDER("autoTranslationProvider", false),
+    USER_NOTES("userNotes", false),
+    STARRED("starred", true);
 
     private final String value;
     private final boolean isIndexedKey;
