@@ -249,7 +249,7 @@ public class NounCardFlipActivity extends CardFlipActivity {
                         return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
                     }
                 }
-            } else { // 0 = article, 1 = adjective, 2 = noun, 3 = plural adjective, 4 = plural noun
+            } else if (results.length == 5) { // 0 = article, 1 = adjective, 2 = noun, 3 = plural adjective, 4 = plural noun
                 swedTranslation = results[1] + " " + results[2];
 
                 double similarity = WordCompareUtil.similarity(results[2], results[4]);
@@ -267,6 +267,9 @@ public class NounCardFlipActivity extends CardFlipActivity {
                         return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
                     }
                 }
+            } else {
+                Log.i("INFO", "Missing some data in: '" + swedTranslation + "' for noun: " + engInput);
+                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
             }
             setEditText(dialogView, R.id.swedishNoun, swedTranslation);
             setEditText(dialogView, R.id.swedishNounPlural, swedPluralTranslation);
