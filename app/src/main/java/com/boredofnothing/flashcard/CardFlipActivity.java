@@ -30,6 +30,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -295,6 +296,17 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         dialog.show();
     }
 
+    public void onStarIconClick(View view) {
+        Boolean isStarred = (Boolean) getDocumentAttribute(CardKeyName.STARRED);
+        isStarred = Boolean.TRUE.equals(isStarred) ? false : true;
+
+        Document currentDocument = documents.get(currentIndex);
+        Map<String, Object> map = currentDocument.toMap();
+        map.put(CardKeyName.STARRED.getValue(), isStarred);
+        updateDocumentInDB(currentDocument, map);
+        setStarred(view);
+    }
+
     abstract protected void searchCardsForWord(String word);
     abstract protected List<ListViewItem> getSearchSuggestionList();
     abstract protected void showInputDialog();
@@ -374,6 +386,15 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             return TranslationMode.AUTO_SWEDISH;
         }
         return TranslationMode.MANUAL_INPUT;
+    }
+
+    protected static final void setStarred(View view) {
+        CheckBox starButton = view.findViewById(R.id.starIcon);
+        if (Boolean.TRUE.equals(getDocumentAttribute(CardKeyName.STARRED))) {
+            starButton.setButtonDrawable(R.drawable.star_on);
+        } else {
+            starButton.setButtonDrawable(R.drawable.star_off);
+        }
     }
 
     protected final boolean isNetworkAvailable() {
@@ -496,6 +517,12 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
 
         return map;
+    }
+
+    protected static final Object getDocumentAttribute(CardKeyName cardKeyName) {
+        Document currentDocument = documents.get(currentIndex);
+        Map<String, Object> map = currentDocument.toMap();
+        return map.get(cardKeyName.getValue());
     }
 
     protected final void storeDocumentToDB(final MutableDocument mutableDocument) {
@@ -823,6 +850,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             view.setFocusable(true);
             view.setBackgroundColor(colorCounter % 2 == 0 ? Color.DKGRAY: Color.GRAY);
             setUpGestures(view);
+            setStarred(view);
             return view;
         }
 
@@ -864,7 +892,6 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
                         Bundle args = new Bundle();
                         String navigationItem = getArguments().getString("navigation_item");
                         args.putString("navigation_item", navigationItem);
-                        args.putString("info_type", CardType.fromValue(navigationItem).getValue());
                         backCardFragment.setArguments(args);
 
                         getFragmentManager()
@@ -927,6 +954,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
             view.setClickable(true);
             view.setFocusable(true);
             setUpGestures(view);
+            setStarred(view);
             return view;
         }
 
