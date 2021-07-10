@@ -1,8 +1,9 @@
-package com.boredofnothing.flashcard.provider;
+package com.boredofnothing.flashcard.provider.verb;
 
 import android.util.Log;
 
 import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.util.DataScraperUtil;
 import com.boredofnothing.flashcard.util.WordCompareUtil;
 
 import org.jsoup.Jsoup;
@@ -21,8 +22,9 @@ public class BablaTranslator extends ConjugationTranslator {
     //private ProgressDialog progressDialog;
 
     private static final BablaTranslator INSTANCE = new BablaTranslator();
+    private static final String BASE_URL = "https://en.bab.la/conjugation/swedish/";
 
-    private BablaTranslator(){
+    private BablaTranslator() {
         //this.context = context;
     }
 
@@ -48,15 +50,15 @@ public class BablaTranslator extends ConjugationTranslator {
 
         try {
             // Connect to the website
-            Document document = Jsoup.connect("https://en.bab.la/conjugation/swedish/" + infinitive.replace(" ", "-")).get();
+            Document document = Jsoup.connect(BASE_URL + infinitive.replace(" ", "-")).get();
 
             // find the infinitiv conjugation
             Elements quickResultsElements = document.select("div.quick-result-entry");
             for (Element quickResultsElement: quickResultsElements) {
                 Elements quickResultOptionElement = quickResultsElement.getElementsByClass("quick-result-option");
                 if (quickResultOptionElement.size() > 0) {
-                    String quickResultConjugationType = getInnerHtml(quickResultOptionElement.get(0));
-                    String value = getInnerHtml(quickResultsElement.getElementsByClass("sense-group-results").get(0));
+                    String quickResultConjugationType = DataScraperUtil.getInnerHtml(quickResultOptionElement.get(0));
+                    String value = DataScraperUtil.getInnerHtml(quickResultsElement.getElementsByClass("sense-group-results").get(0));
                     if (quickResultConjugationType.equals(Conjugation.INFINITIV.getValue())) {
                         if (!infinitive.equals(value)) {
                             double similarity = WordCompareUtil.beginningSimilarity(infinitive, value);
@@ -74,8 +76,8 @@ public class BablaTranslator extends ConjugationTranslator {
             Elements conjugationTenseBlockElements = document.select("div.conj-tense-block");
             if (!conjugationTenseBlockElements.isEmpty()) {
                 for (Element element: conjugationTenseBlockElements) {
-                    String tense = getInnerHtml(element.getElementsByClass("conj-tense-block-header").get(0));
-                    String value = getInnerHtml(element.getElementsByClass("conj-result").get(0));
+                    String tense = DataScraperUtil.getInnerHtml(element.getElementsByClass("conj-tense-block-header").get(0));
+                    String value = DataScraperUtil.getInnerHtml(element.getElementsByClass("conj-result").get(0));
                     if (tense.equals(Conjugation.PRESENS.getValue())) {
                         verb.setSwedishWord(value);
                     } else if (tense.equals(Conjugation.IMPERFEKT_PRETERITUM.getValue())) {

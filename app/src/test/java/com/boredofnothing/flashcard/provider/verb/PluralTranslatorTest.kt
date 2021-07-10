@@ -1,6 +1,6 @@
-package com.boredofnothing.flashcard.provider
+package com.boredofnothing.flashcard.provider.verb
 
-import com.boredofnothing.flashcard.provider.PluralTranslator
+import com.boredofnothing.flashcard.provider.verb.PluralTranslator
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

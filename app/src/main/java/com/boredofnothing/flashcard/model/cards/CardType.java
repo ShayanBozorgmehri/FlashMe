@@ -1,5 +1,7 @@
 package com.boredofnothing.flashcard.model.cards;
 
+import com.boredofnothing.flashcard.provider.lexicon.BablaLexiconTranslator;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -19,6 +21,15 @@ public enum CardType {
     public static CardType fromValue(String value){
         for (CardType type: values()){
             if (type.getValue().equalsIgnoreCase(value)){
+                return type;
+            }
+        }
+        return UNKNOWN;
+    }
+
+    public static CardType from(BablaLexiconTranslator.WordType wordType){
+        for (CardType type: values()){
+            if (type.getValue().equalsIgnoreCase(wordType.name())){
                 return type;
             }
         }

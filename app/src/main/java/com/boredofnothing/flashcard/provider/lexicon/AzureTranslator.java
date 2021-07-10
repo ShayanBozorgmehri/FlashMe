@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard.provider;
+package com.boredofnothing.flashcard.provider.lexicon;
 
 import android.content.Context;
 import android.os.AsyncTask;

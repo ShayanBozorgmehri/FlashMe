@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard.provider
+package com.boredofnothing.flashcard.provider.verb
 
 import org.junit.Assert.assertNull
 import org.junit.Test

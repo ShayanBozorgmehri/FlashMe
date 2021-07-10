@@ -57,7 +57,7 @@ import com.boredofnothing.flashcard.model.cards.Phrase;
 import com.boredofnothing.flashcard.model.cards.Verb;
 import com.boredofnothing.flashcard.model.cards.serializer.NounJsonSerializer;
 import com.boredofnothing.flashcard.model.cards.serializer.VerbJsonSerializer;
-import com.boredofnothing.flashcard.provider.AzureTranslator;
+import com.boredofnothing.flashcard.provider.lexicon.AzureTranslator;
 import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.boredofnothing.flashcard.util.ToastUtil;
 import com.couchbase.lite.CouchbaseLiteException;

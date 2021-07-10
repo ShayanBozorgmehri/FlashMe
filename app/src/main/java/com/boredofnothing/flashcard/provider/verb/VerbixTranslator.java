@@ -1,8 +1,9 @@
-package com.boredofnothing.flashcard.provider;
+package com.boredofnothing.flashcard.provider.verb;
 
 import android.util.Log;
 
 import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.util.DataScraperUtil;
 
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -55,19 +56,19 @@ public class VerbixTranslator extends ConjugationTranslator {
 
             for (Element element: document.select("div.columns-sub")) {
                 Element parent = element.parent();
-                String title = removeHtmlTags(parent.getAllElements().get(0).childNode(1));
+                String title = DataScraperUtil.removeHtmlTags(parent.getAllElements().get(0).childNode(1));
                 if ("Indicative".equals(title)){
                     Elements conjugationElements = parent.select("table.verbtense");
                     for (Element conjugationElement: conjugationElements) {
                         Element conjugationParent = conjugationElement.parent();
-                        String tense = removeHtmlTags(conjugationParent.childNode(0));
+                        String tense = DataScraperUtil.removeHtmlTags(conjugationParent.childNode(0));
                         Element tenseBlock = conjugationParent.child(1);
                         Elements tenseBlockElements = tenseBlock.getElementsByClass("normal"); // a normal conjugation
                         String value;
                         if (!tenseBlockElements.isEmpty()) {
-                            value = getInnerHtml(tenseBlockElements.get(0));
+                            value = DataScraperUtil.getInnerHtml(tenseBlockElements.get(0));
                         } else { // irregular conjugation, like for äter -> åt
-                            value = getInnerHtml(tenseBlock.getElementsByClass("irregular").get(0));
+                            value = DataScraperUtil.getInnerHtml(tenseBlock.getElementsByClass("irregular").get(0));
                         }
                         if (Conjugation.PRESENT.getValue().equals(tense)) {
                             verb.setSwedishWord(value);

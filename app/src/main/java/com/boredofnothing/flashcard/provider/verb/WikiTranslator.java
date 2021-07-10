@@ -1,8 +1,9 @@
-package com.boredofnothing.flashcard.provider;
+package com.boredofnothing.flashcard.provider.verb;
 
 import android.util.Log;
 
 import com.boredofnothing.flashcard.model.cards.Verb;
+import com.boredofnothing.flashcard.util.DataScraperUtil;
 import com.boredofnothing.flashcard.util.WordCompareUtil;
 
 import org.jsoup.Jsoup;
@@ -60,14 +61,14 @@ public class WikiTranslator extends ConjugationTranslator {
                 for (Element table : tables) {
                     Elements tableData = table.getAllElements();
                     if (!tableData.isEmpty()) {
-                        String className = getElementDataByKey(tableData.get(0), "class");
+                        String className = DataScraperUtil.getElementDataByKey(tableData.get(0), "class");
                         if (className != null && className.contains("grammar template-sv-verb")) {
                             Elements rows = tableData.select("tr");
                             if (!rows.isEmpty()) {
                                 // ORDER SHOULD ALWAYS BE THE SAME, skip the first row which is just the title
                                 for (int i = 1; i < rows.size(); i++) {
-                                    String tense = removeHtmlTags(rows.get(i).selectFirst("th"));
-                                    String value = getInnerHtml(rows.get(i).selectFirst("td"))
+                                    String tense = DataScraperUtil.removeHtmlTags(rows.get(i).selectFirst("th"));
+                                    String value = DataScraperUtil.getInnerHtml(rows.get(i).selectFirst("td"))
                                             .replace(", ", "/")
                                             .replaceAll("[0-9]", "");
                                     // for cases like multi word verb cases like 'komma ihåg' that link to another verb
@@ -130,7 +131,7 @@ public class WikiTranslator extends ConjugationTranslator {
     private void findMultiWordConjugation(final Verb verb, final String endingWord, final Element tableDataElement) {
         Element multiWordRedirectElement = tableDataElement.selectFirst("td");
         Node node = multiWordRedirectElement.childNode(0);
-        String redirectInfinitive = getNodeDataByKey(node, "title");
+        String redirectInfinitive = DataScraperUtil.getNodeDataByKey(node, "title");
         Verb redirectVerb = findConjugations(redirectInfinitive, true);
         addEndingWordToVerb(verb, endingWord, redirectVerb);
     }
@@ -180,10 +181,10 @@ public class WikiTranslator extends ConjugationTranslator {
     private List<String> getRedirectValues(final Elements urlElements) {
         return urlElements.stream()
                     .filter(urlElement -> {
-                        String url = getElementDataByKey(urlElement, "href");
+                        String url = DataScraperUtil.getElementDataByKey(urlElement, "href");
                         return url.matches("/wiki/.+#Verb");
                     })
-                    .map(this::getInnerHtml)
+                    .map(e -> DataScraperUtil.getInnerHtml(e))
                     .collect(Collectors.toList());
     }
 

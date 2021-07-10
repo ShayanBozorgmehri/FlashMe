@@ -1,4 +1,4 @@
-package com.boredofnothing.flashcard.provider;
+package com.boredofnothing.flashcard.provider.verb;
 
 import com.boredofnothing.flashcard.model.cards.Article;
 

@@ -16,7 +16,7 @@ import com.boredofnothing.flashcard.model.cards.Article;
 import com.boredofnothing.flashcard.model.cards.CardKeyName;
 import com.boredofnothing.flashcard.model.cards.CardType;
 import com.boredofnothing.flashcard.model.cards.Noun;
-import com.boredofnothing.flashcard.provider.PluralTranslator;
+import com.boredofnothing.flashcard.provider.verb.PluralTranslator;
 import com.boredofnothing.flashcard.util.DocumentUtil;
 import com.boredofnothing.flashcard.util.WordCompareUtil;
 import com.couchbase.lite.Document;
