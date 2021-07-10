@@ -79,8 +79,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import lombok.AllArgsConstructor;
@@ -665,7 +667,8 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         View rowList = getLayoutInflater().inflate(R.layout.azure_list_view, null);
         ListView listView = rowList.findViewById(R.id.azureListView);
 
-        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, translations);
+        Set<String> filteredTranslations = new LinkedHashSet<>(translations);
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>(filteredTranslations));
         listView.setAdapter(adapter);
 
         adapter.notifyDataSetChanged();

@@ -281,38 +281,49 @@ public class VerbCardFlipActivity extends CardFlipActivity {
                 displayNoConnectionToast();
                 return new TranslationResult(SubmissionState.FILLED_IN_CORRECTLY_BUT_NO_CONNECTION);
             }
-            // first, get a translation from azure
+            // first, get a translation from azure or babla
             String azureInfinitiveForm;
+            String bablaInfinitiveForm = null;
             if (!isDisplayAllTranslationSuggestions()) {
                 azureInfinitiveForm = getSwedishTextUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
+                if (isNullOrEmpty(azureInfinitiveForm)) {
+                    List<String> bablaLookups = BablaLexiconTranslator.getInstance().getLexiconTranslations(engInput, CardType.VERB);
+                    if (bablaLookups.isEmpty()) {
+                        azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
+                        if (isNullOrEmpty(engInput)) {
+                            displayToast("Could not find Swedish verb translation for: " + engInput);
+                            return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
+                        } else {
+                            displayToast("Found secondary translation...");
+                        }
+                    } else {
+                        bablaInfinitiveForm = bablaLookups.get(0);
+                    }
+                }
+                // find actual conjugations
+                VerbConjugationResult verbConjugationResult = isNullOrEmpty(azureInfinitiveForm)
+                        ? findVerbConjugations(azureInfinitiveForm, engInput)
+                        : findVerbConjugations(bablaInfinitiveForm, engInput);
+                Verb verb = verbConjugationResult.getVerb();
+                if (verb == null) {
+                    return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
+                }
+                setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
+                setEditText(dialogView, R.id.infinitiveForm, verb.getInfinitive());
+                setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
+                setEditText(dialogView, R.id.perfectForm, verb.getPerfect());
+                autoTranslationProvider = verbConjugationResult.getAutoTranslationProvider();
+
             } else {
                 // have user select one
                 List<String> lookups = getSwedishTextsUsingAzureDictionaryLookup(engInput, PartOfSpeechTag.VERB);
-
+                List<String> bablaLookups = BablaLexiconTranslator.getInstance().getLexiconTranslations(engInput, CardType.VERB);
+                lookups.addAll(bablaLookups);
                 if (lookups.isEmpty()) return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
 
                 createSwedishTranslationSelectionListDialog("Select an infinitive form translation", engInput, lookups, null);
                 return new TranslationResult(SubmissionState.USER_SELECTING_FROM_TRANSLATION_LIST);
             }
-            if (isNullOrEmpty(azureInfinitiveForm)) {
-                azureInfinitiveForm = getSwedishTextUsingAzureTranslator(engInput);
-                if (isNullOrEmpty(engInput)) {
-                    displayToast("Could not find Swedish verb translation for: " + engInput);
-                    return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
-                } else {
-                    displayToast("Found secondary translation...");
-                }
-            }
-            VerbConjugationResult verbConjugationResult = findVerbConjugations(azureInfinitiveForm, engInput);
-            Verb verb = verbConjugationResult.getVerb();
-            if (verb == null) {
-                return new TranslationResult(SubmissionState.SUBMITTED_WITH_NO_RESULTS_FOUND);
-            }
-            setEditText(dialogView, R.id.swedishVerb, verb.getSwedishWord());
-            setEditText(dialogView, R.id.infinitiveForm, verb.getInfinitive());
-            setEditText(dialogView, R.id.imperfectForm, verb.getImperfect());
-            setEditText(dialogView, R.id.perfectForm, verb.getPerfect());
-            autoTranslationProvider = verbConjugationResult.getAutoTranslationProvider();
         }
         return new TranslationResult(SUBMITTED_WITH_RESULTS_FOUND, autoTranslationProvider);
     }
