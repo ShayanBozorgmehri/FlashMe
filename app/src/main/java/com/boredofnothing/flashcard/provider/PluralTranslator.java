@@ -1,11 +1,23 @@
-package com.boredofnothing.flashcard.provider.verb;
+package com.boredofnothing.flashcard.provider;
 
+import android.content.res.Resources;
+import android.util.Log;
+
+import com.boredofnothing.flashcard.R;
 import com.boredofnothing.flashcard.model.cards.Article;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-
-import lombok.experimental.UtilityClass;
 
 /**
  * Class used to figure out the plural tense of a singular form of a Swedish noun if the initial translation failed to find
@@ -15,13 +27,19 @@ import lombok.experimental.UtilityClass;
  * https://myswedish.medium.com/plurals-in-swedish-76f1de93755d,
  * and BergnerNylund1993 "A Compact Swedish Grammar" PDF
  */
-@UtilityClass
 public class PluralTranslator {
 
     private final Set<Character> syllables = new HashSet<>();
     private final Set<String> latinSuffixes = new HashSet<>();
 
-    static {
+    private final Map<String, String> enNounMap;
+    private final Map<String, String> ettNounMap;
+
+    public PluralTranslator(Resources resources) {
+
+        enNounMap = createNounMap(resources, R.raw.en_nouns);
+        ettNounMap = createNounMap(resources, R.raw.ett_nouns);
+
         syllables.add('a');
         syllables.add('e');
         syllables.add('i');
@@ -54,6 +72,34 @@ public class PluralTranslator {
         latinSuffixes.add("ori");
     }
 
+    private Map<String, String> createNounMap(Resources resources, int resource) {
+        InputStream is = resources.openRawResource(resource);
+        Writer writer = new StringWriter();
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            String line = reader.readLine();
+            while (line != null) {
+                writer.write(line);
+                line = reader.readLine();
+            }
+        } catch (Exception e) {
+            Log.e("ERROR", "Unhandled exception while using JSONResourceReader", e);
+        } finally {
+            try {
+                is.close();
+            } catch (Exception e) {
+                Log.e("ERROR", "Unhandled exception while using JSONResourceReader", e);
+            }
+        }
+        String jsonString = writer.toString();
+        try {
+            return new ObjectMapper().readValue(jsonString, new TypeReference<HashMap<String,String>>() {});
+        } catch (JsonProcessingException e) {
+           Log.e("ERROR", "Failed to create default map for resource: " + resource);
+           return new HashMap<>();
+        }
+    }
+
     /**
      * This is NOT a full proof way to find out the plural form of a noun since there are many exceptions and some words do not have rules,
      * but still using as many rules as possible.
@@ -65,42 +111,50 @@ public class PluralTranslator {
         boolean wordEndsWithSyllable = wordEndsWithSyllable(singular);
 
         if (Article.EN.getValue().equals(article)) {
-            if (singular.endsWith("a") && containsStressedSyllables) {
-                // or ending
-                plural = singular.substring(0, singular.lastIndexOf('a')) + "or";
-            } else if (!wordEndsWith(singular, "ent", "lis", "lm", "k", "j", "vakt", // this line may not always be true, but again, there are no real rules...
+            if (enNounMap.containsKey(singular)) {
+                plural = enNounMap.get(singular);
+            } else {
+                if (singular.endsWith("a") && containsStressedSyllables) {
+                    // or ending
+                    plural = singular.substring(0, singular.lastIndexOf('a')) + "or";
+                } else if (!wordEndsWith(singular, "ent", "lis", "lm", "k", "j", "vakt", // this line may not always be true, but again, there are no real rules...
                         "skap" ,"het","nad" ,"or" ,"else", "arie", "are", "er", "ande", "ende")
-                    && (wordEndsWith(singular,"e", "dom", "ing") || !wordEndsWithSyllable)) {
-                // ar ending
-                if (singular.endsWith("e")){
-                    plural = singular.substring(0, singular.lastIndexOf('e')) + "ar";
-                } else if (singular.endsWith("el")) {
-                    plural = singular.substring(0, singular.lastIndexOf('l') - 1) + "lar";
-                } else {
-                    plural = singular + "ar";
-                }
-            } else if (!wordEndsWith(singular,"are", "er", "ande", "ende")
-                    && (wordEndsWith(singular,"skap" ,"het","nad" ,"or" ,"else", "arie")
+                        && (wordEndsWith(singular,"e", "dom", "ing") || !wordEndsWithSyllable)) {
+                    // ar ending
+                    if (singular.endsWith("e")){
+                        plural = singular.substring(0, singular.lastIndexOf('e')) + "ar";
+                    } else if (singular.endsWith("el")) {
+                        plural = singular.substring(0, singular.lastIndexOf('l') - 1) + "lar";
+                    } else {
+                        plural = singular + "ar";
+                    }
+                } else if (!wordEndsWith(singular,"are", "er", "ande", "ende")
+                        && (wordEndsWith(singular,"skap" ,"het","nad" ,"or" ,"else", "arie")
                         || (!wordEndsWithSyllable && (containsStressedSyllables || isWordMonoSyllabic(singular))))) {
-                // er ending
-               plural = singular.endsWith("e") ? singular + "r" : singular + "er";
-            } else if (wordEndsWith(singular,"are", "er", "ande", "ende")) {
-                plural = singular;
-            }
-        } else {
-            if (!singular.endsWith("er")){
-                if (wordEndsWith(singular,"um", "eri", "ium")
-                        || (containsStressedSyllables && !wordEndsWithSyllable) || endsWithLatinSuffix(singular)) {
                     // er ending
-                    plural = singular + "er";
-                } else if (wordEndsWith(singular,"ande", "ende") || containsStressedSyllables || wordEndsWithSyllable) {
-                    // n ending
-                    plural = singular + "n";
-                } else { // ends with a consonant
+                    plural = singular.endsWith("e") ? singular + "r" : singular + "er";
+                } else if (wordEndsWith(singular,"are", "er", "ande", "ende")) {
                     plural = singular;
                 }
+            }
+        } else {
+            if (ettNounMap.containsKey(singular)) {
+                plural = ettNounMap.get(singular);
             } else {
-                plural = singular;
+                if (!singular.endsWith("er")){
+                    if (wordEndsWith(singular,"um", "eri", "ium")
+                            || (containsStressedSyllables && !wordEndsWithSyllable) || endsWithLatinSuffix(singular)) {
+                        // er ending
+                        plural = singular + "er";
+                    } else if (wordEndsWith(singular,"ande", "ende") || containsStressedSyllables || wordEndsWithSyllable) {
+                        // n ending
+                        plural = singular + "n";
+                    } else { // ends with a consonant
+                        plural = singular;
+                    }
+                } else {
+                    plural = singular;
+                }
             }
         }
         return plural;
