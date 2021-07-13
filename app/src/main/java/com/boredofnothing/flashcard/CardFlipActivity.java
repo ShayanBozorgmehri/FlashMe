@@ -300,7 +300,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     public void onStarIconClick(View view) {
         Boolean isStarred = (Boolean) getDocumentAttribute(CardKeyName.STARRED);
-        isStarred = Boolean.TRUE.equals(isStarred) ? false : true;
+        isStarred = !Boolean.TRUE.equals(isStarred);
 
         Document currentDocument = documents.get(currentIndex);
         Map<String, Object> map = currentDocument.toMap();
@@ -322,7 +322,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
 
     @AllArgsConstructor
     @Data
-    protected final class TranslationResult {
+    protected static final class TranslationResult {
         private final SubmissionState submissionState;
         private final AutoTranslationProvider autoTranslationProvider;
 
@@ -390,7 +390,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return TranslationMode.MANUAL_INPUT;
     }
 
-    protected static final void setStarred(View view) {
+    protected static void setStarred(View view) {
         CheckBox starButton = view.findViewById(R.id.starIcon);
         if (Boolean.TRUE.equals(getDocumentAttribute(CardKeyName.STARRED))) {
             starButton.setButtonDrawable(R.drawable.star_on);
@@ -521,7 +521,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return map;
     }
 
-    protected static final Object getDocumentAttribute(CardKeyName cardKeyName) {
+    protected static Object getDocumentAttribute(CardKeyName cardKeyName) {
         Document currentDocument = documents.get(currentIndex);
         Map<String, Object> map = currentDocument.toMap();
         return map.get(cardKeyName.getValue());
@@ -590,7 +590,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         }
     }
 
-    private final void addCurrentDataToReplacedData(Document currentDocument, Map<String, Object> updatedData) {
+    private void addCurrentDataToReplacedData(Document currentDocument, Map<String, Object> updatedData) {
         Map<String, Object> currentData = currentDocument.toMap();
         updatedData.put(CardKeyName.TRANSLATION_MODE.getValue(), currentData.get(CardKeyName.TRANSLATION_MODE.getValue()));
         updatedData.put(CardKeyName.AUTO_TRANSLATION_PROVIDER.getValue(), currentData.get(CardKeyName.AUTO_TRANSLATION_PROVIDER.getValue()));
@@ -668,7 +668,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         ListView listView = rowList.findViewById(R.id.azureListView);
 
         Set<String> filteredTranslations = new LinkedHashSet<>(translations);
-        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>(filteredTranslations));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>(filteredTranslations));
         listView.setAdapter(adapter);
 
         adapter.notifyDataSetChanged();
@@ -709,7 +709,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
         return ((RadioButton) dialogView.findViewById(radioGroup.getCheckedRadioButtonId())).getText().toString();
     }
 
-    protected final static Query createQueryForCardTypeWithNonNullOrMissingValues(CardType cardType) {
+    protected static Query createQueryForCardTypeWithNonNullOrMissingValues(CardType cardType) {
         return QueryBuilder
                 .select(SelectResult.all(), SelectResult.expression(Meta.id))
                 .from(DataSource.database(MainActivity.database))
@@ -733,7 +733,7 @@ public abstract class CardFlipActivity extends Activity implements FragmentManag
     }
 
     @Nullable
-    protected final static String getJsonFromDoc(Document document) {
+    protected static String getJsonFromDoc(Document document) {
         String json = null;
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
