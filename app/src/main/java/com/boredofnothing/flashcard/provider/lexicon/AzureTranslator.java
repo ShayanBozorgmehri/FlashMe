@@ -30,7 +30,7 @@ import lombok.SneakyThrows;
 
 public class AzureTranslator {
 
-    private static final Pair<String, String> SUBSCRIPTION_KEY_PAIR = Pair.create("Ocp-Apim-Subscription-Key", "eb7ecc03dd80409c8e462e6b4e3ec0dd");
+    private static final Pair<String, String> SUBSCRIPTION_KEY_PAIR = Pair.create("Ocp-Apim-Subscription-Key", "95ccd6a02d9b414e8d6d0d2be7e13fce");
     private static final Pair<String, String> SUBSCRIPTION_REGION_PAIR = Pair.create("Ocp-Apim-Subscription-Region", "northeurope");
     private static final Pair<String, String> CONTENT_TYPE_PAIR = Pair.create("Content-type", "application/json");
     private final Context context;
